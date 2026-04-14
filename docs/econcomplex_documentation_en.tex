@@ -1,0 +1,1029 @@
+%% ============================================================
+%%  econcomplex --- Technical Documentation
+%%  Compile with: pdflatex econcomplex_documentation.tex
+%%                pdflatex econcomplex_documentation.tex  (second pass)
+%% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+%% --- Packages ---------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listingsutf8}   % replaces listings with full UTF-8 support
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{mdframed}
+
+%% --- Geometry ------------------------------------------------
+\geometry{
+  a4paper,
+  top=2.5cm, bottom=2.5cm,
+  left=2cm, right=2cm,
+  headheight=14pt
+}
+
+%% --- Colors ----------------------------------------------------
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{200,200,200}
+\definecolor{pyblue}{RGB}{31,119,180}
+\definecolor{pyorange}{RGB}{214,110,0}
+\definecolor{pygray}{RGB}{100,100,100}
+\definecolor{tblhead}{RGB}{40,70,120}
+\definecolor{noteblue}{RGB}{220,235,250}
+\definecolor{noteborder}{RGB}{70,130,180}
+\definecolor{warnbg}{RGB}{255,248,220}
+\definecolor{warnborder}{RGB}{200,150,0}
+
+%% --- UTF-8 mapping for lstlistings ------------------------
+%% (required for accented characters inside code blocks)
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{codeframe},
+  keywordstyle=\bfseries\color{pyblue},
+  commentstyle=\itshape\color{pygray},
+  stringstyle=\color{pyorange},
+  numbers=left,
+  numberstyle=\tiny\color{pygray},
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4,
+  captionpos=b,
+  xleftmargin=1.5em,
+  xrightmargin=0.5em,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate=
+    {\'a}{{\'{a}}}1 {\'e}{{\'{e}}}1 {\'i}{{\'{i}}}1 {\'o}{{\'{o}}}1 {\'u}{{\'{u}}}1
+    {\^a}{{\^{a}}}1 {\^e}{{\^{e}}}1 {\^o}{{\^{o}}}1
+    {\~a}{{\~{a}}}1 {\~o}{{\~{o}}}1
+    {\c c}{{\c{c}}}1
+    {a\'}{{\'{a}}}1 {e\'}{{\'{e}}}1
+    {i\'}{{\'{i}}}1 {o\'}{{\'{o}}}1 {u\'}{{\'{u}}}1
+    {a\^}{{\^{a}}}1 {e\^}{{\^{e}}}1 {o\^}{{\^{o}}}1
+    {a\~}{{\~{a}}}1 {o\~}{{\~{o}}}1
+    {,}{{,}}1 {;}{{;}}1 {:}{{:}}1,
+}
+
+%% --- Bash style (without self-reference) -----------------------
+\lstdefinestyle{bashstyle}{
+  language=bash,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{codeframe},
+  keywordstyle=\bfseries\color{pygray},
+  commentstyle=\itshape\color{pygray},
+  stringstyle=\color{pyorange},
+  numbers=left,
+  numberstyle=\tiny\color{pygray},
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  tabsize=2,
+  captionpos=b,
+  xleftmargin=1.5em,
+  xrightmargin=0.5em,
+  inputencoding=utf8,
+  extendedchars=true,
+  morekeywords={pip,pip3,python3,cd,jupyter,echo,source,export,conda,activate},
+}
+
+%% --- Highlight boxes --------------------------------------
+\tcbuselibrary{skins, breakable}
+
+\newtcolorbox{notebox}{
+  colback=noteblue, colframe=noteborder,
+  boxrule=0.8pt, arc=3pt,
+  left=6pt, right=6pt, top=4pt, bottom=4pt,
+  fonttitle=\bfseries, title=Note,
+}
+
+\newtcolorbox{warnbox}{
+  colback=warnbg, colframe=warnborder,
+  boxrule=0.8pt, arc=3pt,
+  left=6pt, right=6pt, top=4pt, bottom=4pt,
+  fonttitle=\bfseries, title={Warning},
+}
+
+%% --- Header / Footer --------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\texttt{econcomplex}}
+\fancyhead[R]{\small Technical Documentation}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+%% --- Sections ---------------------------------------------------
+\titleformat{\section}{\large\bfseries\color{tblhead}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{pyblue}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{}
+
+%% --- Hyperref -------------------------------------------------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=pyblue,
+  urlcolor=pyblue,
+  citecolor=pygray,
+  pdftitle={econcomplex -- Technical Documentation},
+  pdfauthor={econcomplex contributors},
+}
+
+%% --- Macros ---------------------------------------------------
+\newcommand{\pkg}[1]{\texttt{\textbf{#1}}}
+\newcommand{\fn}[1]{\texttt{#1}}
+\newcommand{\argm}[1]{\textit{\texttt{#1}}}
+\newcommand{\mat}[1]{\mathbf{#1}}
+
+%% ============================================================
+\begin{document}
+
+%% --- Cover page ----------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\Huge\bfseries\color{tblhead} econcomplex}\par
+  \vspace{0.5cm}
+  {\large\bfseries Technical Documentation --- Version 0.1.0}\par
+  \vspace{1cm}
+  \rule{10cm}{0.8pt}\par
+  \vspace{0.8cm}
+  {\large Python Library for Economic Complexity\\
+  and Regional Science Indicators}\par
+  \vspace{2cm}
+  {\normalsize
+    \textit{Elton Freitas}
+  }\par
+  \vspace{3cm}
+  {\small\color{pygray}
+    Dependencies: \texttt{numpy $\geq$ 1.21}, \texttt{pandas $\geq$ 1.3}, \texttt{scipy $\geq$ 1.7}\\[4pt]
+    Compatible with Python 3.9+
+  }\par
+  \vfill
+  {\small\color{pygray} March 2026}
+\end{titlepage}
+
+%% --- Table of contents --------------------------------------------------
+\tableofcontents
+\newpage
+
+%% ============================================================
+\section{Overview}
+
+\pkg{econcomplex} is a Python library that consolidates the best
+implementations of Economic Complexity and Regional Science indicators,
+combining functionalities from four reference packages in the literature:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{EconGeo} (Balland, 2017) --- R package focused on geographic
+        and regional specialization indicators
+  \item \textbf{economiccomplexity} (Vargas Sep\'{u}lveda, 2020) --- R package
+        with C++ backend (Armadillo) for complexity indicators
+  \item \textbf{py-ecomplexity} (The Growth Lab at Harvard, 2020) --- complete
+        Python pipeline with time series support
+  \item \textbf{py-economic-complexity} --- modular Python implementation
+        with Polars support and cross-space indicators
+\end{itemize}
+
+\subsection{Installation}
+
+\begin{lstlisting}[style=bashstyle,
+  caption={Installation via pip (local development)}]
+# From the library root directory
+pip install -e .
+
+# Or adding the path manually
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+import econcomplex as ec
+\end{lstlisting}
+
+\subsection{Module Structure}
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Module} & \textbf{Contents} \\
+\midrule
+\texttt{core}           & RCA, RPOP, Mcp, diversity, ubiquity, utilities \\
+\texttt{complexity}     & ECI/PCI (3 methods), subnational ECI \\
+\texttt{relatedness}    & Proximity, density, distance, co-occurrence, cross-space \\
+\texttt{specialization} & LQ, Hachman, Krugman, specialization coef., similarity \\
+\texttt{inequality}     & Gini, locational Gini, Hoover-Gini, HHI, Shannon entropy \\
+\texttt{productivity}   & PRODY, EXPY, PGI, PEII \\
+\texttt{patents}        & Ease of Recombination, Modular Complexity \\
+\texttt{dynamics}       & Growth rates, entry/exit tracking \\
+\texttt{outlook}        & COI, COG (Complexity Outlook) \\
+\texttt{pipeline}       & \texttt{compute\_complexity()} function --- unified pipeline \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%% ============================================================
+\section{Data Organisation}
+
+This section describes the input format expected by the library,
+ensuring that data is correctly structured before running any indicator.
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Standard Format: Long Table (\textit{long format})}
+
+The \pkg{econcomplex} library works exclusively with
+\textbf{tables in long format} (\textit{tidy data}),
+where each row represents \textbf{a unique combination} of
+region $\times$ activity (and period, when applicable):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llll}
+\toprule
+\textbf{region} & \textbf{activity} & \textbf{value} & \textbf{year (optional)} \\
+\midrule
+\texttt{SP}  & \texttt{cnae\_10} & 12\,345 & 2022 \\
+\texttt{SP}  & \texttt{cnae\_25} &  6\,789 & 2022 \\
+\texttt{RJ}  & \texttt{cnae\_10} &  9\,012 & 2022 \\
+\texttt{RJ}  & \texttt{cnae\_25} &  3\,456 & 2022 \\
+\texttt{SP}  & \texttt{cnae\_10} & 13\,200 & 2023 \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}
+  The library does \textbf{not} accept pivoted matrices (regions in rows,
+  activities in columns). Use \fn{pivot\_to\_matrix()} only for
+  low-level functions that explicitly require the matrix.
+\end{warnbox}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Data Quality Rules}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{No duplicate rows:} each (\textit{region},
+        \textit{activity}) pair must appear exactly once per period.
+  \item \textbf{Non-negative values:} the value column must contain
+        only numbers $\geq 0$.
+  \item \textbf{No \texttt{NaN}:} remove or impute missing values before
+        passing the DataFrame.
+  \item \textbf{Consistent granularity:} all regions must use
+        the same geographic level (e.g., all municipalities
+        \textit{or} all states).
+  \item \textbf{Homogeneous activities:} use a single classification
+        per analysis (e.g., CNAE 2-digit \textit{or} CNAE 4-digit,
+        not mixed).
+\end{enumerate}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Column Names --- \texttt{cols} Dictionary}
+
+The pipeline uses a \argm{cols} dictionary to map the actual column
+names of your DataFrame:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Key} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{"loc"}  & required & Region / location column \\
+\texttt{"act"}  & required & Activity / product / technology column \\
+\texttt{"val"}  & required & Numeric value column (jobs, exports \ldots) \\
+\texttt{"time"} & optional & Period column (year, quarter \ldots) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[caption={Verifying and preparing the DataFrame before the pipeline}]
+import pandas as pd
+import econcomplex as ec
+
+df = pd.read_csv("my_data.csv")
+
+# Check structure
+print(df.dtypes)
+print(df.shape)
+print(df.isnull().sum())        # check for NaN
+print(df.duplicated().sum())    # check for duplicates
+
+# Basic cleaning
+df = df.dropna(subset=["region", "cnae", "jobs"])
+df = df[df["jobs"] >= 0]        # remove negative values
+df = df.drop_duplicates(subset=["region", "cnae", "year"])
+
+# Run the pipeline
+result = ec.compute_complexity(
+    df,
+    cols={"loc": "region", "act": "cnae",
+          "val": "jobs", "time": "year"},
+)
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Supported File Formats}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Format} & \textbf{pandas reader} & \textbf{Notes} \\
+\midrule
+\texttt{.csv}     & \texttt{pd.read\_csv()}     & Most common; use \texttt{sep=";"} for Brazilian CSVs \\
+\texttt{.parquet} & \texttt{pd.read\_parquet()} & Ideal for large datasets (RAIS, COMEX) \\
+\texttt{.xlsx}    & \texttt{pd.read\_excel()}   & Requires \texttt{openpyxl}; avoid $>$100\,000 rows \\
+\texttt{.feather} & \texttt{pd.read\_feather()} & High performance; requires \texttt{pyarrow} \\
+\texttt{.dta}     & \texttt{pd.read\_stata()}   & Stata files; preserves labels \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[caption={Reading different file formats}]
+import pandas as pd
+
+# CSV with semicolon separator (Brazilian standard)
+df = pd.read_csv("rais.csv", sep=";", encoding="latin-1",
+                 usecols=["municipality", "cnae2d", "year", "jobs"],
+                 dtype={"municipality": str, "cnae2d": str})
+
+# Parquet (preferred for RAIS/COMEX)
+df = pd.read_parquet("comex_ncm.parquet",
+                     columns=["co_mun", "co_ncm", "year", "vl_fob"])
+
+# Excel
+df = pd.read_excel("data.xlsx", sheet_name="Sheet1",
+                   usecols=["state", "sector", "year", "jobs"])
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Examples of Compatible Datasets}
+
+\begin{description}[leftmargin=1.5em, style=nextline]
+  \item[\textbf{RAIS/MTE}]
+    Formal employment by municipality $\times$ CNAE (2 or 4 digits)
+    $\times$ year. Value column: active employment bonds on 31/12.
+  \item[\textbf{COMEX/MDIC}]
+    Exports by municipality $\times$ NCM $\times$ year.
+    Value column: \texttt{VL\_FOB} (value in USD).
+  \item[\textbf{INPI --- Patents}]
+    Patent applications by State of the Federation $\times$
+    IPC classification $\times$ year.
+  \item[\textbf{Atlas of Economic Complexity (Harvard)}]
+    Exports by country $\times$ product (HS) $\times$ year.
+    Available at \url{https://atlas.cid.harvard.edu/}.
+  \item[\textbf{Simulated data (testing)}]
+    Use \fn{ec.make\_sample\_data(n\_locs=20, n\_acts=50, seed=42)}
+    to generate a synthetic DataFrame.
+\end{description}
+
+%% ============================================================
+\section{How to Run the Scripts}
+
+This section describes all the ways to run the \pkg{econcomplex}
+library, from direct execution of Python scripts to use in interactive
+environments such as Jupyter and IDEs.
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Prerequisites}
+
+\begin{warnbox}
+  Make sure the dependencies are installed before running any script.
+\end{warnbox}
+
+\begin{lstlisting}[style=bashstyle,
+  caption={Installing the dependencies}]
+# Install main dependencies
+pip install numpy pandas scipy
+
+# Install the library in development mode
+pip install -e /path/to/econcomplex
+
+# Verify installation
+python3 -c "import econcomplex as ec; print(ec.__version__)"
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Direct Execution via Terminal}
+
+The simplest way to use the library is to run a \texttt{.py} script
+directly in the terminal:
+
+\begin{lstlisting}[style=bashstyle,
+  caption={Running scripts in the terminal}]
+# Navigate to the project folder
+cd "/path/to/1 - Pos-doc research/data/script"
+
+# Run the full example script
+python3 econcomplex/example_usage.py
+
+# Run your own script
+python3 my_script.py
+\end{lstlisting}
+
+If the library is \textbf{not} installed via \texttt{pip},
+add the path manually at the beginning of each script:
+
+\begin{lstlisting}[caption={Adding path to sys.path (without pip install)}]
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+
+import econcomplex as ec
+print(ec.__version__)   # 0.1.0
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Running in Jupyter Notebook / JupyterLab}
+
+\begin{lstlisting}[style=bashstyle,
+  caption={Opening Jupyter from the scripts folder}]
+cd "/path/to/1 - Pos-doc research/data/script"
+jupyter notebook
+# or
+jupyter lab
+\end{lstlisting}
+
+Inside the notebook, the first cell should configure the path:
+
+\begin{lstlisting}[caption={Configuration cell in Jupyter}]
+# Cell 1 -- configuration
+import sys, os
+
+BASE = os.path.expanduser(
+    "~/Library/CloudStorage/"
+    "OneDrive-Personnel/1 - Pos-doc research/data/script/econcomplex"
+)
+sys.path.insert(0, BASE)
+
+import econcomplex as ec
+import numpy as np
+import pandas as pd
+
+print("econcomplex", ec.__version__, "loaded successfully.")
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Subsequent cells --- normal usage}]
+# Cell 2 -- load data
+df = pd.read_csv("my_data.csv")   # columns: region, sector, jobs
+
+# Cell 3 -- compute complexity
+result = ec.compute_complexity(
+    df,
+    cols={"loc": "region", "act": "sector", "val": "jobs"},
+    method="eigenvector",
+    compute_coi_cog=True,
+)
+result.head()
+
+# Cell 4 -- display ECI by region
+eci = (result[["region", "eci"]]
+       .drop_duplicates()
+       .set_index("region")
+       .sort_values("eci", ascending=False))
+print(eci)
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Running in VS Code / PyCharm / Spyder}
+
+In any IDE, configure the \textbf{Python interpreter} and the
+\textbf{working directory} to point to the scripts folder.
+
+\begin{lstlisting}[style=bashstyle,
+  caption={Configure path in VS Code (settings.json)}]
+// .vscode/settings.json
+{
+  "python.defaultInterpreterPath":
+      "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+  "terminal.integrated.cwd": "${workspaceFolder}"
+}
+\end{lstlisting}
+
+In \textbf{Spyder}, go to \textit{Tools $\to$ PYTHONPATH Manager}
+and add the \texttt{econcomplex/} directory.
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Minimal Execution Script}
+
+Ready-to-use template for any CSV-format dataset:
+
+\begin{lstlisting}[caption={Minimal template --- copy and adapt}]
+"""
+Usage template for the econcomplex library.
+Adapt the column names and the CSV file path.
+"""
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+
+import pandas as pd
+import econcomplex as ec
+
+# 1. Load data
+df = pd.read_csv("data.csv")
+print("Columns:", df.columns.tolist())
+print("Shape:", df.shape)
+
+# 2. Compute all indicators
+result = ec.compute_complexity(
+    df,
+    cols={
+        "loc":  "region_column_name",    # e.g.: "municipality", "state"
+        "act":  "activity_column_name",  # e.g.: "cnae", "product"
+        "val":  "value_column_name",     # e.g.: "jobs", "exports"
+        "time": "year_column_name",      # optional
+    },
+    method="eigenvector",   # 'eigenvector' | 'reflections' | 'fitness'
+    threshold=1.0,
+    compute_coi_cog=True,
+)
+
+# 3. Export results
+result.to_csv("complexity_results.csv", index=False)
+print("Result saved to complexity_results.csv")
+print("Generated columns:", sorted(result.columns.tolist()))
+
+# 4. Individual indicators (optional)
+mat = ec.pivot_to_matrix(df,
+                         "region_column_name",
+                         "activity_column_name",
+                         "value_column_name")
+
+eci, pci  = ec.eci_pci(mat)
+hachman   = ec.hachman_index(mat)
+krugman   = ec.krugman_index(mat)
+entropy   = ec.shannon_entropy(mat)
+
+output = pd.DataFrame({
+    "eci": eci, "hachman": hachman,
+    "krugman": krugman, "entropy": entropy,
+})
+print(output.round(3))
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Running with RAIS / CNAE Data (real use case)}
+
+\begin{lstlisting}[caption={Usage with RAIS data --- municipalities x CNAE}]
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+
+import pandas as pd
+import econcomplex as ec
+
+# Load aggregated RAIS
+# Expected columns: municipality, cnae2d, year, jobs
+rais = pd.read_parquet("rais_municipality_cnae.parquet")
+
+# Filter a single year for analysis
+rais_2022 = rais[rais["year"] == 2022].copy()
+
+# Pipeline
+result = ec.compute_complexity(
+    rais_2022,
+    cols={"loc": "municipality", "act": "cnae2d", "val": "jobs"},
+    method="eigenvector",
+    compute_coi_cog=False,   # disable COG for large datasets
+)
+
+# Top 20 most complex municipalities
+top20 = (result[["municipality", "eci"]]
+         .drop_duplicates()
+         .sort_values("eci", ascending=False)
+         .head(20))
+print(top20.to_string(index=False))
+
+result.to_csv("complexity_municipalities_2022.csv", index=False)
+\end{lstlisting}
+
+% -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+\subsection{Running a Multi-Year Panel}
+
+To analyse the evolution of indicators over time,
+simply include the time column in the \argm{cols} dictionary:
+
+\begin{lstlisting}[caption={Panel execution --- multiple years}]
+# rais with "year" column containing 2010, 2015, 2020
+panel_result = ec.compute_complexity(
+    rais,
+    cols={
+        "loc":  "municipality",
+        "act":  "cnae2d",
+        "val":  "jobs",
+        "time": "year",       # activates the temporal loop
+    },
+    method="reflections",
+    compute_coi_cog=False,
+)
+
+# The result already contains all years
+print(panel_result["year"].value_counts().sort_index())
+
+# Median ECI evolution by year
+eci_trend = (panel_result[["year", "municipality", "eci"]]
+             .drop_duplicates()
+             .groupby("year")["eci"]
+             .median()
+             .round(4))
+print(eci_trend)
+\end{lstlisting}
+
+\begin{notebox}
+  The pipeline automatically iterates over each period, ensuring that
+  the proximity matrix and complexity vectors are recalculated
+  independently for each year.
+\end{notebox}
+
+%% ============================================================
+\section{Core Indicators (\texttt{core})}
+
+\subsection{Revealed Comparative Advantage (RCA)}
+
+Balassa's RCA is the main specialization filter:
+
+\[
+  \text{RCA}_{il} = \frac{x_{il} / \sum_l x_{il}}
+                         {\sum_i x_{il} / \sum_{il} x_{il}}
+\]
+
+\begin{lstlisting}[caption={Continuous and binary RCA}]
+import econcomplex as ec
+import pandas as pd
+
+df = pd.read_csv("data.csv")
+mat = ec.pivot_to_matrix(df, "region", "sector", "jobs")
+
+rca      = ec.rca(mat)               # continuous values
+mcp      = ec.mcp(mat, threshold=1)  # 1 if RCA >= 1, 0 otherwise
+rca_rpop = ec.rpop(mat)              # Puga & Turrini RCA (continuous)
+\end{lstlisting}
+
+\subsection{Diversity and Ubiquity}
+
+\begin{lstlisting}[caption={Diversity and ubiquity}]
+div = ec.diversity(mat)    # number of sectors with RCA >= 1 per region
+ubi = ec.ubiquity(mat)     # number of regions with RCA >= 1 per sector
+\end{lstlisting}
+
+%% ============================================================
+\section{Economic Complexity (\texttt{complexity})}
+
+\subsection{Eigenvector Method (Hidalgo \& Hausmann, 2009)}
+
+\[
+  \text{ECI} = \frac{\vec{v}_2 - \mu(\vec{v}_2)}{\sigma(\vec{v}_2)}, \quad
+  \text{PCI} = \frac{\vec{u}_2 - \mu(\vec{u}_2)}{\sigma(\vec{u}_2)}
+\]
+where $\vec{v}_2$ is the second left eigenvector of matrix $\tilde{M}$:
+\[
+  \tilde{M}_{ij} = \frac{M_{ij}}{k_{c,0} \cdot k_{p,0}}
+\]
+
+\begin{lstlisting}[caption={ECI and PCI using the eigenvector method}]
+eci, pci = ec.eci_pci(mat, method="eigenvector")
+print(eci.head())   # Series indexed by region
+print(pci.head())   # Series indexed by product/sector
+\end{lstlisting}
+
+\subsection{Method of Reflections (Hidalgo \& Hausmann, 2009)}
+
+\begin{lstlisting}[caption={Method of Reflections}]
+eci_r, pci_r = ec.eci_pci(mat, method="reflections", iterations=20)
+\end{lstlisting}
+
+\subsection{Fitness-Complexity (Tacchini et al., 2012)}
+
+\[
+  F_c^{(n+1)} = \sum_p M_{cp} Q_p^{(n)}, \quad
+  Q_p^{(n+1)} = \frac{1}{\sum_c M_{cp} / F_c^{(n)}}
+\]
+
+\begin{lstlisting}[caption={Fitness-Complexity}]
+fit, comp = ec.eci_pci(mat, method="fitness", iterations=100)
+\end{lstlisting}
+
+\subsection{Subnational ECI}
+
+\begin{lstlisting}[caption={Subnational ECI with external PCI}]
+# pci_national: PCI computed from national/international data
+eci_sub = ec.subnational_eci(mat_sub, pci_national)
+\end{lstlisting}
+
+%% ============================================================
+\section{Product Space and Relatedness (\texttt{relatedness})}
+
+\subsection{Proximity ($\phi$)}
+
+\[
+  \phi_{ij} = \min\!\left(
+    P(\text{RCA}_i \geq 1 \mid \text{RCA}_j \geq 1),\;
+    P(\text{RCA}_j \geq 1 \mid \text{RCA}_i \geq 1)
+  \right)
+\]
+
+\begin{lstlisting}[caption={Discrete and continuous proximity}]
+phi_d = ec.proximity(mat, continuous=False)   # based on binary Mcp
+phi_c = ec.proximity(mat, continuous=True)    # based on continuous RCA
+\end{lstlisting}
+
+\subsection{Density and Distance}
+
+\[
+  \omega_{ij} = \frac{\sum_k M_{kj} \phi_{ij}}{\sum_k \phi_{ij}}, \quad
+  d_{ij} = 1 - \omega_{ij}
+\]
+
+\begin{lstlisting}[caption={Density and distance}]
+density  = ec.density(mat, phi_d)   # DataFrame loc x act
+distance = ec.distance(mat, phi_d)  # DataFrame loc x act
+\end{lstlisting}
+
+\subsection{Co-occurrence and Relatedness Indices}
+
+\begin{lstlisting}[caption={Co-occurrence and relatedness indices}]
+cooc    = ec.co_occurrence(mat)
+phi_cos = ec.cosine_proximity(mat)     # cosine-based
+phi_cor = ec.correlation_proximity(mat)
+rca_rel = ec.relatedness(mat, phi_d)   # relatedness densities
+\end{lstlisting}
+
+\subsection{Cross-Space (relatedness between distinct classifications)}
+
+\begin{lstlisting}[caption={Cross-space proximity and relatedness}]
+# phi_cross: proximity between sectors and technologies (different matrices)
+phi_cross = ec.cross_space_proximity(mat_sector, mat_tech)
+density_c = ec.density(mat_sector, phi_cross)
+\end{lstlisting}
+
+%% ============================================================
+\section{Regional Specialization (\texttt{specialization})}
+
+\begin{lstlisting}[caption={Specialization indices}]
+lq        = ec.location_quotient(mat)    # equivalent to RCA
+hachman   = ec.hachman_index(mat)        # 0 (diversified) to 1 (specialized)
+krugman   = ec.krugman_index(mat)        # structural difference between regions
+coef_spec = ec.spec_coefficient(mat)     # specialization coefficient
+sim_exp   = ec.export_similarity(mat)    # productive structure similarity
+\end{lstlisting}
+
+%% ============================================================
+\section{Inequality and Concentration (\texttt{inequality})}
+
+\begin{lstlisting}[caption={Inequality indicators}]
+gini_r   = ec.gini(mat)                # Gini of value distribution
+gini_loc = ec.locational_gini(mat)     # locational Gini (by sector)
+hoover   = ec.hoover_gini(mat)         # Hoover index
+hhi      = ec.hhi(mat)                 # Herfindahl-Hirschman
+entropy  = ec.shannon_entropy(mat)     # Shannon entropy (by region)
+\end{lstlisting}
+
+%% ============================================================
+\section{Productivity (\texttt{productivity})}
+
+\begin{lstlisting}[caption={Productivity and product inequality}]
+prody = ec.prody(mat, gdp_per_capita)  # income associated with the product
+expy  = ec.expy(mat, prody)            # sophistication of the export basket
+pgi   = ec.pgi(mat)                    # Product Gini Index
+peii  = ec.peii(mat)                   # Product Export Inequality Index
+\end{lstlisting}
+
+%% ============================================================
+\section{Patent-Based Complexity (\texttt{patents})}
+
+\begin{lstlisting}[caption={Patent indicators (input: patent x technology matrix)}]
+ease_rec = ec.ease_of_recombination(mat_pat)
+mod_comp = ec.modular_complexity(mat_pat)
+\end{lstlisting}
+
+%% ============================================================
+\section{Temporal Dynamics (\texttt{dynamics})}
+
+\begin{lstlisting}[caption={Growth rates and entry/exit tracking}]
+growth  = ec.growth_rates(df, "region", "sector", "jobs", "year")
+entries = ec.entry_tracking(df, "region", "sector", "year")
+exits   = ec.exit_tracking(df, "region", "sector", "year")
+\end{lstlisting}
+
+%% ============================================================
+\section{Complexity Outlook (\texttt{outlook})}
+
+The \textbf{COI} measures the latent diversification potential;
+the \textbf{COG} measures the expected complexity gain:
+
+\[
+  \text{COI}_c = \sum_p (1 - M_{cp})\,\omega_{cp}\,Q_p
+\]
+
+\begin{lstlisting}[caption={COI and COG}]
+coi = ec.coi(mat, phi_d, pci)
+cog = ec.cog(mat, phi_d, pci)
+\end{lstlisting}
+
+%% ============================================================
+\section{Unified Pipeline (\texttt{compute\_complexity})}
+
+\subsection{Function Signature}
+
+\begin{lstlisting}[caption={Pipeline function signature}]
+def compute_complexity(
+    df: pd.DataFrame,
+    cols: dict,           # {"loc": str, "act": str, "val": str, "time": str}
+    method: str = "eigenvector",   # 'eigenvector' | 'reflections' | 'fitness'
+    threshold: float = 1.0,        # threshold for Mcp
+    compute_coi_cog: bool = True,
+    iterations: int = 20,          # for reflections/fitness
+) -> pd.DataFrame:
+    """
+    Returns the original DataFrame enriched with columns:
+    rca, mcp, diversity, ubiquity, eci, pci,
+    density, distance, [coi, cog]
+    """
+\end{lstlisting}
+
+\subsection{Parameters}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llp{7cm}}
+\toprule
+\textbf{Parameter} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{df}              & \texttt{DataFrame} & Table in long format \\
+\texttt{cols}            & \texttt{dict}      & Column mapping (see Section~2.3) \\
+\texttt{method}          & \texttt{str}       & Complexity method \\
+\texttt{threshold}       & \texttt{float}     & Mcp threshold (default: 1.0) \\
+\texttt{compute\_coi\_cog} & \texttt{bool}    & Compute COI and COG \\
+\texttt{iterations}      & \texttt{int}       & Iterations for iterative methods \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%% ============================================================
+\section{Complete Examples}
+
+\subsection{Example 1 --- Regional Employment Analysis}
+
+\begin{lstlisting}[caption={Complete regional employment analysis}]
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+
+import pandas as pd
+import numpy as np
+import econcomplex as ec
+
+# Generate synthetic data (or load a real CSV)
+df = ec.make_sample_data(n_locs=50, n_acts=30, seed=42)
+# Columns: loc, act, val
+
+# Full pipeline
+result = ec.compute_complexity(
+    df,
+    cols={"loc": "loc", "act": "act", "val": "val"},
+    method="eigenvector",
+    compute_coi_cog=True,
+)
+
+# Summary of generated indicators
+print(result.columns.tolist())
+# ['loc','act','val','rca','mcp','diversity','ubiquity',
+#  'eci','pci','density','distance','coi','cog']
+
+# Top 10 regions by ECI
+top_eci = (result[["loc","eci"]]
+           .drop_duplicates()
+           .sort_values("eci", ascending=False)
+           .head(10))
+print(top_eci)
+
+# Save
+result.to_csv("regional_result.csv", index=False)
+\end{lstlisting}
+
+\subsection{Example 2 --- Exports with COMEX Data}
+
+\begin{lstlisting}[caption={Export analysis with COMEX/MDIC data}]
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+
+import pandas as pd
+import econcomplex as ec
+
+# Load COMEX dataset aggregated by municipality x NCM x year
+comex = pd.read_parquet("comex_mun_ncm.parquet")
+comex_2023 = comex[comex["year"] == 2023].copy()
+
+# Cleaning
+comex_2023 = comex_2023.dropna(subset=["co_mun","co_ncm","vl_fob"])
+comex_2023 = comex_2023[comex_2023["vl_fob"] > 0]
+
+# Pipeline
+result = ec.compute_complexity(
+    comex_2023,
+    cols={"loc": "co_mun", "act": "co_ncm", "val": "vl_fob"},
+    method="eigenvector",
+    compute_coi_cog=True,
+)
+
+# Save
+result.to_csv("export_complexity_2023.csv", index=False)
+print("Mean ECI:", result["eci"].dropna().mean().round(4))
+\end{lstlisting}
+
+\subsection{Example 3 --- RAIS Time Panel (2010--2022)}
+
+\begin{lstlisting}[caption={Pipeline with panel data --- multiple periods}]
+import sys
+sys.path.insert(0, "/path/to/econcomplex")
+
+import pandas as pd
+import econcomplex as ec
+
+rais = pd.read_parquet("rais_municipality_cnae_2010_2022.parquet")
+
+# Temporal pipeline -- iterates over each year automatically
+panel = ec.compute_complexity(
+    rais,
+    cols={
+        "loc":  "municipality",
+        "act":  "cnae2d",
+        "val":  "jobs",
+        "time": "year",
+    },
+    method="eigenvector",
+    compute_coi_cog=False,
+)
+
+# ECI median evolution
+eci_trend = (panel[["year","municipality","eci"]]
+             .drop_duplicates()
+             .groupby("year")["eci"]
+             .median()
+             .round(4))
+print(eci_trend)
+
+panel.to_csv("panel_complexity_2010_2022.csv", index=False)
+\end{lstlisting}
+
+%% ============================================================
+\section{References}
+
+\begin{description}[leftmargin=1.5em, style=nextline]
+
+  \item[Balassa (1965)]
+    Balassa, B. (1965). Trade liberalisation and ``revealed'' comparative
+    advantage. \textit{The Manchester School}, 33(2), 99--123.
+
+  \item[Hidalgo \& Hausmann (2009)]
+    Hidalgo, C.A., \& Hausmann, R. (2009). The building blocks of economic
+    complexity. \textit{PNAS}, 106(26), 10570--10575.
+
+  \item[Balland (2017)]
+    Balland, P.-A. (2017). \textit{EconGeo: Computing Key Indicators of the
+    Geography of Innovation}. R package.
+
+  \item[Vargas Sep\'{u}lveda (2020)]
+    Vargas Sep\'{u}lveda, M. (2020). \textit{economiccomplexity: Computational
+    Methods for Economic Complexity}. R package.
+
+  \item[The Growth Lab at Harvard (2020)]
+    The Growth Lab at Harvard University (2020). \textit{py-ecomplexity:
+    Economic Complexity in Python}. GitHub.
+
+  \item[Tacchini et al.\ (2012)]
+    Tacchini, E., Loreto, V., Pietronero, L. (2012). A New Metrics for
+    Countries' Fitness and Products' Complexity.
+    \textit{Scientific Reports}, 2, 723.
+
+\end{description}
+
+%% ============================================================
+\section{License and Citation}
+
+This library is distributed under the MIT license. For use in academic
+work, we suggest citing the original packages in the versions
+corresponding to the indicators used.
+
+\begin{lstlisting}[language={}, caption={Check the library version}]
+import econcomplex as ec
+print(ec.__version__)   # 0.1.0
+\end{lstlisting}
+
+\end{document}
