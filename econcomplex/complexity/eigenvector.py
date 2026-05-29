@@ -15,10 +15,22 @@ from ..core.rca import rca as compute_rca
 
 
 def _second_eigenvector(mat: np.ndarray) -> np.ndarray:
-    """Return the eigenvector corresponding to the second largest eigenvalue."""
-    eigenvalues, eigenvectors = np.linalg.eigh(mat)
-    # eigh returns ascending order; second largest = index -2
-    return eigenvectors[:, -2]
+    """Return the eigenvector corresponding to the second largest eigenvalue.
+
+    The Markov-style co-occurrence matrix (Mcc / Mpp) is in general NOT
+    symmetric, because each row is normalised by its own diversity/ubiquity.
+    We therefore use the general (non-symmetric) eigensolver ``np.linalg.eig``
+    and select the eigenvector associated with the second-largest eigenvalue
+    by real part. The largest eigenvalue corresponds to the trivial constant
+    vector; the second is the Hidalgo-Hausmann (2009) complexity index.
+
+    Using ``np.linalg.eigh`` here would be incorrect: it assumes a symmetric
+    matrix and reads only one triangle, yielding the eigenvector of an
+    arbitrarily symmetrised matrix rather than the true second eigenvector.
+    """
+    eigenvalues, eigenvectors = np.linalg.eig(mat)
+    order = np.argsort(eigenvalues.real)
+    return np.real(eigenvectors[:, order[-2]])
 
 
 def eci_pci(
