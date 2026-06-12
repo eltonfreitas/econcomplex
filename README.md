@@ -37,6 +37,12 @@ reference and an interpretation guide for every indicator family.
 ## Installation
 
 ```bash
+pip install econcomplex
+```
+
+Or, for the latest development version straight from GitHub:
+
+```bash
 pip install git+https://github.com/eltonfreitas/econcomplex.git
 ```
 

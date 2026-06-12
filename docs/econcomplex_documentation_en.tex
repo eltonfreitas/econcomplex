@@ -211,7 +211,10 @@ combining functionalities from four reference packages in the literature:
 
 \begin{lstlisting}[style=bashstyle,
   caption={Installation via pip}]
-# Directly from GitHub (recommended)
+# From PyPI (recommended)
+pip install econcomplex
+
+# Latest development version, directly from GitHub
 pip install git+https://github.com/eltonfreitas/econcomplex.git
 
 # Or, for local development, from the library root directory
@@ -463,7 +466,7 @@ environments such as Jupyter and IDEs.
   caption={Installing the dependencies}]
 # Install the library (dependencies come automatically:
 # numpy>=1.21, pandas>=1.3, scipy>=1.9)
-pip install git+https://github.com/eltonfreitas/econcomplex.git
+pip install econcomplex
 
 # Or in development mode
 pip install -e /path/to/econcomplex

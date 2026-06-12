@@ -37,6 +37,12 @@ dependencies = [
   "scipy>=1.9"
 ]
 
+[project.urls]
+Homepage = "https://github.com/eltonfreitas/econcomplex"
+Documentation = "https://github.com/eltonfreitas/econcomplex/tree/main/docs"
+Changelog = "https://github.com/eltonfreitas/econcomplex/blob/main/CHANGELOG.md"
+Issues = "https://github.com/eltonfreitas/econcomplex/issues"
+
 [project.optional-dependencies]
 dev = [
   "black",

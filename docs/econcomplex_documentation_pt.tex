@@ -212,7 +212,10 @@ refer\^{e}ncia na literatura:
 
 \begin{lstlisting}[style=bashstyle,
   caption={Instala\c{c}\~{a}o via pip}]
-# Diretamente do GitHub (recomendado)
+# Do PyPI (recomendado)
+pip install econcomplex
+
+# Versao de desenvolvimento mais recente, direto do GitHub
 pip install git+https://github.com/eltonfreitas/econcomplex.git
 
 # Ou, para desenvolvimento local, a partir da raiz da biblioteca
@@ -468,7 +471,7 @@ at\'{e} o uso em ambientes interativos como Jupyter e IDEs.
   caption={Instala\c{c}\~{a}o das depend\^{e}ncias}]
 # Instalar a biblioteca (dependencias vem automaticamente:
 # numpy>=1.21, pandas>=1.3, scipy>=1.9)
-pip install git+https://github.com/eltonfreitas/econcomplex.git
+pip install econcomplex
 
 # Ou em modo de desenvolvimento
 pip install -e /caminho/para/econcomplex
