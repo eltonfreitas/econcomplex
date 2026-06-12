@@ -1004,6 +1004,66 @@ def compute_complexity(
 \end{notebox}
 
 %% ============================================================
+\section{Como Interpretar os Indicadores}
+
+Guia r\'{a}pido de leitura dos principais resultados. Todos os
+\'{i}ndices de complexidade s\~{a}o \textbf{medidas relativas}: compare
+apenas dentro da mesma matriz (mesmo per\'{i}odo e mesma
+classifica\c{c}\~{a}o de atividades).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\small
+\begin{tabular}{lp{3.2cm}p{8.6cm}}
+\toprule
+\textbf{Indicador} & \textbf{Faixa t\'{i}pica} & \textbf{Leitura} \\
+\midrule
+ECI / PCI & z-score (m\'{e}dia 0, dp 1) & Maior = local / atividade mais
+  complexo. \texttt{NaN} = unidade podada por diversidade/ubiquidade
+  zero. \\
+Fitness / Complexity & $> 0$ (ou escala log) & An\'{a}logo n\~{a}o linear
+  do ECI/PCI; o ranking \'{e} o que importa. \\
+RCA / LQ & $\geq 0$; 1 = neutro & $>1$: local especializado na
+  atividade; base da matriz bin\'{a}ria $M_{cp}$. \\
+Proximidade $\phi$ & $[0, 1]$ & Similaridade tipo-probabilidade entre
+  atividades; maior = especializa\c{c}\~{a}o conjunta mais f\'{a}cil. \\
+Densidade $\omega$ & 0--100\,\% & Fra\c{c}\~{a}o das atividades
+  relacionadas a $c$ que o local j\'{a} possui; maior = entrada mais
+  f\'{a}cil. \\
+Relatedness relativa $\tilde\omega$ & z-score & $>0$: atividade mais
+  relacionada que a m\'{e}dia do option set do local. \\
+Dist\^{a}ncia & $[0, 1]$ & $1-\omega/100$; maior = entrada mais
+  dif\'{i}cil. \\
+COI & sem limite & Maior = mais atividades complexas ao alcance
+  (potencial de diversifica\c{c}\~{a}o). \\
+COG & $\geq 0$ por atividade & Ganho de COI se o local desenvolver a
+  atividade; identifica apostas estrat\'{e}gicas. \\
+Gini locacional & $[0, 0{,}5]$ & Maior = atividade geograficamente mais
+  concentrada. \\
+HHI (normalizado) & $[0, 1]$ & Maior = portf\'{o}lio do local mais
+  concentrado. A entropia l\^{e} ao contr\'{a}rio. \\
+Hachman & $[0, 1]$ & 1 = local espelha a estrutura agregada. \\
+Krugman & $[0, 2]$ & Maior = estrutura mais diferente do agregado. \\
+PRODY / EXPY & unidades do vetor de renda & N\'{i}vel de renda associado
+  \`{a} atividade / \`{a} cesta do local. \\
+Esfor\c{c}o $W_{cp}$ & RCA adicional & Menor = entrada mais barata;
+  $\leq 0$ indica que o modelo j\'{a} prev\^{e} a entrada. \\
+Cont\'{a}gio $B$, $\alpha$ & $B \in (0,1]$, $\alpha \approx 1$ &
+  $\alpha > 1$: atividades relacionadas se refor\c{c}am
+  (cont\'{a}gio complexo). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}
+  Insumos como PIB per capita (PRODY/EXPY), popula\c{c}\~{a}o (RPOP),
+  vetor de Gini regional (PGI) e emiss\~{o}es (PEII) s\~{a}o
+  \textbf{dados externos}: a biblioteca n\~{a}o os deriva da matriz, e
+  vari\'{a}veis proxy produzem indicadores sem significado
+  econ\^{o}mico.
+\end{warnbox}
+
+%% ============================================================
 \section{Exemplos Completos}
 
 \subsection{Exemplo 1 --- An\'{a}lise Regional de Empregos}
@@ -1139,6 +1199,18 @@ otimo = ec.optimize_sequence(adj, active0,
                              B=fit["B"], alpha=fit["alpha"])
 print(otimo["sequence"][:10], otimo["improvement"])
 \end{lstlisting}
+
+%% ============================================================
+\section{Refer\^{e}ncia da API}
+
+Invent\'{a}rio completo das 87 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
+por m\'{o}dulo. As assinaturas mostram os par\^{a}metros e seus valores
+padr\~{a}o; consulte os docstrings no c\'{o}digo
+(\texttt{help(ec.funcao)}) para a documenta\c{c}\~{a}o completa de cada
+par\^{a}metro. Esta se\c{c}\~{a}o \'{e} gerada automaticamente a partir
+do pacote instalado por \texttt{docs/generate\_api\_reference.py}.
+
+\input{api_reference_pt}
 
 %% ============================================================
 \section{Refer\^{e}ncias Bibliogr\'{a}ficas}

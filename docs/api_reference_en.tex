@@ -1,0 +1,174 @@
+\subsection{\texttt{core} --- Core}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize rca(mat, binary=False, threshold=1.0)} & {\small Revealed Comparative Advantage (Balassa Index).} \\[2pt]
+\texttt{\footnotesize rpop(mat, pop, binary=False, threshold=1.0)} & {\small Population-normalized RCA (RPOP).} \\[2pt]
+\texttt{\footnotesize mcp(mat, presence\_test='rca', rca\_threshold=1.0, rpop\_threshold=1.0, pop=None)} & {\small Binary presence matrix (Mcp).} \\[2pt]
+\texttt{\footnotesize diversity(mat, use\_rca=True, threshold=1.0)} & {\small Diversity: number of activities in which each region has RCA >= threshold.} \\[2pt]
+\texttt{\footnotesize ubiquity(mat, use\_rca=True, threshold=1.0)} & {\small Ubiquity: number of regions where each activity has RCA >= threshold.} \\[2pt]
+\texttt{\footnotesize normalized\_ubiquity(mat, threshold=1.0)} & {\small Normalized ubiquity: ratio of activity's share of total value to its share of ubiquity.} \\[2pt]
+\texttt{\footnotesize pivot\_to\_matrix(df, index, columns, values, fill\_value=0.0)} & {\small Convert long-format DataFrame to wide (pivot) matrix.} \\[2pt]
+\texttt{\footnotesize melt\_matrix(mat, index\_name='location', columns\_name='activity', values\_name='value')} & {\small Convert wide matrix to long-format DataFrame.} \\[2pt]
+\texttt{\footnotesize binarize(mat, threshold=1.0)} & {\small Return binary matrix: 1 where mat >= threshold, else 0.} \\[2pt]
+\texttt{\footnotesize normalize\_zscore(vec)} & {\small Z-score normalize a 1-D vector.} \\[2pt]
+\texttt{\footnotesize normalize\_01(vec)} & {\small Min-max normalize a 1-D vector to [0, 1].} \\[2pt]
+\texttt{\footnotesize make\_sample\_data(n\_locs=50, n\_acts=30, seed=42, loc\_col='loc', act\_col='act', val\_col='val')} & {\small Generate synthetic long-format data for examples and testing.} \\[2pt]
+\texttt{\footnotesize trim\_core(mat, dmin=1, umin=1, use\_rca=True, threshold=1.0, max\_iter=100)} & {\small Iteratively prune a value matrix to its (dmin, umin)-core.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{complexity} --- Complexity}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize eci\_pci(mat, use\_rca=True, threshold=1.0, method='eigenvector', iterations=None, extremality=1.0, tol=1e-10, log\_fitness=False, trim=True, dmin=1, umin=1)} & {\small Economic Complexity Index (ECI) and Product Complexity Index (PCI).} \\[2pt]
+\texttt{\footnotesize eci\_pci\_eigenvector(mat, use\_rca=True, threshold=1.0)} & {\small ECI and PCI via the eigenvector method (advanced implementation; prefer `eci\_pci(mat, method="eigenvector")`, which adds the automatic trimming of degenerate units).} \\[2pt]
+\texttt{\footnotesize method\_of\_reflections(mat, use\_rca=True, threshold=1.0, iterations=20, return\_both=True, tol=1e-10)} & {\small Method of Reflections (iterative) to compute ECI and PCI.} \\[2pt]
+\texttt{\footnotesize mor\_regions(mat, use\_rca=True, threshold=1.0, steps=20)} & {\small Method of Reflections -- region/country side only.} \\[2pt]
+\texttt{\footnotesize mor\_activities(mat, use\_rca=True, threshold=1.0, steps=19)} & {\small Method of Reflections -- activity/technology side only.} \\[2pt]
+\texttt{\footnotesize fitness\_complexity(mat, use\_rca=True, threshold=1.0, iterations=20, extremality=1.0, tol=1e-10, log\_fitness=False)} & {\small Fitness-Complexity algorithm.} \\[2pt]
+\texttt{\footnotesize subnational\_eci(mat, pci\_external, use\_rca=True, threshold=1.0, standardize=True)} & {\small Subnational ECI using an externally supplied PCI vector.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{relatedness} --- Relatedness and Product Space}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize proximity(mat, use\_rca=True, threshold=1.0, method='max', compute='both', continuous=False, continuous\_method='correlation')} & {\small Compute product and/or location proximity matrices.} \\[2pt]
+\texttt{\footnotesize continuous\_proximity(rca\_mat, method='correlation')} & {\small Continuous product proximity from a (continuous) RCA matrix.} \\[2pt]
+\texttt{\footnotesize cosine\_proximity(mat, use\_rca=True)} & {\small Shortcut for `continuous\_proximity(rca(mat), method='cosine')`: cosine similarity between the RCA vectors of each pair of activities.} \\[2pt]
+\texttt{\footnotesize correlation\_proximity(mat, use\_rca=True)} & {\small Shortcut for `continuous\_proximity(rca(mat), method='correlation')`: Pearson correlation between RCA vectors, rescaled to [0, 1].} \\[2pt]
+\texttt{\footnotesize relatedness\_density(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relatedness density for each (region, activity) pair.} \\[2pt]
+\texttt{\footnotesize density(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias of \texttt{relatedness\_density}.} \\[2pt]
+\texttt{\footnotesize relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias of \texttt{relatedness\_density}.} \\[2pt]
+\texttt{\footnotesize distance(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Distance (1 - density/100).} \\[2pt]
+\texttt{\footnotesize relatedness\_density\_internal(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Internal relatedness density: density values for activities the region ALREADY has (M\_{rc} = 1).} \\[2pt]
+\texttt{\footnotesize relatedness\_density\_external(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small External relatedness density: density values for activities the region does NOT yet have (M\_{rc} = 0).} \\[2pt]
+\texttt{\footnotesize relative\_relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relative relatedness (Pinheiro et al.} \\[2pt]
+\texttt{\footnotesize co\_occurrence(mat, diagonal=False)} & {\small Co-occurrence matrix: number of times two activities appear together across regions/events.} \\[2pt]
+\texttt{\footnotesize relatedness\_index(mat, method='cosine', diagonal=False)} & {\small Pairwise relatedness index between activities from co-occurrence.} \\[2pt]
+\texttt{\footnotesize z\_score\_novelty(incidence)} & {\small Z-score of technological novelty (atypicality of co-occurrence).} \\[2pt]
+\texttt{\footnotesize cross\_proximity(mat\_a, mat\_b, use\_rca=True, threshold=1.0)} & {\small Cross-space proximity between activity space A and activity space B.} \\[2pt]
+\texttt{\footnotesize cross\_relatedness(mat\_a, x\_phi, use\_rca=True, threshold=1.0)} & {\small Cross-space relatedness density.} \\[2pt]
+\texttt{\footnotesize cross\_space\_proximity(mat\_a, mat\_b, use\_rca=True, threshold=1.0)} & {\small Alias of \texttt{cross\_proximity}.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{specialization} --- Regional Specialization}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize location\_quotient(mat, binary=False, threshold=1.0)} & {\small Location Quotient (identical to RCA / Balassa Index).} \\[2pt]
+\texttt{\footnotesize location\_quotient\_avg(mat)} & {\small Weighted average LQ per region (Coefficient of Specialization, Hoover 1985).} \\[2pt]
+\texttt{\footnotesize hachman\_index(mat)} & {\small Hachman Index (structural similarity to national economy).} \\[2pt]
+\texttt{\footnotesize specialization\_coefficient(mat)} & {\small Hoover Coefficient of Specialization.} \\[2pt]
+\texttt{\footnotesize spec\_coefficient(mat)} & {\small Alias of \texttt{specialization\_coefficient}.} \\[2pt]
+\texttt{\footnotesize krugman\_index(mat)} & {\small Krugman Specialization Index.} \\[2pt]
+\texttt{\footnotesize export\_similarity(mat, use\_rca=True, epsilon=0.1, log=True)} & {\small Export Similarity Index (Bahar et al.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{inequality} --- Inequality and Concentration}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize gini(x)} & {\small Standard Gini coefficient.} \\[2pt]
+\texttt{\footnotesize locational\_gini(mat)} & {\small Krugman Locational Gini per activity (column).} \\[2pt]
+\texttt{\footnotesize hoover\_gini(mat, pop=None)} & {\small Hoover-Gini: Gini using population as horizontal axis (Hoover curve).} \\[2pt]
+\texttt{\footnotesize herfindahl(mat, normalize=True)} & {\small Herfindahl-Hirschman Index (HHI) per region.} \\[2pt]
+\texttt{\footnotesize hhi(mat, normalize=True)} & {\small Alias of \texttt{herfindahl}.} \\[2pt]
+\texttt{\footnotesize shannon\_entropy(mat, base=2.0)} & {\small Shannon entropy per region.} \\[2pt]
+\texttt{\footnotesize hoover\_index(mat, pop=None)} & {\small Hoover Index (Robin Hood Index) per activity.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{productivity} --- Productivity}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize prody(mat, gdp, use\_rca=True)} & {\small PRODY: Income / productivity level of each activity.} \\[2pt]
+\texttt{\footnotesize expy(mat, gdp, use\_rca=True)} & {\small EXPY: Income level of a region's export / activity portfolio.} \\[2pt]
+\texttt{\footnotesize product\_gini\_index(mat, gini\_vec, threshold=1.0)} & {\small Product Gini Index (PGI): inequality embedded in a product.} \\[2pt]
+\texttt{\footnotesize pgi(mat, gini\_vec, threshold=1.0)} & {\small Alias of \texttt{product\_gini\_index}.} \\[2pt]
+\texttt{\footnotesize product\_emissions\_index(mat, emissions, threshold=1.0)} & {\small Product Emissions Intensity Index (PEII).} \\[2pt]
+\texttt{\footnotesize peii(mat, emissions, threshold=1.0)} & {\small Alias of \texttt{product\_emissions\_index}.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{patents} --- Patent-Based Complexity}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize ease\_of\_recombination(incidence)} & {\small Ease of Recombination (EOR) for each technology/class.} \\[2pt]
+\texttt{\footnotesize modular\_complexity(incidence, eor=None)} & {\small Modular Complexity of each patent.} \\[2pt]
+\texttt{\footnotesize modular\_complexity\_avg(incidence, eor=None)} & {\small Average Modular Complexity aggregated per technology (column).} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{dynamics} --- Temporal Dynamics}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize growth\_rate(mat1, mat2, axis=0, pct=True)} & {\small Growth rate between two time periods.} \\[2pt]
+\texttt{\footnotesize growth\_matrix(mat1, mat2, pct=True)} & {\small Element-wise growth rate matrix.} \\[2pt]
+\texttt{\footnotesize growth\_rates(df, loc, act, val, time, axis=0, pct=True)} & {\small Long-format wrapper around `growth\_rate` for panel data.} \\[2pt]
+\texttt{\footnotesize entry(mats, use\_rca=True, threshold=1.0)} & {\small Industry entry matrix: 1 when a (region, activity) transitions from absent (M=0) to present (M=1) between consecutive time periods.} \\[2pt]
+\texttt{\footnotesize exit(mats, use\_rca=True, threshold=1.0)} & {\small Industry exit matrix: 1 when a (region, activity) transitions from present (M=1) to absent (M=0) between consecutive time periods.} \\[2pt]
+\texttt{\footnotesize entry\_exit\_summary(mats, use\_rca=True, threshold=1.0)} & {\small Summary of entry and exit events per (region, activity) pair.} \\[2pt]
+\texttt{\footnotesize entry\_tracking(df, loc, act, val, time, use\_rca=True, threshold=1.0)} & {\small Long-format wrapper around `entry` for panel data.} \\[2pt]
+\texttt{\footnotesize exit\_tracking(df, loc, act, val, time, use\_rca=True, threshold=1.0)} & {\small Long-format wrapper around `exit` for panel data.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{outlook} --- Complexity Outlook}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize complexity\_outlook\_index(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Complexity Outlook Index (COI).} \\[2pt]
+\texttt{\footnotesize complexity\_outlook\_gain(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Complexity Outlook Gain (COG).} \\[2pt]
+\texttt{\footnotesize coi(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias of \texttt{complexity\_outlook\_index}.} \\[2pt]
+\texttt{\footnotesize cog(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias of \texttt{complexity\_outlook\_gain}.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{optimization} --- ECI Optimization and Strategic Diffusion}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize calibrate\_steppingstone(df, loc, act, val, time, horizon=10, steppingstone=5, threshold=1.0, proximity\_method='max')} & {\small Calibrate the stepping-stone forecast model (eq.} \\[2pt]
+\texttt{\footnotesize effort\_matrix(mat, model)} & {\small Effort W\_cp: the added RCA an economy must reach by the steppingstone period for the calibrated model to predict entry (RCA = 1) at the horizon (eq.} \\[2pt]
+\texttt{\footnotesize forecast\_specialization(mat, model)} & {\small No-policy baseline forecast (W = 0): project RCA at t+horizon with the calibrated stepping-stone model, using entry coefficients for cells with RCA < threshold and exit coefficients otherwise.} \\[2pt]
+\texttt{\footnotesize eci\_optimization(mat, model, delta\_eci=0.1, target\_eci=None, locations=None, solver='milp')} & {\small ECI Optimization (Stojkoski \& Hidalgo 2026): identify, per location, the minimal-effort portfolio of new specializations that raises the projected ECI to a target.} \\[2pt]
+\texttt{\footnotesize calibrate\_growth\_model(df, loc, time, gdppc, eci, horizon=10)} & {\small Calibrate the panel growth regression (eq.} \\[2pt]
+\texttt{\footnotesize expected\_growth(model, eci, gdppc\_now, period=None)} & {\small Annualized log growth rate implied by the calibrated model for a given ECI and current GDP per capita (using the most recent period's fixed effect unless `period` is given).} \\[2pt]
+\texttt{\footnotesize eci\_target\_for\_growth(model, growth\_target, gdppc\_now, period=None)} & {\small Invert the growth regression to find the ECI compatible with a target annualized log growth rate (e.g.} \\[2pt]
+\texttt{\footnotesize proximity\_network(mat, phi=None, phi\_threshold=0.55, method='max')} & {\small Binary network of related activities: a\_pp' = 1 if phi\_pp' >= threshold.} \\[2pt]
+\texttt{\footnotesize activation\_probabilities(adjacency, active, B=1.0, alpha=1.0)} & {\small Activation probability of each inactive activity (eq.} \\[2pt]
+\texttt{\footnotesize calibrate\_contagion(df, loc, act, val, time, adjacency=None, phi\_threshold=0.55, threshold=1.0, presence\_test='rca', n\_bins=20)} & {\small Empirically calibrate B and alpha of the contagion model (eq.} \\[2pt]
+\texttt{\footnotesize diversification\_strategy(adjacency, active0, B=1.0, alpha=1.0, strategy='greedy', seed=None)} & {\small Generate a diversification sequence with one of the heuristic strategies of Alshamsi et al.} \\[2pt]
+\texttt{\footnotesize expected\_diversification\_time(adjacency, active0, sequence, B=1.0, alpha=1.0)} & {\small Expected total time of a fixed sequence of targets (activity labels).} \\[2pt]
+\texttt{\footnotesize compare\_strategies(adjacency, active0, B=1.0, alpha=1.0, n\_random=10, seed=0)} & {\small Expected total diversification time of each heuristic strategy ('random' averaged over `n\_random` runs).} \\[2pt]
+\texttt{\footnotesize optimize\_sequence(adjacency, active0, B=1.0, alpha=1.0, n\_iter=2000, seed=0)} & {\small Approximate the optimal diversification sequence by simulated annealing over target orderings (pairwise-swap proposals), starting from the greedy sequence.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{pipeline} --- Unified Pipeline}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize compute\_complexity(data, cols, *, method='eigenvector', presence\_test='rca', threshold=1.0, iterations=20, proximity\_type='discrete', proximity\_method='max', pop=None, compute\_coi\_cog=True, time\_col=None)} & {\small Compute a full suite of economic complexity indicators.} \\[2pt]
+\bottomrule
+\end{longtable}

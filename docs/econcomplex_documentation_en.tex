@@ -997,6 +997,62 @@ def compute_complexity(
 \end{notebox}
 
 %% ============================================================
+\section{Interpreting the Indicators}
+
+Quick-reference guide to reading the main outputs. All complexity
+indices are \textbf{relative measures}: compare them only within the
+same matrix (same period, same activity classification).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\small
+\begin{tabular}{lp{3.2cm}p{8.6cm}}
+\toprule
+\textbf{Indicator} & \textbf{Typical range} & \textbf{Reading} \\
+\midrule
+ECI / PCI & z-score (mean 0, sd 1) & Higher = more complex location /
+  activity. \texttt{NaN} = unit trimmed for zero diversity/ubiquity. \\
+Fitness / Complexity & $> 0$ (or log scale) & Non-linear analogue of
+  ECI/PCI; ranking is the meaningful output. \\
+RCA / LQ & $\geq 0$; 1 = neutral & $>1$: location specialized in the
+  activity; basis of the binary matrix $M_{cp}$. \\
+Proximity $\phi$ & $[0, 1]$ & Probability-like similarity between
+  activities; higher = easier joint specialization. \\
+Density $\omega$ & 0--100\,\% & Share of the activities related to $c$
+  that the location already does; higher = easier entry. \\
+Relative relatedness $\tilde\omega$ & z-score & $>0$: activity more
+  related than the average of the location's option set. \\
+Distance & $[0, 1]$ & $1-\omega/100$; higher = harder entry. \\
+COI & unbounded & Higher = more complex activities within reach
+  (diversification potential). \\
+COG & $\geq 0$ per activity & Gain in COI if the location develops the
+  activity; identifies strategic bets. \\
+Locational Gini & $[0, 0.5]$ & Higher = activity geographically more
+  concentrated. \\
+HHI (normalized) & $[0, 1]$ & Higher = location's portfolio more
+  concentrated. Entropy reads the opposite way. \\
+Hachman & $[0, 1]$ & 1 = location mirrors the aggregate structure. \\
+Krugman & $[0, 2]$ & Higher = structure more different from the
+  aggregate. \\
+PRODY / EXPY & units of the income vector & Income level associated
+  with an activity / a location's basket. \\
+Effort $W_{cp}$ & added RCA & Lower = cheaper entry; $\leq 0$ means the
+  forecast model already predicts entry. \\
+Contagion $B$, $\alpha$ & $B \in (0,1]$, $\alpha \approx 1$ &
+  $\alpha > 1$: related activities reinforce each other (complex
+  contagion). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}
+  Inputs such as GDP per capita (PRODY/EXPY), population (RPOP), the
+  regional Gini vector (PGI), and emissions (PEII) are \textbf{external
+  data}: the library does not derive them from the matrix, and proxy
+  variables produce indicator values without economic meaning.
+\end{warnbox}
+
+%% ============================================================
 \section{Complete Examples}
 
 \subsection{Example 1 --- Regional Employment Analysis}
@@ -1132,6 +1188,17 @@ best = ec.optimize_sequence(adj, active0,
                             B=fit["B"], alpha=fit["alpha"])
 print(best["sequence"][:10], best["improvement"])
 \end{lstlisting}
+
+%% ============================================================
+\section{API Reference}
+
+Complete inventory of the 87 public functions, grouped by module.
+Signatures show parameter names and defaults; see the in-code
+docstrings (\texttt{help(ec.function)}) for full parameter
+documentation. This section is auto-generated from the installed
+package by \texttt{docs/generate\_api\_reference.py}.
+
+\input{api_reference_en}
 
 %% ============================================================
 \section{References}

@@ -1,0 +1,174 @@
+\subsection{\texttt{core} --- Core}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize rca(mat, binary=False, threshold=1.0)} & {\small Vantagem Comparativa Revelada (\'{i}ndice de Balassa).} \\[2pt]
+\texttt{\footnotesize rpop(mat, pop, binary=False, threshold=1.0)} & {\small RCA normalizada por popula\c{c}\~{a}o (RPOP).} \\[2pt]
+\texttt{\footnotesize mcp(mat, presence\_test='rca', rca\_threshold=1.0, rpop\_threshold=1.0, pop=None)} & {\small Matriz bin\'{a}ria de presen\c{c}a Mcp (RCA, RPOP, ambas ou manual).} \\[2pt]
+\texttt{\footnotesize diversity(mat, use\_rca=True, threshold=1.0)} & {\small Diversidade: n\'{u}mero de atividades com RCA acima do limiar, por regi\~{a}o.} \\[2pt]
+\texttt{\footnotesize ubiquity(mat, use\_rca=True, threshold=1.0)} & {\small Ubiquidade: n\'{u}mero de regi\~{o}es com RCA acima do limiar, por atividade.} \\[2pt]
+\texttt{\footnotesize normalized\_ubiquity(mat, threshold=1.0)} & {\small Ubiquidade normalizada pela participa\c{c}\~{a}o no valor total.} \\[2pt]
+\texttt{\footnotesize pivot\_to\_matrix(df, index, columns, values, fill\_value=0.0)} & {\small Converte DataFrame longo em matriz larga (pivot).} \\[2pt]
+\texttt{\footnotesize melt\_matrix(mat, index\_name='location', columns\_name='activity', values\_name='value')} & {\small Converte matriz larga em DataFrame longo.} \\[2pt]
+\texttt{\footnotesize binarize(mat, threshold=1.0)} & {\small Binariza a matriz no limiar dado.} \\[2pt]
+\texttt{\footnotesize normalize\_zscore(vec)} & {\small Padroniza um vetor (z-score).} \\[2pt]
+\texttt{\footnotesize normalize\_01(vec)} & {\small Normaliza um vetor para [0, 1] (min--max).} \\[2pt]
+\texttt{\footnotesize make\_sample\_data(n\_locs=50, n\_acts=30, seed=42, loc\_col='loc', act\_col='act', val\_col='val')} & {\small Gera dados sint\'{e}ticos longos com estrutura aninhada (exemplos e testes).} \\[2pt]
+\texttt{\footnotesize trim\_core(mat, dmin=1, umin=1, use\_rca=True, threshold=1.0, max\_iter=100)} & {\small Poda iterativa ao n\'{u}cleo (dmin, umin), removendo unidades degeneradas.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{complexity} --- Complexidade}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize eci\_pci(mat, use\_rca=True, threshold=1.0, method='eigenvector', iterations=None, extremality=1.0, tol=1e-10, log\_fitness=False, trim=True, dmin=1, umin=1)} & {\small Porta de entrada \'{u}nica do ECI/PCI (autovetor, reflex\~{o}es ou fitness), com poda autom\'{a}tica.} \\[2pt]
+\texttt{\footnotesize eci\_pci\_eigenvector(mat, use\_rca=True, threshold=1.0)} & {\small Implementa\c{c}\~{a}o do m\'{e}todo do autovetor (Hidalgo \& Hausmann 2009).} \\[2pt]
+\texttt{\footnotesize method\_of\_reflections(mat, use\_rca=True, threshold=1.0, iterations=20, return\_both=True, tol=1e-10)} & {\small M\'{e}todo das Reflex\~{o}es iterativo para ECI/PCI.} \\[2pt]
+\texttt{\footnotesize mor\_regions(mat, use\_rca=True, threshold=1.0, steps=20)} & {\small Reflex\~{o}es apenas do lado das regi\~{o}es, no passo escolhido.} \\[2pt]
+\texttt{\footnotesize mor\_activities(mat, use\_rca=True, threshold=1.0, steps=19)} & {\small Reflex\~{o}es apenas do lado das atividades.} \\[2pt]
+\texttt{\footnotesize fitness\_complexity(mat, use\_rca=True, threshold=1.0, iterations=20, extremality=1.0, tol=1e-10, log\_fitness=False)} & {\small Algoritmo Fitness--Complexity (Tacchella et al.\ 2012).} \\[2pt]
+\texttt{\footnotesize subnational\_eci(mat, pci\_external, use\_rca=True, threshold=1.0, standardize=True)} & {\small ECI subnacional projetado com PCI externo.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{relatedness} --- Relatedness e Product Space}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize proximity(mat, use\_rca=True, threshold=1.0, method='max', compute='both', continuous=False, continuous\_method='correlation')} & {\small Matrizes de proximidade entre produtos e/ou regi\~{o}es (discreta ou cont\'{i}nua).} \\[2pt]
+\texttt{\footnotesize continuous\_proximity(rca\_mat, method='correlation')} & {\small Proximidade cont\'{i}nua a partir do RCA (correla\c{c}\~{a}o ou cosseno).} \\[2pt]
+\texttt{\footnotesize cosine\_proximity(mat, use\_rca=True)} & {\small Atalho: proximidade cont\'{i}nua por cosseno.} \\[2pt]
+\texttt{\footnotesize correlation\_proximity(mat, use\_rca=True)} & {\small Atalho: proximidade cont\'{i}nua por correla\c{c}\~{a}o.} \\[2pt]
+\texttt{\footnotesize relatedness\_density(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Densidade de relatedness por par (regi\~{a}o, atividade), em percentual.} \\[2pt]
+\texttt{\footnotesize density(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias de \texttt{relatedness\_density}.} \\[2pt]
+\texttt{\footnotesize relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias de \texttt{relatedness\_density}.} \\[2pt]
+\texttt{\footnotesize distance(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Dist\^{a}ncia: 1 -- densidade/100.} \\[2pt]
+\texttt{\footnotesize relatedness\_density\_internal(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Densidade restrita \`{a}s atividades j\'{a} presentes.} \\[2pt]
+\texttt{\footnotesize relatedness\_density\_external(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Densidade restrita \`{a}s atividades ausentes.} \\[2pt]
+\texttt{\footnotesize relative\_relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relatedness relativa: z-score no option set (Pinheiro et al.\ 2022).} \\[2pt]
+\texttt{\footnotesize co\_occurrence(mat, diagonal=False)} & {\small Matriz de coocorr\^{e}ncia entre atividades.} \\[2pt]
+\texttt{\footnotesize relatedness\_index(mat, method='cosine', diagonal=False)} & {\small \'{I}ndice de relatedness por coocorr\^{e}ncia (probabilidade, associa\c{c}\~{a}o, cosseno, Jaccard).} \\[2pt]
+\texttt{\footnotesize z\_score\_novelty(incidence)} & {\small Z-score de novidade (atipicidade da coocorr\^{e}ncia).} \\[2pt]
+\texttt{\footnotesize cross\_proximity(mat\_a, mat\_b, use\_rca=True, threshold=1.0)} & {\small Proximidade entre dois espa\c{c}os de atividades distintos.} \\[2pt]
+\texttt{\footnotesize cross\_relatedness(mat\_a, x\_phi, use\_rca=True, threshold=1.0)} & {\small Densidade de relatedness cross-space (regi\~{o}es x espa\c{c}o B).} \\[2pt]
+\texttt{\footnotesize cross\_space\_proximity(mat\_a, mat\_b, use\_rca=True, threshold=1.0)} & {\small Alias de \texttt{cross\_proximity}.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{specialization} --- Especializa\c{c}\~{a}o Regional}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize location\_quotient(mat, binary=False, threshold=1.0)} & {\small Quociente Locacional (id\^{e}ntico ao RCA).} \\[2pt]
+\texttt{\footnotesize location\_quotient\_avg(mat)} & {\small LQ m\'{e}dio ponderado por regi\~{a}o (coeficiente de Hoover).} \\[2pt]
+\texttt{\footnotesize hachman\_index(mat)} & {\small \'{I}ndice de Hachman (similaridade \`{a} estrutura nacional).} \\[2pt]
+\texttt{\footnotesize specialization\_coefficient(mat)} & {\small Coeficiente de especializa\c{c}\~{a}o de Hoover.} \\[2pt]
+\texttt{\footnotesize spec\_coefficient(mat)} & {\small Alias de \texttt{specialization\_coefficient}.} \\[2pt]
+\texttt{\footnotesize krugman\_index(mat)} & {\small \'{I}ndice de especializa\c{c}\~{a}o de Krugman.} \\[2pt]
+\texttt{\footnotesize export\_similarity(mat, use\_rca=True, epsilon=0.1, log=True)} & {\small Similaridade de pauta entre regi\~{o}es (Bahar et al.\ 2014).} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{inequality} --- Desigualdade e Concentra\c{c}\~{a}o}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize gini(x)} & {\small Coeficiente de Gini padr\~{a}o (vetor ou colunas de DataFrame).} \\[2pt]
+\texttt{\footnotesize locational\_gini(mat)} & {\small Gini locacional de Krugman, por atividade.} \\[2pt]
+\texttt{\footnotesize hoover\_gini(mat, pop=None)} & {\small Gini com eixo populacional (curva de Hoover).} \\[2pt]
+\texttt{\footnotesize herfindahl(mat, normalize=True)} & {\small \'{I}ndice Herfindahl--Hirschman por regi\~{a}o.} \\[2pt]
+\texttt{\footnotesize hhi(mat, normalize=True)} & {\small Alias de \texttt{herfindahl}.} \\[2pt]
+\texttt{\footnotesize shannon\_entropy(mat, base=2.0)} & {\small Entropia de Shannon por regi\~{a}o (diversifica\c{c}\~{a}o).} \\[2pt]
+\texttt{\footnotesize hoover\_index(mat, pop=None)} & {\small \'{I}ndice de Hoover (Robin Hood) por atividade.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{productivity} --- Produtividade}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize prody(mat, gdp, use\_rca=True)} & {\small PRODY: n\'{i}vel de renda associado a cada atividade.} \\[2pt]
+\texttt{\footnotesize expy(mat, gdp, use\_rca=True)} & {\small EXPY: renda impl\'{i}cita da cesta de cada regi\~{a}o.} \\[2pt]
+\texttt{\footnotesize product\_gini\_index(mat, gini\_vec, threshold=1.0)} & {\small PGI: desigualdade embutida em cada produto.} \\[2pt]
+\texttt{\footnotesize pgi(mat, gini\_vec, threshold=1.0)} & {\small Alias de \texttt{product\_gini\_index}.} \\[2pt]
+\texttt{\footnotesize product\_emissions\_index(mat, emissions, threshold=1.0)} & {\small PEII: intensidade de emiss\~{o}es embutida em cada produto.} \\[2pt]
+\texttt{\footnotesize peii(mat, emissions, threshold=1.0)} & {\small Alias de \texttt{product\_emissions\_index}.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{patents} --- Complexidade de Patentes}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize ease\_of\_recombination(incidence)} & {\small Facilidade de recombina\c{c}\~{a}o (EOR) por tecnologia.} \\[2pt]
+\texttt{\footnotesize modular\_complexity(incidence, eor=None)} & {\small Complexidade modular de cada patente.} \\[2pt]
+\texttt{\footnotesize modular\_complexity\_avg(incidence, eor=None)} & {\small Complexidade modular m\'{e}dia por tecnologia.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{dynamics} --- Din\^{a}mica Temporal}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize growth\_rate(mat1, mat2, axis=0, pct=True)} & {\small Taxa de crescimento agregada entre dois per\'{i}odos.} \\[2pt]
+\texttt{\footnotesize growth\_matrix(mat1, mat2, pct=True)} & {\small Matriz de crescimento c\'{e}lula a c\'{e}lula.} \\[2pt]
+\texttt{\footnotesize growth\_rates(df, loc, act, val, time, axis=0, pct=True)} & {\small Crescimento em painel longo, entre per\'{i}odos consecutivos.} \\[2pt]
+\texttt{\footnotesize entry(mats, use\_rca=True, threshold=1.0)} & {\small Entradas: transi\c{c}\~{o}es 0 para 1 na especializa\c{c}\~{a}o.} \\[2pt]
+\texttt{\footnotesize exit(mats, use\_rca=True, threshold=1.0)} & {\small Sa\'{i}das: transi\c{c}\~{o}es 1 para 0 na especializa\c{c}\~{a}o.} \\[2pt]
+\texttt{\footnotesize entry\_exit\_summary(mats, use\_rca=True, threshold=1.0)} & {\small Resumo de entradas e sa\'{i}das por par (regi\~{a}o, atividade).} \\[2pt]
+\texttt{\footnotesize entry\_tracking(df, loc, act, val, time, use\_rca=True, threshold=1.0)} & {\small Entradas em formato longo (painel).} \\[2pt]
+\texttt{\footnotesize exit\_tracking(df, loc, act, val, time, use\_rca=True, threshold=1.0)} & {\small Sa\'{i}das em formato longo (painel).} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{outlook} --- Complexity Outlook}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize complexity\_outlook\_index(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small COI: potencial de diversifica\c{c}\~{a}o rumo a atividades complexas.} \\[2pt]
+\texttt{\footnotesize complexity\_outlook\_gain(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small COG: ganho de COI ao desenvolver cada atividade.} \\[2pt]
+\texttt{\footnotesize coi(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias de \texttt{complexity\_outlook\_index}.} \\[2pt]
+\texttt{\footnotesize cog(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias de \texttt{complexity\_outlook\_gain}.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{optimization} --- Otimiza\c{c}\~{a}o de ECI e Difus\~{a}o Estrat\'{e}gica}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize calibrate\_steppingstone(df, loc, act, val, time, horizon=10, steppingstone=5, threshold=1.0, proximity\_method='max')} & {\small Calibra o modelo forward com steppingstone (OLS de entrada/sa\'{i}da).} \\[2pt]
+\texttt{\footnotesize effort\_matrix(mat, model)} & {\small Esfor\c{c}o $W_{cp}$: RCA adicional necess\'{a}rio para entrar em cada atividade.} \\[2pt]
+\texttt{\footnotesize forecast\_specialization(mat, model)} & {\small Proje\c{c}\~{a}o sem pol\'{i}tica (W=0): RCA, Mcp, PCI e ECI futuros.} \\[2pt]
+\texttt{\footnotesize eci\_optimization(mat, model, delta\_eci=0.1, target\_eci=None, locations=None, solver='milp')} & {\small Programa 0--1: portf\'{o}lio de menor esfor\c{c}o para atingir o ECI alvo.} \\[2pt]
+\texttt{\footnotesize calibrate\_growth\_model(df, loc, time, gdppc, eci, horizon=10)} & {\small Regress\~{a}o de crescimento em painel (ECI, converg\^{e}ncia, intera\c{c}\~{a}o).} \\[2pt]
+\texttt{\footnotesize expected\_growth(model, eci, gdppc\_now, period=None)} & {\small Crescimento anual esperado dado o ECI e o PIB per capita.} \\[2pt]
+\texttt{\footnotesize eci\_target\_for\_growth(model, growth\_target, gdppc\_now, period=None)} & {\small Inverte a regress\~{a}o: ECI compat\'{i}vel com a meta de crescimento.} \\[2pt]
+\texttt{\footnotesize proximity\_network(mat, phi=None, phi\_threshold=0.55, method='max')} & {\small Rede bin\'{a}ria de atividades relacionadas (phi acima do limiar).} \\[2pt]
+\texttt{\footnotesize activation\_probabilities(adjacency, active, B=1.0, alpha=1.0)} & {\small Probabilidade de ativa\c{c}\~{a}o $p = B x^{\alpha}$ por atividade.} \\[2pt]
+\texttt{\footnotesize calibrate\_contagion(df, loc, act, val, time, adjacency=None, phi\_threshold=0.55, threshold=1.0, presence\_test='rca', n\_bins=20)} & {\small Calibra B e alfa do cont\'{a}gio a partir das entradas observadas.} \\[2pt]
+\texttt{\footnotesize diversification\_strategy(adjacency, active0, B=1.0, alpha=1.0, strategy='greedy', seed=None)} & {\small Sequ\^{e}ncia de alvos por estrat\'{e}gia heur\'{i}stica, com tempos esperados.} \\[2pt]
+\texttt{\footnotesize expected\_diversification\_time(adjacency, active0, sequence, B=1.0, alpha=1.0)} & {\small Tempo total esperado de uma sequ\^{e}ncia fixa de alvos.} \\[2pt]
+\texttt{\footnotesize compare\_strategies(adjacency, active0, B=1.0, alpha=1.0, n\_random=10, seed=0)} & {\small Compara o tempo total das cinco estrat\'{e}gias heur\'{i}sticas.} \\[2pt]
+\texttt{\footnotesize optimize\_sequence(adjacency, active0, B=1.0, alpha=1.0, n\_iter=2000, seed=0)} & {\small Recozimento simulado sobre sequ\^{e}ncias; nunca pior que a gulosa.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{pipeline} --- Pipeline Unificado}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize compute\_complexity(data, cols, *, method='eigenvector', presence\_test='rca', threshold=1.0, iterations=20, proximity\_type='discrete', proximity\_method='max', pop=None, compute\_coi\_cog=True, time\_col=None)} & {\small Pipeline completo: todos os indicadores a partir do DataFrame longo (suporta painel).} \\[2pt]
+\bottomrule
+\end{longtable}

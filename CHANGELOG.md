@@ -13,6 +13,7 @@ First official release.
 - `log_fitness` option (Cristelli et al. 2015 log scale) and convergence `tol` for the Method of Reflections; non-convergence warning for Fitness-Complexity.
 - `continuous_method="correlation" | "cosine"` in `proximity()`/`continuous_proximity()`.
 - Runnable examples in `examples/` (`basic_usage.py`, `eci_optimization.py`) and an API map section in the documentation.
+- Expanded documentation: complete auto-generated API reference (87 functions, `docs/generate_api_reference.py`), indicator interpretation guide, and rewritten bilingual READMEs with quickstarts, data format, validation notes, and BibTeX citation.
 
 ### Changed
 - Default iterations unified at **20** for reflections and fitness (matching the R `economiccomplexity` package; for fitness it is a cap with early stopping at convergence).
