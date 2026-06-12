@@ -4,7 +4,7 @@ Utility functions for matrix/dataframe handling.
 
 import numpy as np
 import pandas as pd
-from typing import Union, Tuple, Optional
+from typing import Union
 
 
 def pivot_to_matrix(
@@ -80,3 +80,58 @@ def normalize_01(vec: np.ndarray) -> np.ndarray:
     if rng == 0:
         return np.zeros_like(vec)
     return (vec - vec.min()) / rng
+
+
+def make_sample_data(
+    n_locs: int = 50,
+    n_acts: int = 30,
+    seed: int = 42,
+    loc_col: str = "loc",
+    act_col: str = "act",
+    val_col: str = "val",
+) -> pd.DataFrame:
+    """
+    Generate synthetic long-format data for examples and testing.
+
+    The data has the nested (triangular) structure typical of real
+    location-activity matrices: high-capability locations are active in
+    many activities (including complex ones), while low-capability
+    locations concentrate on ubiquitous activities. This makes the
+    resulting ECI/PCI, proximity, and density values meaningful.
+
+    Parameters
+    ----------
+    n_locs : int
+        Number of locations (rows).
+    n_acts : int
+        Number of activities (columns).
+    seed : int
+        Random seed for reproducibility.
+    loc_col, act_col, val_col : str
+        Column names of the returned DataFrame.
+
+    Returns
+    -------
+    pd.DataFrame
+        Long format with columns [loc_col, act_col, val_col],
+        containing only positive entries.
+    """
+    rng = np.random.default_rng(seed)
+
+    # Capability of each location and requirement of each activity
+    capability = np.sort(rng.uniform(0.1, 1.0, n_locs))[::-1]
+    requirement = np.sort(rng.uniform(0.0, 0.9, n_acts))
+
+    # Presence probability falls with the capability gap (nested structure)
+    gap = capability[:, None] - requirement[None, :]
+    presence = rng.random((n_locs, n_acts)) < 1 / (1 + np.exp(-10 * gap))
+
+    values = presence * rng.lognormal(mean=3.0, sigma=1.0, size=(n_locs, n_acts))
+
+    locs = [f"L{i + 1:03d}" for i in range(n_locs)]
+    acts = [f"A{j + 1:03d}" for j in range(n_acts)]
+
+    df = pd.DataFrame(values, index=locs, columns=acts)
+    long = melt_matrix(df, loc_col, act_col, val_col)
+    long = long[long[val_col] > 0].reset_index(drop=True)
+    return long

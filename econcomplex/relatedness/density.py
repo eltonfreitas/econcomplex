@@ -189,11 +189,17 @@ def relative_relatedness(
     proximity_method: str = "max",
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
-    Relative relatedness: standardized density for activities a region
-    does NOT currently hold.
+    Relative relatedness (Pinheiro et al. 2021, eq. 7): z-transform of the
+    relatedness density against the statistics of the region's option set
+    (activities it does NOT currently hold, M_{rc} = 0).
 
     relative_density_{rc} = (density_{rc} - mean_non_held_r) / std_non_held_r
     for cells where M_{rc} = 0; NaN otherwise.
+
+    References
+    ----------
+    Pinheiro, Hartmann, Boschma & Hidalgo (2022) "The time and frequency
+    of unrelated diversification", Research Policy 51, 104323.
 
     Returns
     -------
@@ -220,3 +226,7 @@ def relative_relatedness(
     if is_df:
         return pd.DataFrame(result, index=row_index, columns=col_index)
     return result
+
+
+# Short alias matching the documented API
+density = relatedness_density

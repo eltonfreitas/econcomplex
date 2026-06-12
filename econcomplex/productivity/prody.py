@@ -211,3 +211,8 @@ def product_emissions_index(
     if is_df:
         return pd.Series(result, index=col_index, name="peii")
     return result
+
+
+# Short aliases matching the documented API
+pgi = product_gini_index
+peii = product_emissions_index

@@ -42,12 +42,6 @@ def test_rca_average_is_one(sample_mat):
     """Column-weighted average of RCA should equal 1 for each activity."""
     arr = sample_mat.values.astype(float)
     rca_arr = ec.rca(arr)
-    col_sums = arr.sum(axis=0)
-    total = arr.sum()
-    # Sum of (share_c_r * RCA_r_c) over regions = 1 for each c
-    weighted = (arr / arr.sum(axis=1, keepdims=True)) * rca_arr
-    # col weighted mean should be approx 1
-    col_means = (weighted.sum(axis=0) * total) / (col_sums * col_sums)
     # simplified check: global mean of RCA = 1
     assert abs(rca_arr.mean() - 1.0) < 0.5  # not exact but confirms normalization
 
@@ -223,3 +217,298 @@ def test_pipeline_time(sample_mat):
         compute_coi_cog=False,
     )
     assert set(result["year"].unique()) == {2020, 2021}
+
+
+# ── NumPy 2.x compatibility ───────────────────────────────────────────────────
+def test_locational_gini_runs(sample_mat):
+    """np.trapz was removed in NumPy 2.0; locational_gini must still work."""
+    result = ec.locational_gini(sample_mat)
+    assert len(result) == sample_mat.shape[1]
+    assert (result <= 0.5 + 1e-9).all()
+
+
+def test_hoover_gini_runs(sample_mat):
+    result = ec.hoover_gini(sample_mat)
+    assert len(result) == sample_mat.shape[1]
+
+
+# ── eci_pci dispatcher ────────────────────────────────────────────────────────
+def test_eci_pci_method_eigenvector_default(sample_mat):
+    eci_default, pci_default = ec.eci_pci(sample_mat)
+    eci_explicit, pci_explicit = ec.eci_pci(sample_mat, method="eigenvector")
+    assert np.allclose(eci_default.values, eci_explicit.values)
+    assert np.allclose(pci_default.values, pci_explicit.values)
+
+
+def test_eci_pci_method_reflections(sample_mat):
+    eci, pci = ec.eci_pci(sample_mat, method="reflections", iterations=20)
+    eci_direct, pci_direct = ec.method_of_reflections(sample_mat, iterations=20)
+    assert np.allclose(eci.values, eci_direct.values)
+    assert np.allclose(pci.values, pci_direct.values)
+
+
+def test_eci_pci_method_fitness(sample_mat):
+    fit, comp = ec.eci_pci(sample_mat, method="fitness", iterations=100)
+    fit_direct, comp_direct = ec.fitness_complexity(sample_mat, iterations=100)
+    assert np.allclose(fit.values, fit_direct.values)
+    assert np.allclose(comp.values, comp_direct.values)
+
+
+def test_eci_pci_invalid_method(sample_mat):
+    with pytest.raises(ValueError):
+        ec.eci_pci(sample_mat, method="banana")
+
+
+# ── New fitness/reflections options ───────────────────────────────────────────
+def test_fitness_log_scale(sample_mat):
+    fit, comp = ec.fitness_complexity(sample_mat)
+    fit_log, comp_log = ec.fitness_complexity(sample_mat, log_fitness=True)
+    positive = fit.values > 0
+    assert np.allclose(fit_log.values[positive], np.log(fit.values[positive]))
+
+
+def test_reflections_tol_converges(sample_mat):
+    """With a loose tolerance and many iterations the result must match
+    the fully-iterated (tol=None) run within that tolerance."""
+    eci_full, _ = ec.method_of_reflections(sample_mat, iterations=200, tol=None)
+    eci_tol, _ = ec.method_of_reflections(sample_mat, iterations=200, tol=1e-8)
+    assert np.allclose(eci_full.values, eci_tol.values, atol=1e-6)
+
+
+# ── make_sample_data ──────────────────────────────────────────────────────────
+def test_make_sample_data_shape_and_columns():
+    df = ec.make_sample_data(n_locs=20, n_acts=10, seed=42)
+    assert list(df.columns) == ["loc", "act", "val"]
+    assert (df["val"] > 0).all()
+    assert df["loc"].nunique() <= 20
+    assert df["act"].nunique() <= 10
+
+
+def test_make_sample_data_reproducible():
+    df1 = ec.make_sample_data(seed=7)
+    df2 = ec.make_sample_data(seed=7)
+    pd.testing.assert_frame_equal(df1, df2)
+
+
+def test_make_sample_data_works_in_pipeline():
+    df = ec.make_sample_data(n_locs=30, n_acts=15, seed=1)
+    result = ec.compute_complexity(
+        df, cols={"loc": "loc", "act": "act", "val": "val"},
+        compute_coi_cog=False,
+    )
+    assert "eci" in result.columns
+
+
+# ── Documented short aliases ──────────────────────────────────────────────────
+def test_documented_aliases_exist():
+    assert ec.density is ec.relatedness_density
+    assert ec.relatedness is ec.relatedness_density
+    assert ec.hhi is ec.herfindahl
+    assert ec.coi is ec.complexity_outlook_index
+    assert ec.cog is ec.complexity_outlook_gain
+    assert ec.pgi is ec.product_gini_index
+    assert ec.peii is ec.product_emissions_index
+    assert ec.spec_coefficient is ec.specialization_coefficient
+    assert ec.cross_space_proximity is ec.cross_proximity
+
+
+# ── API organization (complexity entry point) ─────────────────────────────────
+def test_eci_pci_lives_in_its_own_module():
+    from econcomplex.complexity.eci_pci import eci_pci as entry
+    assert entry is ec.eci_pci
+
+
+def test_eigenvector_implementation_matches_dispatcher(sample_mat):
+    eci_a, pci_a = ec.eci_pci(sample_mat, trim=False)
+    eci_b, pci_b = ec.eci_pci_eigenvector(sample_mat)
+    assert np.allclose(eci_a.values, eci_b.values)
+    assert np.allclose(pci_a.values, pci_b.values)
+
+
+def test_dispatcher_log_fitness(sample_mat):
+    fit_a, comp_a = ec.eci_pci(sample_mat, method="fitness", log_fitness=True)
+    fit_b, comp_b = ec.fitness_complexity(sample_mat, log_fitness=True)
+    assert np.allclose(fit_a.values, fit_b.values, equal_nan=True)
+
+
+def test_mor_variants_still_work(sample_mat):
+    reg = ec.mor_regions(sample_mat, steps=4)
+    act = ec.mor_activities(sample_mat, steps=4)
+    assert len(reg) == sample_mat.shape[0]
+    assert len(act) == sample_mat.shape[1]
+    assert (reg.values >= 0).all() and (reg.values <= 100).all()
+
+
+def test_continuous_proximity_methods(sample_mat):
+    rca_mat = ec.rca(sample_mat)
+    cos_a = ec.continuous_proximity(rca_mat, method="cosine")
+    cos_b = ec.cosine_proximity(sample_mat)
+    assert np.allclose(cos_a.values, cos_b.values)
+    cos_c = ec.proximity(sample_mat, continuous=True,
+                         continuous_method="cosine")["product"]
+    assert np.allclose(cos_a.values, cos_c.values)
+
+
+def test_relatedness_alias(sample_mat):
+    phi = ec.proximity(sample_mat)["product"]
+    dens = ec.relatedness(sample_mat, phi=phi)
+    direct = ec.relatedness_density(sample_mat, phi=phi)
+    assert np.allclose(dens.values, direct.values)
+
+
+# ── Cross-space with different space sizes ────────────────────────────────────
+def test_cross_relatedness_rectangular_spaces(sample_mat):
+    """Spaces A and B with different sizes: result must be R x B,
+    labeled with space-B activities."""
+    mat_b = pd.DataFrame(
+        np.random.default_rng(5).poisson(10, (sample_mat.shape[0], 3)),
+        index=sample_mat.index, columns=["T1", "T2", "T3"],
+    )
+    x_phi = ec.cross_proximity(sample_mat, mat_b)        # A x B (5 x 3)
+    dens = ec.cross_relatedness(sample_mat, x_phi)
+    assert dens.shape == (sample_mat.shape[0], 3)
+    assert list(dens.columns) == ["T1", "T2", "T3"]
+    with pytest.raises(ValueError):
+        ec.cross_relatedness(mat_b, x_phi)               # wrong orientation
+
+
+# ── New proximity variants ────────────────────────────────────────────────────
+def test_cosine_proximity(sample_mat):
+    phi = ec.cosine_proximity(sample_mat)
+    n_acts = sample_mat.shape[1]
+    assert phi.shape == (n_acts, n_acts)
+    assert np.allclose(np.diag(phi.values), 0.0)
+    assert ((phi.values >= 0) & (phi.values <= 1 + 1e-9)).all()
+
+
+def test_correlation_proximity(sample_mat):
+    phi = ec.correlation_proximity(sample_mat)
+    n_acts = sample_mat.shape[1]
+    assert phi.shape == (n_acts, n_acts)
+    assert ((phi.values >= 0) & (phi.values <= 1 + 1e-9)).all()
+
+
+def test_proximity_continuous_param(sample_mat):
+    phi = ec.proximity(sample_mat, continuous=True)["product"]
+    direct = ec.correlation_proximity(sample_mat)
+    assert np.allclose(phi.values, direct.values)
+
+
+# ── Long-format dynamics wrappers ─────────────────────────────────────────────
+@pytest.fixture
+def sample_panel(sample_mat):
+    df1 = ec.melt_matrix(sample_mat, "region", "activity", "employment")
+    df1["year"] = 2020
+    mat2 = sample_mat.copy()
+    mat2.iloc[0, 2] = 100   # entry for (R1, C)
+    mat2.iloc[3, 4] = 0     # exit for (R4, E)
+    df2 = ec.melt_matrix(mat2, "region", "activity", "employment")
+    df2["year"] = 2021
+    return pd.concat([df1, df2], ignore_index=True)
+
+
+def test_growth_rates_long(sample_panel):
+    g = ec.growth_rates(sample_panel, "region", "activity", "employment", "year")
+    assert set(g.columns) == {"region", "year", "growth"}
+    assert set(g["year"].unique()) == {2021}
+
+
+def test_entry_tracking_long(sample_panel):
+    ent = ec.entry_tracking(sample_panel, "region", "activity", "employment", "year")
+    assert set(ent.columns) == {"region", "activity", "entry"}
+    assert set(ent["entry"].unique()).issubset({0.0, 1.0})
+    assert ent["entry"].sum() > 0
+
+
+def test_exit_tracking_long(sample_panel):
+    ext = ec.exit_tracking(sample_panel, "region", "activity", "employment", "year")
+    assert set(ext.columns) == {"region", "activity", "exit"}
+    assert set(ext["exit"].unique()).issubset({0.0, 1.0})
+
+
+# ── Pre-processing (trim_core) ────────────────────────────────────────────────
+@pytest.fixture
+def degenerate_mat(sample_mat):
+    """sample_mat plus an all-zero region and an all-zero activity."""
+    mat = sample_mat.copy()
+    mat.loc["R5"] = 0.0
+    mat["F"] = 0.0
+    return mat
+
+
+def test_trim_core_removes_degenerate_units(degenerate_mat):
+    core = ec.trim_core(degenerate_mat)
+    assert "R5" not in core.index
+    assert "F" not in core.columns
+    assert core.shape[0] >= 2 and core.shape[1] >= 2
+
+
+def test_trim_core_noop_on_clean_matrix(sample_mat):
+    core = ec.trim_core(sample_mat)
+    assert core.shape == sample_mat.shape
+
+
+def test_trim_core_stricter_core():
+    """(2,2)-core drops a location active in a single product."""
+    df = ec.make_sample_data(n_locs=30, n_acts=15, seed=3)
+    mat = ec.pivot_to_matrix(df, "loc", "act", "val")
+    core = ec.trim_core(mat, dmin=2, umin=2)
+    m = ec.mcp(core)
+    assert (m.sum(axis=1) >= 2).all()
+    assert (m.sum(axis=0) >= 2).all()
+
+
+def test_eci_pci_trims_degenerate_units(degenerate_mat):
+    eci, pci = ec.eci_pci(degenerate_mat)
+    assert np.isnan(eci["R5"])
+    assert np.isnan(pci["F"])
+    assert eci.drop("R5").notna().all()
+    # values for the surviving core match the untrimmed-input calculation
+    eci_clean, _ = ec.eci_pci(degenerate_mat.drop(index="R5", columns=["F"]))
+    assert np.allclose(eci.drop("R5").values, eci_clean.values)
+
+
+def test_eci_pci_trim_false_keeps_shape(degenerate_mat):
+    eci, pci = ec.eci_pci(degenerate_mat, trim=False)
+    assert eci.notna().all()
+    assert len(eci) == degenerate_mat.shape[0]
+
+
+def test_eci_pci_trim_all_methods(degenerate_mat):
+    for method in ["eigenvector", "reflections", "fitness"]:
+        eci, pci = ec.eci_pci(degenerate_mat, method=method)
+        assert np.isnan(eci["R5"]), f"method={method}"
+        assert np.isnan(pci["F"]), f"method={method}"
+
+
+def test_pipeline_with_degenerate_data(degenerate_mat):
+    long = ec.melt_matrix(degenerate_mat, "region", "activity", "employment")
+    result = ec.compute_complexity(
+        long,
+        cols={"loc": "region", "act": "activity", "val": "employment"},
+        compute_coi_cog=False,
+    )
+    assert result.loc[result["region"] == "R5", "eci"].isna().all()
+    assert result.loc[result["region"] != "R5", "eci"].notna().all()
+
+
+def test_reflections_sign_orientation(sample_mat):
+    """ECI from reflections must correlate positively with diversity."""
+    eci, pci = ec.method_of_reflections(sample_mat)
+    div = ec.diversity(sample_mat)
+    ubi = ec.ubiquity(sample_mat)
+    assert np.corrcoef(eci.values, div.values)[0, 1] > 0
+    assert np.corrcoef(pci.values, ubi.values)[0, 1] < 0
+
+
+# ── Default iterations (20, as in the R economiccomplexity package) ───────────
+def test_fitness_default_iterations_match_dispatcher(sample_mat):
+    fit_a, comp_a = ec.eci_pci(sample_mat, method="fitness")
+    fit_b, comp_b = ec.fitness_complexity(sample_mat)
+    assert np.allclose(fit_a.values, fit_b.values)
+    assert np.allclose(comp_a.values, comp_b.values)
+
+
+def test_fitness_warns_when_not_converged(sample_mat):
+    with pytest.warns(RuntimeWarning, match="did not converge"):
+        ec.fitness_complexity(sample_mat, iterations=1, tol=1e-15)

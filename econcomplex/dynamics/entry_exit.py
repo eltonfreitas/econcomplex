@@ -10,8 +10,24 @@ import numpy as np
 import pandas as pd
 from typing import List, Union
 
-from ..core.utils import validate_matrix, binarize
+from ..core.utils import validate_matrix, binarize, melt_matrix, pivot_to_matrix
 from ..core.rca import rca as compute_rca
+
+
+def _panel_to_matrices(
+    df: pd.DataFrame, loc: str, act: str, val: str, time: str
+) -> List[pd.DataFrame]:
+    """Split a long-format panel into one aligned matrix per time period."""
+    periods = sorted(df[time].unique())
+    if len(periods) < 2:
+        raise ValueError("Need at least 2 time periods.")
+    mats = [pivot_to_matrix(df[df[time] == t], loc, act, val) for t in periods]
+    rows = mats[0].index
+    cols = mats[0].columns
+    for m in mats[1:]:
+        rows = rows.union(m.index)
+        cols = cols.union(m.columns)
+    return [m.reindex(index=rows, columns=cols, fill_value=0.0) for m in mats]
 
 
 def entry(
@@ -164,3 +180,69 @@ def entry_exit_summary(
                 })
 
     return pd.DataFrame(rows)
+
+
+def entry_tracking(
+    df: pd.DataFrame,
+    loc: str,
+    act: str,
+    val: str,
+    time: str,
+    use_rca: bool = True,
+    threshold: float = 1.0,
+) -> pd.DataFrame:
+    """
+    Long-format wrapper around `entry` for panel data.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Long-format data.
+    loc, act, val, time : str
+        Column names for location, activity, value, and time period.
+    use_rca : bool
+        Compute RCA before binarizing.
+    threshold : float
+        Binarization threshold.
+
+    Returns
+    -------
+    pd.DataFrame with columns [loc, act, 'entry'] (entry = 1 when the
+    pair entered in at least one period transition).
+    """
+    mats = _panel_to_matrices(df, loc, act, val, time)
+    result = entry(mats, use_rca=use_rca, threshold=threshold)
+    return melt_matrix(result, loc, act, "entry")
+
+
+def exit_tracking(
+    df: pd.DataFrame,
+    loc: str,
+    act: str,
+    val: str,
+    time: str,
+    use_rca: bool = True,
+    threshold: float = 1.0,
+) -> pd.DataFrame:
+    """
+    Long-format wrapper around `exit` for panel data.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Long-format data.
+    loc, act, val, time : str
+        Column names for location, activity, value, and time period.
+    use_rca : bool
+        Compute RCA before binarizing.
+    threshold : float
+        Binarization threshold.
+
+    Returns
+    -------
+    pd.DataFrame with columns [loc, act, 'exit'] (exit = 1 when the
+    pair exited in at least one period transition).
+    """
+    mats = _panel_to_matrices(df, loc, act, val, time)
+    result = exit(mats, use_rca=use_rca, threshold=threshold)
+    return melt_matrix(result, loc, act, "exit")

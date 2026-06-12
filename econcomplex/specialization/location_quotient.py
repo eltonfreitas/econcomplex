@@ -157,3 +157,7 @@ def krugman_index(
     if is_df:
         return pd.Series(result, index=row_index, name="krugman_index")
     return result
+
+
+# Short alias matching the documented API
+spec_coefficient = specialization_coefficient

@@ -124,7 +124,6 @@ def hoover_index(
     else:
         pop_arr = np.array(pop, dtype=float)
 
-    total = arr.sum()
     total_pop = pop_arr.sum()
 
     col_sums = arr.sum(axis=0)
@@ -143,3 +142,7 @@ def hoover_index(
     if is_df:
         return pd.Series(result, index=col_index, name="hoover_index")
     return result
+
+
+# Short alias matching the documented API
+hhi = herfindahl

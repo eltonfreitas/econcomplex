@@ -15,12 +15,54 @@ from ..core.utils import validate_matrix, safe_divide, normalize_zscore, binariz
 from ..core.rca import rca as compute_rca
 
 
+def _binary_presence(mat, use_rca: bool, threshold: float):
+    """Binary Mcp plus DataFrame metadata, shared by the MoR variants."""
+    is_df = isinstance(mat, pd.DataFrame)
+    row_index = mat.index if is_df else None
+    col_index = mat.columns if is_df else None
+    arr = validate_matrix(mat)
+    if use_rca:
+        m = binarize(compute_rca(arr), threshold)
+    else:
+        m = binarize(arr, threshold)
+    return m, is_df, row_index, col_index
+
+
+def _reflect(m: np.ndarray, iterations: int, tol: Optional[float] = None):
+    """
+    Iterate the Method of Reflections from the binary matrix `m`:
+      k_{r,n} = (M * k_{c,n-1}) / k_{r,0}
+      k_{c,n} = (M^T * k_{r,n-1}) / k_{c,0}
+    Optionally stop early when the z-scored reflections change by less
+    than `tol`. Returns (kc, kp, kc0, kp0).
+    """
+    kc0 = m.sum(axis=1)  # diversity
+    kp0 = m.sum(axis=0)  # ubiquity
+    kc = kc0.copy()
+    kp = kp0.copy()
+    for _ in range(iterations):
+        kc_new = safe_divide(m @ kp, kc0)
+        kp_new = safe_divide(m.T @ kc, kp0)
+        if tol is not None:
+            delta_c = np.max(np.abs(normalize_zscore(kc_new) - normalize_zscore(kc)))
+            delta_p = np.max(np.abs(normalize_zscore(kp_new) - normalize_zscore(kp)))
+            kc = kc_new
+            kp = kp_new
+            if delta_c < tol and delta_p < tol:
+                break
+        else:
+            kc = kc_new
+            kp = kp_new
+    return kc, kp, kc0, kp0
+
+
 def method_of_reflections(
     mat: Union[np.ndarray, pd.DataFrame],
     use_rca: bool = True,
     threshold: float = 1.0,
     iterations: int = 20,
     return_both: bool = True,
+    tol: Optional[float] = 1e-10,
 ) -> Union[Tuple[pd.Series, pd.Series], Tuple[np.ndarray, np.ndarray]]:
     """
     Method of Reflections (iterative) to compute ECI and PCI.
@@ -44,36 +86,28 @@ def method_of_reflections(
         Number of reflection steps (default 20).
     return_both : bool
         If True, return (ECI, PCI); if False, return ECI only.
+    tol : float, optional
+        Convergence tolerance: stop early when the z-scored reflections
+        change by less than `tol` between iterations. The check uses the
+        z-scored vectors because the raw reflections converge to a
+        constant. Pass None to always run all `iterations`.
 
     Returns
     -------
     (eci, pci) as pd.Series (or ndarrays if input is ndarray).
     """
-    is_df = isinstance(mat, pd.DataFrame)
-    row_index = mat.index if is_df else None
-    col_index = mat.columns if is_df else None
-
-    arr = validate_matrix(mat)
-
-    if use_rca:
-        m = binarize(compute_rca(arr), threshold)
-    else:
-        m = binarize(arr, threshold)
-
-    kc0 = m.sum(axis=1)  # diversity
-    kp0 = m.sum(axis=0)  # ubiquity
-
-    kc = kc0.copy()
-    kp = kp0.copy()
-
-    for _ in range(iterations):
-        kc_new = safe_divide(m @ kp, kc0)
-        kp_new = safe_divide(m.T @ kc, kp0)
-        kc = kc_new
-        kp = kp_new
+    m, is_df, row_index, col_index = _binary_presence(mat, use_rca, threshold)
+    kc, kp, kc0, kp0 = _reflect(m, iterations, tol=tol)
 
     eci = normalize_zscore(kc)
     pci = normalize_zscore(kp)
+
+    # Sign orientation, as in the eigenvector method: ECI correlates
+    # positively with diversity, PCI negatively with ubiquity
+    if np.std(eci) > 0 and np.std(kc0) > 0 and np.corrcoef(eci, kc0)[0, 1] < 0:
+        eci = -eci
+    if np.std(pci) > 0 and np.std(kp0) > 0 and np.corrcoef(pci, kp0)[0, 1] > 0:
+        pci = -pci
 
     if is_df:
         return (
@@ -99,27 +133,8 @@ def mor_regions(
     step 1 = avg ubiquity of industries present in each region
     step 2+ = higher-order reflections
     """
-    is_df = isinstance(mat, pd.DataFrame)
-    row_index = mat.index if is_df else None
-
-    arr = validate_matrix(mat)
-
-    if use_rca:
-        m = binarize(compute_rca(arr), threshold)
-    else:
-        m = binarize(arr, threshold)
-
-    kc0 = m.sum(axis=1)
-    kp0 = m.sum(axis=0)
-
-    kc = kc0.copy()
-    kp = kp0.copy()
-
-    for step in range(steps):
-        kc_new = safe_divide(m @ kp, kc0)
-        kp_new = safe_divide(m.T @ kc, kp0)
-        kc = kc_new
-        kp = kp_new
+    m, is_df, row_index, _ = _binary_presence(mat, use_rca, threshold)
+    kc, kp, _, _ = _reflect(m, steps)
 
     if steps > 1:
         mn, mx = kc.min(), kc.max()
@@ -144,27 +159,8 @@ def mor_activities(
     step 0 = raw ubiquity
     step 1+ = higher-order reflections; rescaled to 0–100 for steps > 1.
     """
-    is_df = isinstance(mat, pd.DataFrame)
-    col_index = mat.columns if is_df else None
-
-    arr = validate_matrix(mat)
-
-    if use_rca:
-        m = binarize(compute_rca(arr), threshold)
-    else:
-        m = binarize(arr, threshold)
-
-    kc0 = m.sum(axis=1)
-    kp0 = m.sum(axis=0)
-
-    kc = kc0.copy()
-    kp = kp0.copy()
-
-    for _ in range(steps):
-        kc_new = safe_divide(m @ kp, kc0)
-        kp_new = safe_divide(m.T @ kc, kp0)
-        kc = kc_new
-        kp = kp_new
+    m, is_df, _, col_index = _binary_presence(mat, use_rca, threshold)
+    kc, kp, _, _ = _reflect(m, steps)
 
     if steps > 1:
         mn, mx = kp.min(), kp.max()

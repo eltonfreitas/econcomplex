@@ -7,21 +7,17 @@ for all indicator methods.
 
 from __future__ import annotations
 
-import warnings
-from typing import Dict, Literal, Optional, Union
+from typing import Dict, Literal, Optional
 
 import numpy as np
 import pandas as pd
 
-from .core.rca import rca, rpop, mcp
-from .core.diversity import diversity, ubiquity
-from .complexity.reflections import method_of_reflections
-from .complexity.eigenvector import eci_pci
-from .complexity.fitness import fitness_complexity
+from .core.rca import rca, mcp
+from .complexity.eci_pci import eci_pci
 from .relatedness.proximity import proximity, continuous_proximity
-from .relatedness.density import relatedness_density, distance
+from .relatedness.density import relatedness_density
 from .outlook.coi_cog import complexity_outlook_index, complexity_outlook_gain
-from .core.utils import pivot_to_matrix, binarize, safe_divide
+from .core.utils import pivot_to_matrix
 
 
 def compute_complexity(
@@ -168,20 +164,15 @@ def _compute_single_period(
     ubi = mcp_mat.sum(axis=0)
 
     # --- ECI / PCI ---
-    if method == "eigenvector":
-        eci_s, pci_s = eci_pci(mat, use_rca=True, threshold=threshold)
-    elif method == "reflections":
-        eci_s, pci_s = method_of_reflections(mat, use_rca=True,
-                                               threshold=threshold,
-                                               iterations=iterations)
-    elif method == "fitness":
-        eci_s, pci_s = fitness_complexity(mat, use_rca=True,
-                                           threshold=threshold,
-                                           iterations=iterations)
+    # Routed through the eci_pci dispatcher: validates the method and
+    # pre-trims degenerate (zero diversity/ubiquity) units, returned as NaN.
+    eci_s, pci_s = eci_pci(
+        mat, use_rca=True, threshold=threshold, method=method,
+        iterations=iterations if method != "eigenvector" else None,
+    )
+    if method == "fitness":
         eci_s.name = "eci"
         pci_s.name = "pci"
-    else:
-        raise ValueError("method must be 'eigenvector', 'reflections', or 'fitness'.")
 
     # --- Proximity ---
     if proximity_type == "continuous":

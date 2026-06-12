@@ -1,5 +1,9 @@
 """
-Eigenvector method for Economic Complexity (ECI / PCI).
+Eigenvector implementation of Economic Complexity (ECI / PCI).
+
+This module holds the eigenvector method only. The recommended entry
+point for users is `eci_pci()` (module `complexity.eci_pci`), which
+dispatches between the eigenvector, reflections, and fitness methods.
 
 References
 ----------
@@ -33,14 +37,15 @@ def _second_eigenvector(mat: np.ndarray) -> np.ndarray:
     return np.real(eigenvectors[:, order[-2]])
 
 
-def eci_pci(
+def eci_pci_eigenvector(
     mat: Union[np.ndarray, pd.DataFrame],
     use_rca: bool = True,
     threshold: float = 1.0,
 ) -> Tuple[Union[pd.Series, np.ndarray], Union[pd.Series, np.ndarray]]:
     """
-    Economic Complexity Index (ECI) and Product Complexity Index (PCI)
-    via the eigenvector method.
+    ECI and PCI via the eigenvector method (advanced implementation;
+    prefer `eci_pci(mat, method="eigenvector")`, which adds the automatic
+    trimming of degenerate units).
 
     Builds Markov matrices:
       Mcc_{rr'} = sum_c (M_{rc}/D_r) * (M_{r'c}/U_c)
@@ -93,10 +98,10 @@ def eci_pci(
 
     # Sign correction
     # ECI should correlate positively with diversity
-    if np.corrcoef(eci_raw, kc0)[0, 1] < 0:
+    if np.std(eci_raw) > 0 and np.std(kc0) > 0 and np.corrcoef(eci_raw, kc0)[0, 1] < 0:
         eci_raw = -eci_raw
     # PCI should correlate negatively with ubiquity
-    if np.corrcoef(pci_raw, kp0)[0, 1] > 0:
+    if np.std(pci_raw) > 0 and np.std(kp0) > 0 and np.corrcoef(pci_raw, kp0)[0, 1] > 0:
         pci_raw = -pci_raw
 
     eci = normalize_zscore(eci_raw)

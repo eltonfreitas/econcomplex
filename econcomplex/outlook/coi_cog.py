@@ -161,3 +161,8 @@ def complexity_outlook_gain(
     if is_df:
         return pd.DataFrame(cog, index=row_index, columns=col_index)
     return cog
+
+
+# Short aliases matching the documented API
+coi = complexity_outlook_index
+cog = complexity_outlook_gain

@@ -8,7 +8,7 @@ Balland & Rigby (2017); Mealy et al. (2019).
 
 import numpy as np
 import pandas as pd
-from typing import Optional, Tuple, Union
+from typing import Tuple, Union
 
 from ..core.utils import validate_matrix, binarize, normalize_zscore
 from ..core.rca import rca as compute_rca

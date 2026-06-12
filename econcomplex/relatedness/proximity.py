@@ -8,7 +8,7 @@ Hidalgo et al. (2007) "The Product Space Conditions the Development of Nations".
 
 import numpy as np
 import pandas as pd
-from typing import Literal, Optional, Union
+from typing import Literal, Union
 
 from ..core.utils import validate_matrix, safe_divide, binarize
 from ..core.rca import rca as compute_rca
@@ -20,6 +20,8 @@ def proximity(
     threshold: float = 1.0,
     method: Literal["max", "sqrt", "min"] = "max",
     compute: Literal["product", "location", "both"] = "both",
+    continuous: bool = False,
+    continuous_method: Literal["correlation", "cosine"] = "correlation",
 ) -> dict:
     """
     Compute product and/or location proximity matrices.
@@ -45,6 +47,13 @@ def proximity(
         Normalization method: 'max', 'sqrt', or 'min'.
     compute : str
         Which side to compute: 'product', 'location', or 'both'.
+    continuous : bool
+        If True, skip binarization and compute the proximity on the
+        continuous RCA values (see `continuous_proximity`); `method`
+        and `threshold` are ignored.
+    continuous_method : str
+        Similarity used when `continuous=True`: 'correlation'
+        (Pearson, rescaled to [0, 1]) or 'cosine'.
 
     Returns
     -------
@@ -55,6 +64,23 @@ def proximity(
     col_index = mat.columns if is_df else None
 
     arr = validate_matrix(mat)
+
+    if continuous:
+        rca_arr = compute_rca(arr) if use_rca else arr
+        results = {}
+        if compute in ("product", "both"):
+            phi_p = continuous_proximity(rca_arr, method=continuous_method)
+            if is_df:
+                results["product"] = pd.DataFrame(phi_p, index=col_index, columns=col_index)
+            else:
+                results["product"] = phi_p
+        if compute in ("location", "both"):
+            phi_l = continuous_proximity(rca_arr.T, method=continuous_method)
+            if is_df:
+                results["location"] = pd.DataFrame(phi_l, index=row_index, columns=row_index)
+            else:
+                results["location"] = phi_l
+        return results
 
     if use_rca:
         m = binarize(compute_rca(arr), threshold)
@@ -100,31 +126,41 @@ def proximity(
 
 def continuous_proximity(
     rca_mat: Union[np.ndarray, pd.DataFrame],
+    method: Literal["correlation", "cosine"] = "correlation",
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
-    Continuous product proximity based on Pearson correlation of RCA vectors.
+    Continuous product proximity from a (continuous) RCA matrix.
 
-    phi_{pp'} = (1 + corr(RCA_p, RCA_{p'})) / 2
-
-    Rescales correlation from [-1, 1] to [0, 1].
+    method='correlation' (default):
+      phi_{pp'} = (1 + corr(RCA_p, RCA_{p'})) / 2
+      (Pearson correlation rescaled from [-1, 1] to [0, 1])
+    method='cosine':
+      phi_{pp'} = (RCA_p . RCA_{p'}) / (||RCA_p|| * ||RCA_{p'}||)
 
     Parameters
     ----------
     rca_mat : array-like (R x C)
         Pre-computed (continuous) RCA matrix.
+    method : str
+        'correlation' or 'cosine'.
 
     Returns
     -------
-    C x C proximity matrix.
+    C x C proximity matrix with zero diagonal.
     """
     is_df = isinstance(rca_mat, pd.DataFrame)
     col_index = rca_mat.columns if is_df else None
 
     arr = validate_matrix(rca_mat)
 
-    # Pearson correlation between columns
-    corr = np.corrcoef(arr.T)  # C x C
-    phi = (1 + corr) / 2.0
+    if method == "correlation":
+        corr = np.corrcoef(arr.T)  # C x C
+        phi = (1 + corr) / 2.0
+    elif method == "cosine":
+        norms = np.linalg.norm(arr, axis=0)  # C
+        phi = safe_divide(arr.T @ arr, norms[:, None] * norms[None, :])
+    else:
+        raise ValueError("method must be 'correlation' or 'cosine'.")
     np.fill_diagonal(phi, 0.0)
 
     if is_df:
@@ -132,24 +168,47 @@ def continuous_proximity(
     return phi
 
 
-def relatedness(
+def _continuous_on_values(mat, use_rca, method):
+    """Shortcut: RCA (optional) + continuous_proximity with given method."""
+    is_df = isinstance(mat, pd.DataFrame)
+    col_index = mat.columns if is_df else None
+    arr = validate_matrix(mat)
+    rca_arr = compute_rca(arr) if use_rca else arr
+    phi = continuous_proximity(rca_arr, method=method)
+    if is_df:
+        return pd.DataFrame(phi, index=col_index, columns=col_index)
+    return phi
+
+
+def cosine_proximity(
     mat: Union[np.ndarray, pd.DataFrame],
-    phi: Optional[Union[np.ndarray, pd.DataFrame]] = None,
     use_rca: bool = True,
-    threshold: float = 1.0,
-    proximity_method: str = "max",
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
-    Relatedness density (alias kept here for convenience — full version in density module).
+    Shortcut for `continuous_proximity(rca(mat), method='cosine')`:
+    cosine similarity between the RCA vectors of each pair of activities.
 
-    density_{rc} = (M * Phi)_{rc} / colSums(Phi)_c
-
-    Returns
-    -------
-    R x C density matrix.
+    Returns a C x C proximity matrix with zero diagonal.
     """
-    from .density import relatedness_density
-    return relatedness_density(mat, phi=phi, use_rca=use_rca, threshold=threshold,
-                                proximity_method=proximity_method)
+    return _continuous_on_values(mat, use_rca, "cosine")
+
+
+def correlation_proximity(
+    mat: Union[np.ndarray, pd.DataFrame],
+    use_rca: bool = True,
+) -> Union[pd.DataFrame, np.ndarray]:
+    """
+    Shortcut for `continuous_proximity(rca(mat), method='correlation')`:
+    Pearson correlation between RCA vectors, rescaled to [0, 1].
+
+    Returns a C x C proximity matrix with zero diagonal.
+    """
+    return _continuous_on_values(mat, use_rca, "correlation")
+
+
+# Documented-API alias: relatedness(mat, phi) == relatedness_density
+from .density import relatedness_density as _relatedness_density  # noqa: E402
+
+relatedness = _relatedness_density
 
 

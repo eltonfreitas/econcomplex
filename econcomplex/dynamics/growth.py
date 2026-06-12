@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from typing import Union
 
-from ..core.utils import validate_matrix, safe_divide
+from ..core.utils import validate_matrix, safe_divide, pivot_to_matrix
 
 
 def growth_rate(
@@ -95,3 +95,52 @@ def growth_matrix(
     if is_df:
         return pd.DataFrame(g, index=row_index, columns=col_index)
     return g
+
+
+def growth_rates(
+    df: pd.DataFrame,
+    loc: str,
+    act: str,
+    val: str,
+    time: str,
+    axis: int = 0,
+    pct: bool = True,
+) -> pd.DataFrame:
+    """
+    Long-format wrapper around `growth_rate` for panel data.
+
+    Computes the growth rate between each pair of consecutive time periods.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Long-format data.
+    loc, act, val, time : str
+        Column names for location, activity, value, and time period.
+    axis : int
+        0 = growth per location, 1 = growth per activity.
+    pct : bool
+        If True, return percentage.
+
+    Returns
+    -------
+    pd.DataFrame with columns [unit, time, 'growth'], where unit is `loc`
+    (axis=0) or `act` (axis=1) and `time` marks the end of each interval.
+    """
+    periods = sorted(df[time].unique())
+    if len(periods) < 2:
+        raise ValueError("Need at least 2 time periods to compute growth.")
+
+    unit_col = loc if axis == 0 else act
+    out = []
+    for t1, t2 in zip(periods[:-1], periods[1:]):
+        m1 = pivot_to_matrix(df[df[time] == t1], loc, act, val)
+        m2 = pivot_to_matrix(df[df[time] == t2], loc, act, val)
+        rows = m1.index.union(m2.index)
+        cols = m1.columns.union(m2.columns)
+        m1 = m1.reindex(index=rows, columns=cols, fill_value=0.0)
+        m2 = m2.reindex(index=rows, columns=cols, fill_value=0.0)
+        g = growth_rate(m1, m2, axis=axis, pct=pct)
+        out.append(pd.DataFrame({unit_col: g.index, time: t2, "growth": g.values}))
+
+    return pd.concat(out, ignore_index=True)

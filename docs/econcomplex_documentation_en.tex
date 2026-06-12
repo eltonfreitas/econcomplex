@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Technical Documentation --- Version 0.1.0}\par
+  {\large\bfseries Technical Documentation --- Version 1.0.0}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -178,11 +178,11 @@
   }\par
   \vspace{3cm}
   {\small\color{pygray}
-    Dependencies: \texttt{numpy $\geq$ 1.21}, \texttt{pandas $\geq$ 1.3}, \texttt{scipy $\geq$ 1.7}\\[4pt]
-    Compatible with Python 3.9+
+    Dependencies: \texttt{numpy $\geq$ 1.21}, \texttt{pandas $\geq$ 1.3}, \texttt{scipy $\geq$ 1.9}\\[4pt]
+    Compatible with Python 3.9+ (NumPy 1.x and 2.x)
   }\par
   \vfill
-  {\small\color{pygray} March 2026}
+  {\small\color{pygray} June 2026}
 \end{titlepage}
 
 %% --- Table of contents --------------------------------------------------
@@ -210,14 +210,15 @@ combining functionalities from four reference packages in the literature:
 \subsection{Installation}
 
 \begin{lstlisting}[style=bashstyle,
-  caption={Installation via pip (local development)}]
-# From the library root directory
+  caption={Installation via pip}]
+# Directly from GitHub (recommended)
+pip install git+https://github.com/eltonfreitas/econcomplex.git
+
+# Or, for local development, from the library root directory
 pip install -e .
 
-# Or adding the path manually
-import sys
-sys.path.insert(0, "/path/to/econcomplex")
-import econcomplex as ec
+# Verify the installation
+python3 -c "import econcomplex as ec; print(ec.__version__)"
 \end{lstlisting}
 
 \subsection{Module Structure}
@@ -227,16 +228,64 @@ import econcomplex as ec
 \toprule
 \textbf{Module} & \textbf{Contents} \\
 \midrule
-\texttt{core}           & RCA, RPOP, Mcp, diversity, ubiquity, utilities \\
-\texttt{complexity}     & ECI/PCI (3 methods), subnational ECI \\
-\texttt{relatedness}    & Proximity, density, distance, co-occurrence, cross-space \\
+\texttt{core}           & RCA, RPOP, Mcp, diversity, ubiquity, \texttt{trim\_core},
+                          \texttt{make\_sample\_data}, utilities \\
+\texttt{complexity}     & ECI/PCI --- single entry point \texttt{eci\_pci(method=...)}
+                          (eigenvector, reflections, fitness), subnational ECI \\
+\texttt{relatedness}    & Proximity (discrete, continuous, cosine, correlation),
+                          density, distance, co-occurrence, cross-space \\
 \texttt{specialization} & LQ, Hachman, Krugman, specialization coef., similarity \\
 \texttt{inequality}     & Gini, locational Gini, Hoover-Gini, HHI, Shannon entropy \\
 \texttt{productivity}   & PRODY, EXPY, PGI, PEII \\
 \texttt{patents}        & Ease of Recombination, Modular Complexity \\
-\texttt{dynamics}       & Growth rates, entry/exit tracking \\
+\texttt{dynamics}       & Growth rates, entry/exit tracking (matrix and panel APIs) \\
 \texttt{outlook}        & COI, COG (Complexity Outlook) \\
+\texttt{optimization}   & ECI Optimization (Stojkoski \& Hidalgo 2026), growth
+                          targeting, strategic diffusion (Alshamsi et al.\ 2018) \\
 \texttt{pipeline}       & \texttt{compute\_complexity()} function --- unified pipeline \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{API Map: Entry Points, Advanced Implementations, and Aliases}
+
+The public API has three layers. \textbf{Entry points} are what most
+users need; \textbf{advanced implementations} are the method-specific
+functions the entry points delegate to (exposed for research use);
+\textbf{aliases} are alternative short names bound to the very same
+function (no duplicated code or computation).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lp{8.6cm}}
+\toprule
+\textbf{Entry point} & \textbf{Delegates to (advanced)} \\
+\midrule
+\texttt{eci\_pci(method=...)} & \texttt{eci\_pci\_eigenvector},
+  \texttt{method\_of\_reflections}, \texttt{fitness\_complexity}
+  (variants: \texttt{mor\_regions}, \texttt{mor\_activities}) \\
+\texttt{proximity(continuous=..., continuous\_method=...)} &
+  \texttt{continuous\_proximity}; shortcuts \texttt{cosine\_proximity},
+  \texttt{correlation\_proximity} \\
+\texttt{compute\_complexity()} & full per-period pipeline over
+  \texttt{eci\_pci}, \texttt{proximity}, \texttt{density}, COI/COG \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\toprule
+\textbf{Alias} & \textbf{Canonical function (same object)} \\
+\midrule
+\texttt{density}, \texttt{relatedness} & \texttt{relatedness\_density} \\
+\texttt{hhi}                  & \texttt{herfindahl} \\
+\texttt{coi} / \texttt{cog}   & \texttt{complexity\_outlook\_index} / \texttt{\_gain} \\
+\texttt{pgi} / \texttt{peii}  & \texttt{product\_gini\_index} / \texttt{product\_emissions\_index} \\
+\texttt{spec\_coefficient}    & \texttt{specialization\_coefficient} \\
+\texttt{cross\_space\_proximity} & \texttt{cross\_proximity} \\
+\texttt{location\_quotient}   & \texttt{rca} (identical formula) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -412,10 +461,11 @@ environments such as Jupyter and IDEs.
 
 \begin{lstlisting}[style=bashstyle,
   caption={Installing the dependencies}]
-# Install main dependencies
-pip install numpy pandas scipy
+# Install the library (dependencies come automatically:
+# numpy>=1.21, pandas>=1.3, scipy>=1.9)
+pip install git+https://github.com/eltonfreitas/econcomplex.git
 
-# Install the library in development mode
+# Or in development mode
 pip install -e /path/to/econcomplex
 
 # Verify installation
@@ -430,11 +480,11 @@ directly in the terminal:
 
 \begin{lstlisting}[style=bashstyle,
   caption={Running scripts in the terminal}]
-# Navigate to the project folder
-cd "/path/to/1 - Pos-doc research/data/script"
+# Navigate to the library folder
+cd /path/to/econcomplex
 
-# Run the full example script
-python3 econcomplex/example_usage.py
+# Run the full example script (guided tour of all indicators)
+python3 examples/basic_usage.py
 
 # Run your own script
 python3 my_script.py
@@ -448,32 +498,25 @@ import sys
 sys.path.insert(0, "/path/to/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 0.1.0
+print(ec.__version__)   # 1.0.0
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 \subsection{Running in Jupyter Notebook / JupyterLab}
 
 \begin{lstlisting}[style=bashstyle,
-  caption={Opening Jupyter from the scripts folder}]
-cd "/path/to/1 - Pos-doc research/data/script"
+  caption={Opening Jupyter from your project folder}]
+cd /path/to/my_project
 jupyter notebook
 # or
 jupyter lab
 \end{lstlisting}
 
-Inside the notebook, the first cell should configure the path:
+With the library installed via pip the first cell is just the imports
+(use the \texttt{sys.path} fallback only if you have not installed it):
 
 \begin{lstlisting}[caption={Configuration cell in Jupyter}]
-# Cell 1 -- configuration
-import sys, os
-
-BASE = os.path.expanduser(
-    "~/Library/CloudStorage/"
-    "OneDrive-Personnel/1 - Pos-doc research/data/script/econcomplex"
-)
-sys.path.insert(0, BASE)
-
+# Cell 1 -- imports
 import econcomplex as ec
 import numpy as np
 import pandas as pd
@@ -531,9 +574,6 @@ Ready-to-use template for any CSV-format dataset:
 Usage template for the econcomplex library.
 Adapt the column names and the CSV file path.
 """
-import sys
-sys.path.insert(0, "/path/to/econcomplex")
-
 import pandas as pd
 import econcomplex as ec
 
@@ -583,9 +623,6 @@ print(output.round(3))
 \subsection{Running with RAIS / CNAE Data (real use case)}
 
 \begin{lstlisting}[caption={Usage with RAIS data --- municipalities x CNAE}]
-import sys
-sys.path.insert(0, "/path/to/econcomplex")
-
 import pandas as pd
 import econcomplex as ec
 
@@ -673,7 +710,7 @@ mat = ec.pivot_to_matrix(df, "region", "sector", "jobs")
 
 rca      = ec.rca(mat)               # continuous values
 mcp      = ec.mcp(mat, threshold=1)  # 1 if RCA >= 1, 0 otherwise
-rca_rpop = ec.rpop(mat)              # Puga & Turrini RCA (continuous)
+rca_rpop = ec.rpop(mat, pop)         # Puga & Turrini RCA (requires population vector)
 \end{lstlisting}
 
 \subsection{Diversity and Ubiquity}
@@ -701,15 +738,24 @@ where $\vec{v}_2$ is the second left eigenvector of matrix $\tilde{M}$:
 eci, pci = ec.eci_pci(mat, method="eigenvector")
 print(eci.head())   # Series indexed by region
 print(pci.head())   # Series indexed by product/sector
+
+# Pre-processing: units with zero diversity/ubiquity are trimmed
+# automatically and returned as NaN. Disable with trim=False, or
+# restrict to the well-connected core with dmin=2, umin=2 (sparse data).
+core = ec.trim_core(mat, dmin=2, umin=2)   # also available standalone
 \end{lstlisting}
 
 \subsection{Method of Reflections (Hidalgo \& Hausmann, 2009)}
 
 \begin{lstlisting}[caption={Method of Reflections}]
 eci_r, pci_r = ec.eci_pci(mat, method="reflections", iterations=20)
+# tol=1e-10 stops the iterations early once the z-scored reflections
+# stabilize; signs are oriented as in the eigenvector method
+# (ECI correlates positively with diversity, PCI negatively
+# with ubiquity).
 \end{lstlisting}
 
-\subsection{Fitness-Complexity (Tacchini et al., 2012)}
+\subsection{Fitness-Complexity (Tacchella et al., 2012)}
 
 \[
   F_c^{(n+1)} = \sum_p M_{cp} Q_p^{(n)}, \quad
@@ -717,7 +763,12 @@ eci_r, pci_r = ec.eci_pci(mat, method="reflections", iterations=20)
 \]
 
 \begin{lstlisting}[caption={Fitness-Complexity}]
-fit, comp = ec.eci_pci(mat, method="fitness", iterations=100)
+fit, comp = ec.eci_pci(mat, method="fitness", iterations=20)
+# iterations is a cap (20, as in the R economiccomplexity package);
+# the loop stops at convergence (tol) and warns if it is genuinely
+# unstable. log_fitness=True returns the log scale recommended by
+# Cristelli et al. (2015):
+fit_log, comp_log = ec.fitness_complexity(mat, log_fitness=True)
 \end{lstlisting}
 
 \subsection{Subnational ECI}
@@ -740,8 +791,8 @@ eci_sub = ec.subnational_eci(mat_sub, pci_national)
 \]
 
 \begin{lstlisting}[caption={Discrete and continuous proximity}]
-phi_d = ec.proximity(mat, continuous=False)   # based on binary Mcp
-phi_c = ec.proximity(mat, continuous=True)    # based on continuous RCA
+phi_d = ec.proximity(mat)["product"]                   # based on binary Mcp
+phi_c = ec.proximity(mat, continuous=True)["product"]  # based on continuous RCA
 \end{lstlisting}
 
 \subsection{Density and Distance}
@@ -770,7 +821,7 @@ rca_rel = ec.relatedness(mat, phi_d)   # relatedness densities
 \begin{lstlisting}[caption={Cross-space proximity and relatedness}]
 # phi_cross: proximity between sectors and technologies (different matrices)
 phi_cross = ec.cross_space_proximity(mat_sector, mat_tech)
-density_c = ec.density(mat_sector, phi_cross)
+density_c = ec.cross_relatedness(mat_sector, phi_cross)
 \end{lstlisting}
 
 %% ============================================================
@@ -800,9 +851,9 @@ entropy  = ec.shannon_entropy(mat)     # Shannon entropy (by region)
 
 \begin{lstlisting}[caption={Productivity and product inequality}]
 prody = ec.prody(mat, gdp_per_capita)  # income associated with the product
-expy  = ec.expy(mat, prody)            # sophistication of the export basket
-pgi   = ec.pgi(mat)                    # Product Gini Index
-peii  = ec.peii(mat)                   # Product Export Inequality Index
+expy  = ec.expy(mat, gdp_per_capita)   # sophistication of the export basket
+pgi   = ec.pgi(mat, gini_vec)          # Product Gini Index (regional Gini vector)
+peii  = ec.peii(mat, emissions)        # Product Emissions Intensity Index
 \end{lstlisting}
 
 %% ============================================================
@@ -818,8 +869,8 @@ mod_comp = ec.modular_complexity(mat_pat)
 
 \begin{lstlisting}[caption={Growth rates and entry/exit tracking}]
 growth  = ec.growth_rates(df, "region", "sector", "jobs", "year")
-entries = ec.entry_tracking(df, "region", "sector", "year")
-exits   = ec.exit_tracking(df, "region", "sector", "year")
+entries = ec.entry_tracking(df, "region", "sector", "jobs", "year")
+exits   = ec.exit_tracking(df, "region", "sector", "jobs", "year")
 \end{lstlisting}
 
 %% ============================================================
@@ -833,8 +884,61 @@ the \textbf{COG} measures the expected complexity gain:
 \]
 
 \begin{lstlisting}[caption={COI and COG}]
-coi = ec.coi(mat, phi_d, pci)
-cog = ec.cog(mat, phi_d, pci)
+coi = ec.coi(mat, pci, phi=phi_d)
+cog = ec.cog(mat, pci, phi=phi_d)
+\end{lstlisting}
+
+%% ============================================================
+\section{ECI Optimization (\texttt{optimization})}
+
+A target-oriented optimization layer for strategic diversification
+(Stojkoski \& Hidalgo, 2026, \emph{Research Policy} 55, 105454).
+A stepping-stone forecast model is calibrated on a historical panel,
+the effort $W_{cp}$ (the added RCA an economy needs to enter an
+activity) is obtained in closed form, and a 0--1 integer program
+selects the minimal-effort portfolio of new activities that reaches a
+target ECI.
+
+\begin{lstlisting}[caption={ECI Optimization workflow}]
+# 1. Calibrate the stepping-stone model on a panel (t, t+5, t+10)
+model = ec.calibrate_steppingstone(df, "region", "sector", "jobs",
+                                   "year", horizon=10, steppingstone=5)
+
+# 2. Effort and no-policy forecast for the latest year
+W  = ec.effort_matrix(mat, model)            # added RCA per candidate
+fc = ec.forecast_specialization(mat, model)  # rca, mcp, pci, eci
+
+# 3. Minimal-effort portfolio raising each location's ECI by 0.1
+portfolio = ec.eci_optimization(mat, model, delta_eci=0.1)
+
+# 4. Optional: growth targeting - convert a growth target (3.5%/yr)
+#    into an ECI target and optimize towards it
+gm = ec.calibrate_growth_model(panel, "region", "year", "gdppc", "eci")
+eci_star  = ec.eci_target_for_growth(gm, 0.035, gdppc_now)
+portfolio = ec.eci_optimization(mat, model, target_eci=eci_star)
+\end{lstlisting}
+
+%% ============================================================
+\section{Strategic Diffusion (\texttt{optimization.diffusion})}
+
+Complex-contagion model of diversification on the network of related
+activities (Alshamsi, Pinheiro \& Hidalgo, 2018, \emph{Nature
+Communications} 9, 1328): the probability of entering an activity is
+$p_i = B\,(\text{fraction of related activities present})^{\alpha}$.
+The greedy strategy of always entering the most related activity is
+suboptimal; minimal diversification time requires targeting hubs in a
+narrow early window.
+
+\begin{lstlisting}[caption={Strategic diffusion workflow}]
+adj = ec.proximity_network(mat, phi_threshold=0.55)  # product space
+fit = ec.calibrate_contagion(df, "region", "sector", "jobs", "year",
+                             adjacency=adj)          # B and alpha
+
+active0 = ec.mcp(mat).loc["my_region"]               # current portfolio
+seq = ec.diversification_strategy(adj, active0, B=fit["B"],
+                                  alpha=fit["alpha"], strategy="greedy")
+table = ec.compare_strategies(adj, active0, B=fit["B"], alpha=fit["alpha"])
+best  = ec.optimize_sequence(adj, active0, B=fit["B"], alpha=fit["alpha"])
 \end{lstlisting}
 
 %% ============================================================
@@ -844,12 +948,18 @@ cog = ec.cog(mat, phi_d, pci)
 
 \begin{lstlisting}[caption={Pipeline function signature}]
 def compute_complexity(
-    df: pd.DataFrame,
-    cols: dict,           # {"loc": str, "act": str, "val": str, "time": str}
-    method: str = "eigenvector",   # 'eigenvector' | 'reflections' | 'fitness'
-    threshold: float = 1.0,        # threshold for Mcp
+    data: pd.DataFrame,
+    cols: dict,            # {"loc": str, "act": str, "val": str, "time": str}
+    *,
+    method: str = "eigenvector",    # 'eigenvector' | 'reflections' | 'fitness'
+    presence_test: str = "rca",     # 'rca' | 'rpop' | 'both' | 'manual'
+    threshold: float = 1.0,         # binarization threshold
+    iterations: int = 20,           # for reflections/fitness
+    proximity_type: str = "discrete",   # 'discrete' | 'continuous'
+    proximity_method: str = "max",      # 'max' | 'sqrt' | 'min'
+    pop: pd.DataFrame | None = None,    # population (for 'rpop'/'both')
     compute_coi_cog: bool = True,
-    iterations: int = 20,          # for reflections/fitness
+    time_col: str | None = None,
 ) -> pd.DataFrame:
     """
     Returns the original DataFrame enriched with columns:
@@ -866,15 +976,25 @@ def compute_complexity(
 \toprule
 \textbf{Parameter} & \textbf{Type} & \textbf{Description} \\
 \midrule
-\texttt{df}              & \texttt{DataFrame} & Table in long format \\
+\texttt{data}            & \texttt{DataFrame} & Table in long format \\
 \texttt{cols}            & \texttt{dict}      & Column mapping (see Section~2.3) \\
-\texttt{method}          & \texttt{str}       & Complexity method \\
-\texttt{threshold}       & \texttt{float}     & Mcp threshold (default: 1.0) \\
-\texttt{compute\_coi\_cog} & \texttt{bool}    & Compute COI and COG \\
-\texttt{iterations}      & \texttt{int}       & Iterations for iterative methods \\
+\texttt{method}          & \texttt{str}       & Complexity method (single entry point) \\
+\texttt{presence\_test}  & \texttt{str}       & How to binarize Mcp (RCA, RPOP, both, manual) \\
+\texttt{threshold}       & \texttt{float}     & Binarization threshold (default: 1.0) \\
+\texttt{iterations}      & \texttt{int}       & Iterations for iterative methods (default: 20) \\
+\texttt{proximity\_type} & \texttt{str}       & Discrete (co-occurrence) or continuous proximity \\
+\texttt{proximity\_method} & \texttt{str}     & Proximity normalization \\
+\texttt{pop}             & \texttt{DataFrame} & Population, required for RPOP \\
+\texttt{compute\_coi\_cog} & \texttt{bool}    & Compute COI and COG (slower) \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{notebox}
+  Degenerate units (zero diversity or ubiquity) are automatically
+  trimmed by the complexity step and returned as \texttt{NaN}
+  (see \fn{trim\_core}).
+\end{notebox}
 
 %% ============================================================
 \section{Complete Examples}
@@ -882,9 +1002,6 @@ def compute_complexity(
 \subsection{Example 1 --- Regional Employment Analysis}
 
 \begin{lstlisting}[caption={Complete regional employment analysis}]
-import sys
-sys.path.insert(0, "/path/to/econcomplex")
-
 import pandas as pd
 import numpy as np
 import econcomplex as ec
@@ -920,9 +1037,6 @@ result.to_csv("regional_result.csv", index=False)
 \subsection{Example 2 --- Exports with COMEX Data}
 
 \begin{lstlisting}[caption={Export analysis with COMEX/MDIC data}]
-import sys
-sys.path.insert(0, "/path/to/econcomplex")
-
 import pandas as pd
 import econcomplex as ec
 
@@ -950,9 +1064,6 @@ print("Mean ECI:", result["eci"].dropna().mean().round(4))
 \subsection{Example 3 --- RAIS Time Panel (2010--2022)}
 
 \begin{lstlisting}[caption={Pipeline with panel data --- multiple periods}]
-import sys
-sys.path.insert(0, "/path/to/econcomplex")
-
 import pandas as pd
 import econcomplex as ec
 
@@ -982,6 +1093,46 @@ print(eci_trend)
 panel.to_csv("panel_complexity_2010_2022.csv", index=False)
 \end{lstlisting}
 
+\subsection{Example 4 --- Diversification Targets (ECI Optimization)}
+
+Step-by-step use of the optimization layer with a multi-year panel
+(needs at least the periods $t$, $t+\tau$ and $t+\Delta t$):
+
+\begin{lstlisting}[caption={ECI Optimization end to end}]
+import pandas as pd
+import econcomplex as ec
+
+# 1. Panel with at least t, t+5, t+10 (e.g. 2005, 2010, 2015)
+rais = pd.read_parquet("rais_municipality_cnae_2005_2015.parquet")
+
+# 2. Calibrate the stepping-stone forecast model
+model = ec.calibrate_steppingstone(
+    rais, "municipality", "cnae2d", "jobs", "year",
+    horizon=10, steppingstone=5,
+)
+
+# 3. Matrix of the latest year and minimal-effort portfolios
+mat = ec.pivot_to_matrix(rais[rais["year"] == 2015],
+                         "municipality", "cnae2d", "jobs")
+portfolio = ec.eci_optimization(mat, model, delta_eci=0.1)
+print(portfolio.head())   # location, activity, effort, pci, targets
+
+# 4. Optional: growth targeting (needs GDP per capita and ECI panel)
+gm = ec.calibrate_growth_model(macro, "municipality", "year",
+                               "gdppc", "eci", horizon=10)
+eci_star = ec.eci_target_for_growth(gm, 0.035, gdppc_now)
+portfolio = ec.eci_optimization(mat, model, target_eci=eci_star)
+
+# 5. Optional: diversification timing (strategic diffusion)
+adj = ec.proximity_network(mat, phi_threshold=0.55)
+fit = ec.calibrate_contagion(rais, "municipality", "cnae2d",
+                             "jobs", "year", adjacency=adj)
+active0 = ec.mcp(mat).loc["my_municipality"]
+best = ec.optimize_sequence(adj, active0,
+                            B=fit["B"], alpha=fit["alpha"])
+print(best["sequence"][:10], best["improvement"])
+\end{lstlisting}
+
 %% ============================================================
 \section{References}
 
@@ -1007,10 +1158,29 @@ panel.to_csv("panel_complexity_2010_2022.csv", index=False)
     The Growth Lab at Harvard University (2020). \textit{py-ecomplexity:
     Economic Complexity in Python}. GitHub.
 
-  \item[Tacchini et al.\ (2012)]
-    Tacchini, E., Loreto, V., Pietronero, L. (2012). A New Metrics for
-    Countries' Fitness and Products' Complexity.
-    \textit{Scientific Reports}, 2, 723.
+  \item[Tacchella et al.\ (2012)]
+    Tacchella, A., Cristelli, M., Caldarelli, G., Gabrielli, A.,
+    Pietronero, L. (2012). A New Metrics for Countries' Fitness and
+    Products' Complexity. \textit{Scientific Reports}, 2, 723.
+
+  \item[Hidalgo et al.\ (2007)]
+    Hidalgo, C.A., Klinger, B., Barab\'{a}si, A.-L., Hausmann, R. (2007).
+    The product space conditions the development of nations.
+    \textit{Science}, 317(5837), 482--487.
+
+  \item[Alshamsi et al.\ (2018)]
+    Alshamsi, A., Pinheiro, F.L., Hidalgo, C.A. (2018). Optimal
+    diversification strategies in the networks of related products and
+    of related research areas. \textit{Nature Communications}, 9, 1328.
+
+  \item[Pinheiro et al.\ (2022)]
+    Pinheiro, F.L., Hartmann, D., Boschma, R., Hidalgo, C.A. (2022).
+    The time and frequency of unrelated diversification.
+    \textit{Research Policy}, 51(8), 104323.
+
+  \item[Stojkoski \& Hidalgo (2026)]
+    Stojkoski, V., Hidalgo, C.A. (2026). Optimizing economic complexity.
+    \textit{Research Policy}, 55, 105454.
 
 \end{description}
 
@@ -1018,12 +1188,13 @@ panel.to_csv("panel_complexity_2010_2022.csv", index=False)
 \section{License and Citation}
 
 This library is distributed under the MIT license. For use in academic
-work, we suggest citing the original packages in the versions
-corresponding to the indicators used.
+work, please cite the library
+(\url{https://github.com/eltonfreitas/econcomplex}) together with the
+original papers of the indicators used (see References).
 
 \begin{lstlisting}[language={}, caption={Check the library version}]
 import econcomplex as ec
-print(ec.__version__)   # 0.1.0
+print(ec.__version__)   # 1.0.0
 \end{lstlisting}
 
 \end{document}

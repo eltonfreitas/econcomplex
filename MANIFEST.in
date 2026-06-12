@@ -1,5 +1,7 @@
 include README.md
 include README.pt-BR.md
 include LICENSE
+include CHANGELOG.md
 recursive-include docs *.pdf *.tex
+recursive-include examples *.py
 

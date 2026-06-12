@@ -8,7 +8,7 @@ Catalan et al. (2020) "Cross-space proximity and relatedness".
 
 import numpy as np
 import pandas as pd
-from typing import Optional, Union
+from typing import Union
 
 from ..core.utils import validate_matrix, safe_divide, binarize
 from ..core.rca import rca as compute_rca
@@ -83,10 +83,11 @@ def cross_relatedness(
     """
     Cross-space relatedness density.
 
-    x_density_{ri} = (M_A * X_phi)_{ri} / (ones * X_phi)_{ri}
+    x_density_{rb} = (M_A * X_phi)_{rb} / sum_a X_phi_{ab}
 
-    Probability that a region holds activity i (space A) given its presence
-    in related activities of space B.
+    Relatedness of region r to each activity b of space B, given the
+    region's portfolio in space A (the fraction of space-A activities
+    related to b that the region already holds).
 
     Parameters
     ----------
@@ -101,16 +102,23 @@ def cross_relatedness(
 
     Returns
     -------
-    R x A cross-relatedness matrix.
+    R x B cross-relatedness matrix (columns = activities of space B).
     """
     is_df = isinstance(mat_a, pd.DataFrame)
     row_index = mat_a.index if is_df else None
-    col_a = mat_a.columns if is_df else None
+    col_b = x_phi.columns if isinstance(x_phi, pd.DataFrame) else None
 
     arr_a = validate_matrix(mat_a)
     phi_arr = (
         x_phi.values if isinstance(x_phi, pd.DataFrame) else np.array(x_phi, dtype=float)
     )
+
+    if arr_a.shape[1] != phi_arr.shape[0]:
+        raise ValueError(
+            "x_phi must have one row per activity of mat_a "
+            f"(mat_a has {arr_a.shape[1]} activities, x_phi has "
+            f"{phi_arr.shape[0]} rows)."
+        )
 
     if use_rca:
         m_a = binarize(compute_rca(arr_a), threshold)
@@ -126,5 +134,9 @@ def cross_relatedness(
     result = safe_divide(numerator, denom)
 
     if is_df:
-        return pd.DataFrame(result, index=row_index, columns=col_a)
+        return pd.DataFrame(result, index=row_index, columns=col_b)
     return result
+
+
+# Short alias matching the documented API
+cross_space_proximity = cross_proximity

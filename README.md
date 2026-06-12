@@ -4,16 +4,19 @@
 
 ## Highlights
 
-- Economic complexity indicators such as ECI, PCI, method of reflections, and fitness complexity
-- Relatedness and product-space measures such as proximity, co-occurrence, and density
+- Economic complexity indicators with a single entry point — `eci_pci(mat, method="eigenvector" | "reflections" | "fitness")` — plus subnational ECI
+- Automatic pre-processing of sparse data: degenerate units (zero diversity/ubiquity) are trimmed and returned as `NaN` (`trim_core`)
+- Relatedness and product-space measures such as proximity (discrete, continuous, cosine, correlation), co-occurrence, density, and relative relatedness
 - Regional specialization metrics such as location quotient, Hachman, Krugman, and export similarity
 - Inequality and concentration measures such as Gini, Hoover, Herfindahl, and Shannon entropy
-- Productivity and dynamics indicators such as PRODY, EXPY, growth, and entry/exit analysis
+- Productivity and dynamics indicators such as PRODY, EXPY, growth, and entry/exit analysis (matrix and panel APIs)
+- **ECI Optimization** (Stojkoski & Hidalgo 2026): minimal-effort diversification portfolios that reach an ECI or growth target
+- **Strategic diffusion** (Alshamsi, Pinheiro & Hidalgo 2018): complex-contagion model, diversification strategies, and optimal sequencing on the product space
 
 ## Installation
 
 ```bash
-pip install .
+pip install git+https://github.com/eltonfreitas/econcomplex.git
 ```
 
 For editable local development:
@@ -45,9 +48,18 @@ You can also work directly with matrices:
 ```python
 mat = ec.pivot_to_matrix(df, "region", "sector", "employment")
 rca = ec.rca(mat)
-eci, pci = ec.eci_pci(mat)
+eci, pci = ec.eci_pci(mat)                      # method="reflections"/"fitness" also available
 phi = ec.proximity(mat)["product"]
-density = ec.relatedness_density(mat, phi=phi)
+density = ec.density(mat, phi=phi)
+```
+
+And identify diversification targets with the optimization layer
+(requires a panel with at least the periods t, t+5 and t+10):
+
+```python
+model = ec.calibrate_steppingstone(panel, "region", "sector", "employment", "year",
+                                   horizon=10, steppingstone=5)
+portfolio = ec.eci_optimization(mat, model, delta_eci=0.1)
 ```
 
 ## Documentation
@@ -62,7 +74,7 @@ density = ec.relatedness_density(mat, phi=phi)
 
 - `econcomplex/`: importable package
 - `tests/`: automated tests
-- `example_usage.py`: usage examples
+- `examples/`: runnable usage examples (`python examples/basic_usage.py`)
 - `docs/`: English and Portuguese documentation sources and PDFs
 
 ## Testing

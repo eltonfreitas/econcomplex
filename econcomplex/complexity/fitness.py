@@ -7,6 +7,8 @@ Tacchella et al. (2012) "A New Metrics for Countries' Fitness and Products' Comp
 Cristelli et al. (2013).
 """
 
+import warnings
+
 import numpy as np
 import pandas as pd
 from typing import Tuple, Union
@@ -19,9 +21,10 @@ def fitness_complexity(
     mat: Union[np.ndarray, pd.DataFrame],
     use_rca: bool = True,
     threshold: float = 1.0,
-    iterations: int = 100,
+    iterations: int = 20,
     extremality: float = 1.0,
     tol: float = 1e-10,
+    log_fitness: bool = False,
 ) -> Tuple[Union[pd.Series, np.ndarray], Union[pd.Series, np.ndarray]]:
     """
     Fitness-Complexity algorithm.
@@ -41,11 +44,20 @@ def fitness_complexity(
     threshold : float
         Binarization threshold.
     iterations : int
-        Maximum iterations (default 100).
+        Maximum iterations (default 20, matching the R `economiccomplexity`
+        package). The loop stops earlier as soon as `tol` is reached.
+        At 20 iterations the algorithm is practically converged on typical
+        data (relative change ~1e-7); a RuntimeWarning is issued only when
+        the final relative change still exceeds 1e-3, which signals real
+        instability (e.g. oscillation on pathological matrices).
     extremality : float
         Non-linearity parameter alpha (default 1.0).
     tol : float
         Convergence tolerance on relative change.
+    log_fitness : bool
+        If True, return natural log of fitness and complexity
+        (Cristelli et al. 2015 recommend the log scale for analysis).
+        Zeros are returned as NaN.
 
     Returns
     -------
@@ -68,6 +80,8 @@ def fitness_complexity(
     fitness = np.ones(n_r)
     complexity = np.ones(n_c)
 
+    converged = False
+    delta_f = delta_q = np.inf
     for _ in range(iterations):
         fitness_new = m @ complexity
         # Normalize by mean
@@ -91,7 +105,22 @@ def fitness_complexity(
         complexity = complexity_new
 
         if delta_f < tol and delta_q < tol:
+            converged = True
             break
+
+    if not converged and (delta_f > 1e-3 or delta_q > 1e-3):
+        warnings.warn(
+            f"fitness_complexity did not converge within {iterations} "
+            f"iterations (final relative change {max(delta_f, delta_q):.1e}); "
+            "results may be unstable. Increase `iterations`.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+    if log_fitness:
+        with np.errstate(divide="ignore", invalid="ignore"):
+            fitness = np.where(fitness > 0, np.log(fitness), np.nan)
+            complexity = np.where(complexity > 0, np.log(complexity), np.nan)
 
     if is_df:
         return (

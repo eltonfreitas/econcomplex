@@ -4,16 +4,19 @@
 
 ## Destaques
 
-- Indicadores de complexidade economica como ECI, PCI, metodo das reflexoes e fitness complexity
-- Medidas de relatedness e product space como proximidade, coocorrencia e densidade
+- Indicadores de complexidade economica com porta de entrada unica — `eci_pci(mat, method="eigenvector" | "reflections" | "fitness")` — alem de ECI subnacional
+- Pre-processamento automatico de dados esparsos: unidades degeneradas (diversidade/ubiquidade zero) sao removidas e retornadas como `NaN` (`trim_core`)
+- Medidas de relatedness e product space como proximidade (discreta, continua, cosseno, correlacao), coocorrencia, densidade e relatedness relativa
 - Indicadores de especializacao regional como location quotient, Hachman, Krugman e similaridade de exportacao
 - Medidas de desigualdade e concentracao como Gini, Hoover, Herfindahl e entropia de Shannon
-- Indicadores de produtividade e dinamica como PRODY, EXPY, crescimento e entrada/saida
+- Indicadores de produtividade e dinamica como PRODY, EXPY, crescimento e entrada/saida (APIs de matriz e painel)
+- **Otimizacao de ECI** (Stojkoski & Hidalgo 2026): portfolios de diversificacao de menor esforco para atingir uma meta de ECI ou de crescimento
+- **Difusao estrategica** (Alshamsi, Pinheiro & Hidalgo 2018): modelo de contagio complexo, estrategias de diversificacao e sequenciamento otimo no product space
 
 ## Instalacao
 
 ```bash
-pip install .
+pip install git+https://github.com/eltonfreitas/econcomplex.git
 ```
 
 Para desenvolvimento local editavel:
@@ -40,6 +43,18 @@ result = ec.compute_complexity(
 print(result.head())
 ```
 
+Tambem e possivel trabalhar diretamente com matrizes e usar a camada de
+otimizacao (exige painel com ao menos os periodos t, t+5 e t+10):
+
+```python
+mat = ec.pivot_to_matrix(df, "regiao", "setor", "emprego")
+eci, pci = ec.eci_pci(mat)        # method="reflections"/"fitness" tambem
+
+model = ec.calibrate_steppingstone(painel, "regiao", "setor", "emprego", "ano",
+                                   horizon=10, steppingstone=5)
+portfolio = ec.eci_optimization(mat, model, delta_eci=0.1)
+```
+
 ## Documentacao
 
 - PDF em ingles: [docs/econcomplex_documentation_en.pdf](docs/econcomplex_documentation_en.pdf)
@@ -52,7 +67,7 @@ print(result.head())
 
 - `econcomplex/`: pacote Python importavel
 - `tests/`: testes automatizados
-- `example_usage.py`: exemplos de uso
+- `examples/`: exemplos de uso executaveis (`python examples/basic_usage.py`)
 - `docs/`: documentacao em ingles e portugues
 
 ## Testes

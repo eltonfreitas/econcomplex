@@ -12,6 +12,12 @@ from typing import Optional, Union
 
 from ..core.utils import validate_matrix, safe_divide
 
+# np.trapz was renamed to np.trapezoid in NumPy 2.0 and the old name removed
+try:
+    from numpy import trapezoid as _trapezoid
+except ImportError:  # NumPy < 2.0
+    from numpy import trapz as _trapezoid
+
 
 def gini(
     x: Union[np.ndarray, pd.Series, pd.DataFrame],
@@ -36,7 +42,6 @@ def gini(
         n = len(v)
         if n == 0 or v.sum() == 0:
             return 0.0
-        cumsum = np.cumsum(v)
         # Lorenz-curve area approximation
         numerator = 2 * np.sum((np.arange(1, n + 1)) * v) - (n + 1) * v.sum()
         return numerator / (n * v.sum())
@@ -72,7 +77,6 @@ def locational_gini(
 
     arr = validate_matrix(mat)
     total = arr.sum()
-    n_r = arr.shape[0]
 
     col_sums = arr.sum(axis=0)  # C
     row_sums = arr.sum(axis=1)  # R
@@ -92,7 +96,7 @@ def locational_gini(
         p = np.concatenate([[0], p])
         nu = np.concatenate([[0], nu])
         # Area under Lorenz curve (trapezoidal)
-        area = np.trapz(nu, p)
+        area = _trapezoid(nu, p)
         loc_gini = 0.5 - area
         results.append(loc_gini)
 
@@ -151,7 +155,7 @@ def hoover_gini(
         nu = np.cumsum(s_rc[order])
         p = np.concatenate([[0], p])
         nu = np.concatenate([[0], nu])
-        area = np.trapz(nu, p)
+        area = _trapezoid(nu, p)
         results.append(1 - 2 * area)
 
     result = np.array(results)
