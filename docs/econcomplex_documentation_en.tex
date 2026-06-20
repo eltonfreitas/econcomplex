@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Technical Documentation --- Version 1.0.0}\par
+  {\large\bfseries Technical Documentation --- Version 1.0.1}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -501,7 +501,7 @@ import sys
 sys.path.insert(0, "/path/to/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.0.0
+print(ec.__version__)   # 1.0.1
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -962,6 +962,8 @@ def compute_complexity(
     proximity_method: str = "max",      # 'max' | 'sqrt' | 'min'
     pop: pd.DataFrame | None = None,    # population (for 'rpop'/'both')
     compute_coi_cog: bool = True,
+    trim: bool = True,                  # pre-trim degenerate units
+    dmin: int = 1, umin: int = 1,       # core thresholds (use 2,2 if sparse)
     time_col: str | None = None,
 ) -> pd.DataFrame:
     """
@@ -970,6 +972,16 @@ def compute_complexity(
     density, distance, [coi, cog]
     """
 \end{lstlisting}
+
+\begin{notebox}
+  \texttt{compute\_complexity} is a thin \textbf{orchestration layer}: it
+  calls the same public functions you would call by hand (\fn{rca},
+  \fn{mcp}, \fn{diversity}, \fn{ubiquity}, \fn{eci\_pci}, \fn{proximity},
+  \fn{relatedness\_density}, \fn{distance}, \fn{coi}/\fn{cog}) and merges
+  the results back into long format, looping over periods for panels. It
+  is the convenience entry point for the common case; for fine-grained
+  control, call the matrix-level functions directly.
+\end{notebox}
 
 \subsection{Parameters}
 
@@ -989,6 +1001,8 @@ def compute_complexity(
 \texttt{proximity\_method} & \texttt{str}     & Proximity normalization \\
 \texttt{pop}             & \texttt{DataFrame} & Population, required for RPOP \\
 \texttt{compute\_coi\_cog} & \texttt{bool}    & Compute COI and COG (slower) \\
+\texttt{trim}            & \texttt{bool}      & Pre-trim degenerate units (default: True) \\
+\texttt{dmin}, \texttt{umin} & \texttt{int}   & Core thresholds forwarded to \fn{eci\_pci}; use 2 for sparse data \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -996,7 +1010,8 @@ def compute_complexity(
 \begin{notebox}
   Degenerate units (zero diversity or ubiquity) are automatically
   trimmed by the complexity step and returned as \texttt{NaN}
-  (see \fn{trim\_core}).
+  (see \fn{trim\_core}). For sparse subnational data, pass
+  \texttt{dmin=2, umin=2} to restrict to the well-connected core.
 \end{notebox}
 
 %% ============================================================
@@ -1264,7 +1279,7 @@ original papers of the indicators used (see References).
 
 \begin{lstlisting}[language={}, caption={Check the library version}]
 import econcomplex as ec
-print(ec.__version__)   # 1.0.0
+print(ec.__version__)   # 1.0.1
 \end{lstlisting}
 
 \end{document}

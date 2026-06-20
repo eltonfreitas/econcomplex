@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.0.0}\par
+  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.0.1}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -506,7 +506,7 @@ import sys
 sys.path.insert(0, "/caminho/para/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.0.0
+print(ec.__version__)   # 1.0.1
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -969,6 +969,8 @@ def compute_complexity(
     proximity_method: str = "max",      # 'max' | 'sqrt' | 'min'
     pop: pd.DataFrame | None = None,    # populacao (para 'rpop'/'both')
     compute_coi_cog: bool = True,
+    trim: bool = True,                  # poda unidades degeneradas
+    dmin: int = 1, umin: int = 1,       # nucleo (use 2,2 se esparso)
     time_col: str | None = None,
 ) -> pd.DataFrame:
     """
@@ -977,6 +979,17 @@ def compute_complexity(
     density, distance, [coi, cog]
     """
 \end{lstlisting}
+
+\begin{notebox}
+  \texttt{compute\_complexity} \'{e} uma fina \textbf{camada de
+  orquestra\c{c}\~{a}o}: chama as mesmas fun\c{c}\~{o}es p\'{u}blicas que
+  voc\^{e} chamaria na m\~{a}o (\fn{rca}, \fn{mcp}, \fn{diversity},
+  \fn{ubiquity}, \fn{eci\_pci}, \fn{proximity}, \fn{relatedness\_density},
+  \fn{distance}, \fn{coi}/\fn{cog}) e remonta o resultado em formato
+  longo, iterando por per\'{i}odo em pain\'{e}is. \'{E} a porta de entrada
+  para o caso comum; para controle fino, use as fun\c{c}\~{o}es de matriz
+  diretamente.
+\end{notebox}
 
 \subsection{Par\^{a}metros}
 
@@ -996,6 +1009,8 @@ def compute_complexity(
 \texttt{proximity\_method} & \texttt{str}     & Normaliza\c{c}\~{a}o da proximidade \\
 \texttt{pop}             & \texttt{DataFrame} & Popula\c{c}\~{a}o, obrigat\'{o}ria para RPOP \\
 \texttt{compute\_coi\_cog} & \texttt{bool}    & Calcular COI e COG (mais lento) \\
+\texttt{trim}            & \texttt{bool}      & Poda unidades degeneradas (padr\~{a}o: True) \\
+\texttt{dmin}, \texttt{umin} & \texttt{int}   & Limiares do n\'{u}cleo repassados a \fn{eci\_pci}; use 2 para dados esparsos \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1003,7 +1018,8 @@ def compute_complexity(
 \begin{notebox}
   Unidades degeneradas (diversidade ou ubiquidade zero) s\~{a}o removidas
   automaticamente na etapa de complexidade e retornadas como
-  \texttt{NaN} (ver \fn{trim\_core}).
+  \texttt{NaN} (ver \fn{trim\_core}). Para dados subnacionais esparsos,
+  passe \texttt{dmin=2, umin=2} para restringir ao n\'{u}cleo conectado.
 \end{notebox}
 
 %% ============================================================
@@ -1276,7 +1292,7 @@ originais dos indicadores utilizados (ver Refer\^{e}ncias).
 
 \begin{lstlisting}[language={}, caption={Verificar vers\~{a}o da biblioteca}]
 import econcomplex as ec
-print(ec.__version__)   # 1.0.0
+print(ec.__version__)   # 1.0.1
 \end{lstlisting}
 
 \end{document}

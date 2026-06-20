@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.1] — 2026-06-13
+
+### Changed
+- `compute_complexity` is now a **pure orchestration layer**: it calls the
+  same public functions a user would call by hand (`diversity`, `ubiquity`,
+  and `distance` are now delegated instead of recomputed inline), so any
+  change to an indicator propagates automatically. Outputs are byte-for-byte
+  identical to 1.0.0 (verified against a saved baseline for all three methods).
+
+### Added
+- `compute_complexity` now exposes `trim`, `dmin`, and `umin`, forwarded to
+  `eci_pci` — the well-connected `(2, 2)` core (recommended for sparse
+  subnational data) is finally reachable from the high-level pipeline, not
+  only from the matrix-level API.
+
 ## [1.0.0] — 2026-06-12
 
 First official release.

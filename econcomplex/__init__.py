@@ -55,7 +55,7 @@ the same objects as their canonical functions (see the API map in the
 documentation).
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Elton Freitas and contributors"
 
 # ── Core ──────────────────────────────────────────────────────────────────────

@@ -1,8 +1,19 @@
 """
 High-level pipeline: compute all complexity indicators in one call.
 
-Mirrors the API of py-ecomplexity but with richer output and support
-for all indicator methods.
+This is a *thin orchestration layer* over the public functions of the
+library — it does not reimplement any indicator. It only (i) pivots the
+long-format input to a matrix, (ii) calls the same public functions a
+user would call by hand (``rca``, ``mcp``, ``diversity``, ``ubiquity``,
+``eci_pci``, ``proximity``, ``relatedness_density``, ``distance``,
+``coi``/``cog``), (iii) loops over periods for panel data, and (iv)
+merges the results back into long format.
+
+It is the convenience entry point for the common case and for panels;
+for fine-grained control (e.g. proximity normalisation per side, custom
+continuous methods) call the matrix-level functions directly.
+
+Mirrors the spirit of py-ecomplexity's pipeline.
 """
 
 from __future__ import annotations
@@ -13,9 +24,10 @@ import numpy as np
 import pandas as pd
 
 from .core.rca import rca, mcp
+from .core.diversity import diversity as compute_diversity, ubiquity as compute_ubiquity
 from .complexity.eci_pci import eci_pci
 from .relatedness.proximity import proximity, continuous_proximity
-from .relatedness.density import relatedness_density
+from .relatedness.density import relatedness_density, distance as compute_distance
 from .outlook.coi_cog import complexity_outlook_index, complexity_outlook_gain
 from .core.utils import pivot_to_matrix
 
@@ -32,6 +44,9 @@ def compute_complexity(
     proximity_method: Literal["max", "sqrt", "min"] = "max",
     pop: Optional[pd.DataFrame] = None,
     compute_coi_cog: bool = True,
+    trim: bool = True,
+    dmin: int = 1,
+    umin: int = 1,
     time_col: Optional[str] = None,
 ) -> pd.DataFrame:
     """
@@ -65,6 +80,13 @@ def compute_complexity(
         Required when presence_test is 'rpop' or 'both'.
     compute_coi_cog : bool
         Whether to compute COI and COG (slower).
+    trim : bool
+        Pre-trim degenerate units before the ECI/PCI step (passed to
+        ``eci_pci``); trimmed units get NaN ECI/PCI. Default True.
+    dmin, umin : int
+        Diversity/ubiquity thresholds for the trimming (passed to
+        ``eci_pci`` → ``trim_core``). Default 1; use 2 for the
+        well-connected core recommended for sparse subnational data.
     time_col : str, optional
         Override for time column name (or use cols['time']).
 
@@ -103,6 +125,7 @@ def compute_complexity(
                 proximity_method=proximity_method,
                 pop=pop_period,
                 compute_coi_cog=compute_coi_cog,
+                trim=trim, dmin=dmin, umin=umin,
             )
             results.append(period_result)
         return pd.concat(results, ignore_index=True)
@@ -117,6 +140,7 @@ def compute_complexity(
             proximity_method=proximity_method,
             pop=pop,
             compute_coi_cog=compute_coi_cog,
+            trim=trim, dmin=dmin, umin=umin,
         )
 
 
@@ -134,8 +158,11 @@ def _compute_single_period(
     proximity_method: str,
     pop: Optional[pd.DataFrame],
     compute_coi_cog: bool,
+    trim: bool,
+    dmin: int,
+    umin: int,
 ) -> pd.DataFrame:
-    """Compute indicators for a single time period."""
+    """Compute indicators for a single time period (pure orchestration)."""
 
     # --- Build pivot matrix ---
     mat = pivot_to_matrix(data, index=loc_col, columns=act_col, values=val_col)
@@ -159,9 +186,9 @@ def _compute_single_period(
         pop=pop_vec,
     )
 
-    # --- Diversity & Ubiquity ---
-    div = mcp_mat.sum(axis=1)
-    ubi = mcp_mat.sum(axis=0)
+    # --- Diversity & Ubiquity (on the chosen Mcp, via the public funcs) ---
+    div = compute_diversity(mcp_mat, use_rca=False, threshold=0.5)
+    ubi = compute_ubiquity(mcp_mat, use_rca=False, threshold=0.5)
 
     # --- ECI / PCI ---
     # Routed through the eci_pci dispatcher: validates the method and
@@ -169,6 +196,7 @@ def _compute_single_period(
     eci_s, pci_s = eci_pci(
         mat, use_rca=True, threshold=threshold, method=method,
         iterations=iterations if method != "eigenvector" else None,
+        trim=trim, dmin=dmin, umin=umin,
     )
     if method == "fitness":
         eci_s.name = "eci"
@@ -182,9 +210,9 @@ def _compute_single_period(
                              method=proximity_method, compute="product")
         phi = phi_dict["product"]
 
-    # --- Density & Distance ---
+    # --- Density & Distance (public functions on the chosen Mcp) ---
     dens_mat = relatedness_density(mcp_mat, phi=phi, use_rca=False, threshold=0.5)
-    dist_mat = 1 - dens_mat / 100
+    dist_mat = compute_distance(mcp_mat, phi=phi, use_rca=False, threshold=0.5)
 
     # --- COI / COG (optional) ---
     coi_s = None

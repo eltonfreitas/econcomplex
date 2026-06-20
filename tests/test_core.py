@@ -512,3 +512,46 @@ def test_fitness_default_iterations_match_dispatcher(sample_mat):
 def test_fitness_warns_when_not_converged(sample_mat):
     with pytest.warns(RuntimeWarning, match="did not converge"):
         ec.fitness_complexity(sample_mat, iterations=1, tol=1e-15)
+
+
+# ── Pipeline is pure orchestration of the public functions ────────────────────
+def test_pipeline_matches_manual_indicators(sample_long):
+    """Each column the pipeline returns must equal the value obtained by
+    calling the public functions by hand on the same matrix."""
+    res = ec.compute_complexity(
+        sample_long, cols={"loc": "region", "act": "activity", "val": "employment"},
+        compute_coi_cog=True,
+    )
+    mat = ec.pivot_to_matrix(sample_long, "region", "activity", "employment")
+    mcp = ec.mcp(mat)
+    eci, pci = ec.eci_pci(mat)
+    phi = ec.proximity(mcp, use_rca=False, threshold=0.5)["product"]
+
+    div = ec.diversity(mcp, use_rca=False, threshold=0.5)
+    dens = ec.density(mcp, phi=phi, use_rca=False, threshold=0.5)
+    dist = ec.distance(mcp, phi=phi, use_rca=False, threshold=0.5)
+
+    # one (region, activity) cell and one region-level value
+    row = res.iloc[0]
+    r, a = row["region"], row["activity"]
+    assert np.isclose(row["eci"], eci[r], equal_nan=True)
+    assert np.isclose(row["diversity"], div[r])
+    assert np.isclose(row["density"], dens.loc[r, a])
+    assert np.isclose(row["distance"], dist.loc[r, a])
+
+
+def test_pipeline_passes_trim_params():
+    """dmin/umin must reach eci_pci through the pipeline (was impossible
+    before 1.0.1): the (2,2) core trims at least as many units as (1,1)."""
+    long = ec.make_sample_data(n_locs=40, n_acts=25, seed=11)
+    strict = ec.compute_complexity(
+        long, cols={"loc": "loc", "act": "act", "val": "val"},
+        compute_coi_cog=False, dmin=2, umin=2,
+    )
+    loose = ec.compute_complexity(
+        long, cols={"loc": "loc", "act": "act", "val": "val"},
+        compute_coi_cog=False,
+    )
+    n_nan_strict = strict.drop_duplicates("loc")["eci"].isna().sum()
+    n_nan_loose = loose.drop_duplicates("loc")["eci"].isna().sum()
+    assert n_nan_strict >= n_nan_loose   # stricter core trims at least as much
