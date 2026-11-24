@@ -11,16 +11,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-        numpy: [""]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        extra: [""]
         include:
           - python: "3.11"
-            numpy: "numpy<2"        # NumPy 1.x line
+            extra: "numpy<2"        # NumPy 1.x line
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
-      - run: pip install -e . pytest ${{ matrix.numpy }}
+      # EXTRA goes through an environment variable so that "numpy<2" is
+      # passed to pip as a word instead of being read as a shell redirection
+      - run: pip install -e . pytest $EXTRA
+        env:
+          EXTRA: ${{ matrix.extra }}
       - run: pytest -q

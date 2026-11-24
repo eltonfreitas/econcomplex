@@ -1,7 +1,7 @@
 # econcomplex
 
 [![version](https://img.shields.io/badge/vers%C3%A3o-1.1.0-blue)](CHANGELOG.md)
-[![python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
+[![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
 [![tests](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml/badge.svg)](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml)
 
@@ -46,7 +46,7 @@ Ou, para a versão de desenvolvimento mais recente direto do GitHub:
 pip install git+https://github.com/eltonfreitas/econcomplex.git
 ```
 
-Exige Python ≥ 3.9 com `numpy ≥ 1.21` (compatível com 1.x **e** 2.x),
+Exige Python ≥ 3.10 com `numpy ≥ 1.21` (compatível com 1.x **e** 2.x),
 `pandas ≥ 1.3`, `scipy ≥ 1.9`. Para desenvolvimento local:
 
 ```bash

@@ -34,11 +34,16 @@
 - `exits`, the preferred name for `exit` (which shadows the Python builtin).
 - Runnable `Examples` in the docstrings of the main entry points, executed
   by the test suite (`pytest --doctest-modules`).
-- Continuous integration (GitHub Actions): Python 3.9 to 3.14 and NumPy 1.x.
+- Continuous integration (GitHub Actions): Python 3.10 to 3.14 and NumPy 1.x.
 - `eci_optimization` output has an `optimal` column (True when the solver
   proved optimality) and warns once when locations reach the time limit.
 - Known-answer tests for the 25 public functions that had no direct test,
   plus a regression test that reproduces the 1.0.1 results to 1e-7.
+
+### Changed
+- Minimum Python is now 3.10. Python 3.9 reached end of life in October 2025
+  and is no longer available on the CI runners; `pip` on 3.9 keeps
+  installing 1.0.1.
 
 ### Note
 - The 1.0.1 entry below says outputs were "byte-for-byte identical" to 1.0.0;
