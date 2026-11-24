@@ -58,6 +58,8 @@ def proximity(
     Returns
     -------
     dict with keys 'product' and/or 'location' as DataFrames (or ndarrays).
+    Use `product_proximity` or `location_proximity` to get one matrix
+    directly.
     """
     is_df = isinstance(mat, pd.DataFrame)
     row_index = mat.index if is_df else None
@@ -122,6 +124,53 @@ def proximity(
             results["location"] = phi_l
 
     return results
+
+
+def product_proximity(
+    mat: Union[np.ndarray, pd.DataFrame],
+    use_rca: bool = True,
+    threshold: float = 1.0,
+    method: Literal["max", "sqrt", "min"] = "max",
+    continuous: bool = False,
+    continuous_method: Literal["correlation", "cosine"] = "correlation",
+) -> Union[pd.DataFrame, np.ndarray]:
+    """
+    Activity-by-activity proximity matrix (C x C), returned directly.
+
+    Shortcut for ``proximity(mat, compute="product", ...)["product"]``;
+    see `proximity` for the parameters.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> ec.product_proximity(mat).values.tolist()
+    [[0.0, 0.5, 0.5], [0.5, 0.0, 1.0], [0.5, 1.0, 0.0]]
+    """
+    return proximity(mat, use_rca=use_rca, threshold=threshold, method=method,
+                     compute="product", continuous=continuous,
+                     continuous_method=continuous_method)["product"]
+
+
+def location_proximity(
+    mat: Union[np.ndarray, pd.DataFrame],
+    use_rca: bool = True,
+    threshold: float = 1.0,
+    method: Literal["max", "sqrt", "min"] = "max",
+    continuous: bool = False,
+    continuous_method: Literal["correlation", "cosine"] = "correlation",
+) -> Union[pd.DataFrame, np.ndarray]:
+    """
+    Location-by-location proximity matrix (R x R), returned directly.
+
+    Shortcut for ``proximity(mat, compute="location", ...)["location"]``;
+    see `proximity` for the parameters.
+    """
+    return proximity(mat, use_rca=use_rca, threshold=threshold, method=method,
+                     compute="location", continuous=continuous,
+                     continuous_method=continuous_method)["location"]
 
 
 def continuous_proximity(

@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Optional, Union
 
-from ..core.utils import safe_divide, pivot_to_matrix
+from ..core.utils import safe_divide, pivot_to_matrix, align_vector
 from ..core.rca import mcp as compute_mcp
 from ..relatedness.proximity import proximity as compute_proximity
 
@@ -66,8 +66,8 @@ def activation_probabilities(
     Activation probability of each inactive activity (eq. 1):
     p_i = B * (active neighbors / degree)^alpha; 0 for active nodes.
     """
-    a = np.asarray(active, dtype=float)
     adj = adjacency.values
+    a = align_vector(active, adjacency.index, adj.shape[0], "active")
     k = adj.sum(axis=1)
     frac = safe_divide(adj @ a, k)
     p = B * frac ** alpha
@@ -222,7 +222,8 @@ def diversification_strategy(
     rng = np.random.default_rng(seed)
     adj = adjacency.values
     k = adj.sum(axis=1)
-    active = np.asarray(active0, dtype=float).copy()
+    active = align_vector(active0, adjacency.index, adjacency.shape[0],
+                          "active0").copy()
 
     rows = []
     total = 0.0
@@ -266,7 +267,8 @@ def expected_diversification_time(
     idx = adjacency.index.get_indexer(pd.Index(sequence))
     if (idx < 0).any():
         raise ValueError("sequence contains activities absent from the network.")
-    active = np.asarray(active0, dtype=float).copy()
+    active = align_vector(active0, adjacency.index, adjacency.shape[0],
+                          "active0").copy()
     total = 0.0
     for i in idx:
         cnt = adj[i] @ active

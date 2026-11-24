@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Technical Documentation --- Version 1.0.1}\par
+  {\large\bfseries Technical Documentation --- Version 1.1.0}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -182,7 +182,7 @@
     Compatible with Python 3.9+ (NumPy 1.x and 2.x)
   }\par
   \vfill
-  {\small\color{pygray} June 2026}
+  {\small\color{pygray} November 2026}
 \end{titlepage}
 
 %% --- Table of contents --------------------------------------------------
@@ -227,7 +227,7 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \subsection{Module Structure}
 
 \begin{center}
-\begin{tabular}{lp{9cm}}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{10cm}}
 \toprule
 \textbf{Module} & \textbf{Contents} \\
 \midrule
@@ -260,15 +260,16 @@ function (no duplicated code or computation).
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\begin{tabular}{lp{8.6cm}}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{10.4cm}}
 \toprule
 \textbf{Entry point} & \textbf{Delegates to (advanced)} \\
 \midrule
 \texttt{eci\_pci(method=...)} & \texttt{eci\_pci\_eigenvector},
   \texttt{method\_of\_reflections}, \texttt{fitness\_complexity}
   (variants: \texttt{mor\_regions}, \texttt{mor\_activities}) \\
-\texttt{proximity(continuous=..., continuous\_method=...)} &
-  \texttt{continuous\_proximity}; shortcuts \texttt{cosine\_proximity},
+\texttt{proximity(continuous=...)} &
+  \texttt{continuous\_proximity}; shortcuts \texttt{product\_proximity}, \texttt{location\_proximity} (return the matrix), \texttt{cosine\_proximity},
   \texttt{correlation\_proximity} \\
 \texttt{compute\_complexity()} & full per-period pipeline over
   \texttt{eci\_pci}, \texttt{proximity}, \texttt{density}, COI/COG \\
@@ -288,6 +289,7 @@ function (no duplicated code or computation).
 \texttt{pgi} / \texttt{peii}  & \texttt{product\_gini\_index} / \texttt{product\_emissions\_index} \\
 \texttt{spec\_coefficient}    & \texttt{specialization\_coefficient} \\
 \texttt{cross\_space\_proximity} & \texttt{cross\_proximity} \\
+\texttt{exits} & \texttt{exit} (name that does not shadow the Python builtin) \\
 \texttt{location\_quotient}   & \texttt{rca} (identical formula) \\
 \bottomrule
 \end{tabular}
@@ -346,6 +348,17 @@ $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
         per analysis (e.g., CNAE 2-digit \textit{or} CNAE 4-digit,
         not mixed).
 \end{enumerate}
+
+\begin{notebox}
+  The library enforces rules 2 and 3: a matrix with negative, \texttt{NaN}
+  or infinite cells raises a \texttt{ValueError} that says how many cells
+  are affected. Auxiliary inputs given as labelled pandas objects (a GDP or
+  population \texttt{Series}, a PCI vector, a proximity matrix) are matched
+  to the matrix \textbf{by label}, so their order does not matter and extra
+  labels are ignored; a label of the matrix that is absent raises an error
+  naming it. Lists, arrays and \texttt{Series} with a default integer index
+  are taken by position.
+\end{notebox}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 \subsection{Column Names --- \texttt{cols} Dictionary}
@@ -444,8 +457,9 @@ df = pd.read_excel("data.xlsx", sheet_name="Sheet1",
     Exports by country $\times$ product (HS) $\times$ year.
     Available at \url{https://atlas.cid.harvard.edu/}.
   \item[\textbf{Simulated data (testing)}]
-    Use \fn{ec.make\_sample\_data(n\_locs=20, n\_acts=50, seed=42)}
-    to generate a synthetic DataFrame.
+    {\sloppy Use \fn{ec.make\_sample\_data()} to generate a synthetic
+    DataFrame; \fn{n\_locs}, \fn{n\_acts} and \fn{seed} set its size and
+    the random seed.\par}
 \end{description}
 
 %% ============================================================
@@ -501,7 +515,7 @@ import sys
 sys.path.insert(0, "/path/to/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.0.1
+print(ec.__version__)   # 1.1.0
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -911,7 +925,9 @@ model = ec.calibrate_steppingstone(df, "region", "sector", "jobs",
 W  = ec.effort_matrix(mat, model)            # added RCA per candidate
 fc = ec.forecast_specialization(mat, model)  # rca, mcp, pci, eci
 
-# 3. Minimal-effort portfolio raising each location's ECI by 0.1
+# 3. Minimal-effort portfolio raising each location's ECI by 0.1.
+#    time_limit caps the exact solver per location (default 5 s);
+#    the `optimal` column says whether optimality was proven.
 portfolio = ec.eci_optimization(mat, model, delta_eci=0.1)
 
 # 4. Optional: growth targeting - convert a growth target (3.5%/yr)
@@ -1210,11 +1226,13 @@ print(best["sequence"][:10], best["improvement"])
 %% ============================================================
 \section{API Reference}
 
-Complete inventory of the 87 public functions, grouped by module.
+\begin{sloppypar}
+Complete inventory of the 90 public functions, grouped by module.
 Signatures show parameter names and defaults; see the in-code
 docstrings (\texttt{help(ec.function)}) for full parameter
 documentation. This section is auto-generated from the installed
 package by \texttt{docs/generate\_api\_reference.py}.
+\end{sloppypar}
 
 \input{api_reference_en}
 
@@ -1279,7 +1297,7 @@ original papers of the indicators used (see References).
 
 \begin{lstlisting}[language={}, caption={Check the library version}]
 import econcomplex as ec
-print(ec.__version__)   # 1.0.1
+print(ec.__version__)   # 1.1.0
 \end{lstlisting}
 
 \end{document}

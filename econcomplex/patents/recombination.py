@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from typing import Union
 
-from ..core.utils import validate_matrix, safe_divide
+from ..core.utils import validate_matrix, safe_divide, align_vector
 
 
 def ease_of_recombination(
@@ -88,7 +88,8 @@ def modular_complexity(
         if isinstance(eor_arr, pd.Series):
             eor_arr = eor_arr.values
     else:
-        eor_arr = np.array(eor, dtype=float)
+        eor_arr = align_vector(eor, incidence.columns if is_df else None,
+                               arr.shape[1], "eor")
 
     # number of technologies per patent
     n_techs = arr.sum(axis=1)  # P
@@ -120,6 +121,8 @@ def modular_complexity_avg(
     col_index = incidence.columns if is_df else None
 
     arr = validate_matrix(incidence)
+    if eor is not None:
+        eor = align_vector(eor, col_index, arr.shape[1], "eor")
     mc = modular_complexity(arr, eor=eor)
     if isinstance(mc, pd.Series):
         mc_arr = mc.values

@@ -25,27 +25,8 @@ except ImportError:  # SciPy < 1.9
     _HAS_MILP = False
 
 
-def _select_portfolio(costs: np.ndarray, surplus: np.ndarray, deficit: float,
-                      solver: str) -> Optional[np.ndarray]:
-    """
-    Minimize sum(costs[x]) s.t. sum(surplus[x]) >= deficit, x binary.
-    Returns a boolean mask over the candidates, or None if infeasible.
-    """
-    if surplus.sum() < deficit:
-        return None
-
-    if solver == "milp" and _HAS_MILP:
-        res = milp(
-            c=costs,
-            constraints=LinearConstraint(surplus[None, :], lb=deficit),
-            integrality=np.ones_like(costs),
-            bounds=Bounds(0, 1),
-        )
-        if res.status == 0 and res.x is not None:
-            return res.x > 0.5
-        return None
-
-    # Greedy fallback: cheapest cost per unit of ECI surplus first
+def _greedy(costs: np.ndarray, surplus: np.ndarray, deficit: float) -> np.ndarray:
+    """Cheapest cost per unit of ECI surplus first, until the deficit is covered."""
     order = np.argsort(costs / surplus)
     chosen = np.zeros(len(costs), dtype=bool)
     covered = 0.0
@@ -54,7 +35,40 @@ def _select_portfolio(costs: np.ndarray, surplus: np.ndarray, deficit: float,
             break
         chosen[i] = True
         covered += surplus[i]
-    return chosen if covered >= deficit else None
+    return chosen
+
+
+def _select_portfolio(costs: np.ndarray, surplus: np.ndarray, deficit: float,
+                      solver: str, time_limit: float):
+    """
+    Minimize sum(costs[x]) s.t. sum(surplus[x]) >= deficit, x binary.
+
+    Returns (mask, proven_optimal); mask is None if the target is
+    infeasible. The exact solver is capped at `time_limit` seconds: when
+    it runs out (many candidates with near-identical cost make optimality
+    slow to prove) the best feasible portfolio found so far is kept, and
+    it is never worse than the greedy one.
+    """
+    if surplus.sum() < deficit:
+        return None, False
+
+    best = _greedy(costs, surplus, deficit)
+    if not (solver == "milp" and _HAS_MILP):
+        return best, False
+
+    res = milp(
+        c=costs,
+        constraints=LinearConstraint(surplus[None, :], lb=deficit),
+        integrality=np.ones_like(costs),
+        bounds=Bounds(0, 1),
+        options={"time_limit": time_limit},
+    )
+    if res.x is not None:
+        found = res.x > 0.5
+        if (surplus[found].sum() >= deficit - 1e-9
+                and costs[found].sum() <= costs[best].sum()):
+            best = found
+    return best, res.status == 0
 
 
 def eci_optimization(
@@ -64,6 +78,7 @@ def eci_optimization(
     target_eci: Optional[Union[float, Dict, pd.Series]] = None,
     locations: Optional[list] = None,
     solver: str = "milp",
+    time_limit: float = 5.0,
 ) -> pd.DataFrame:
     """
     ECI Optimization (Stojkoski & Hidalgo 2026): identify, per location,
@@ -96,12 +111,19 @@ def eci_optimization(
         Subset of locations to optimize (default: all rows of `mat`).
     solver : str
         'milp' (exact, default) or 'greedy'.
+    time_limit : float
+        Seconds the exact solver may spend on each location (default 5).
+        Locations with many near-equivalent candidates can take very long
+        to *prove* optimality; when the limit is hit the best feasible
+        portfolio found is returned (never worse than the greedy one) and
+        flagged in the `optimal` column.
 
     Returns
     -------
     pd.DataFrame with one row per suggested activity:
       [location, activity, effort, pci_projected, eci_projected,
-       eci_target, eci_achieved]
+       eci_target, eci_achieved, optimal]
+    `optimal` is True when the solver proved the portfolio optimal.
     Locations whose projected ECI already meets the target contribute no
     rows; infeasible locations are skipped with a warning.
     """
@@ -114,6 +136,7 @@ def eci_optimization(
     locs = locations if locations is not None else list(mat.index)
     valid_p = pci.notna()
     rows = []
+    n_unproven = 0
 
     for c in locs:
         base_eci = eci_proj.get(c, np.nan)
@@ -146,7 +169,8 @@ def eci_optimization(
 
         costs = np.clip(W.loc[c].values[cand], 0.0, None)
         surplus = (pci.values - target)[cand]
-        chosen = _select_portfolio(costs, surplus, deficit, solver)
+        chosen, proven = _select_portfolio(costs, surplus, deficit, solver,
+                                           time_limit)
         if chosen is None:
             warnings.warn(
                 f"Location {c!r}: target ECI {target:.3f} infeasible with "
@@ -154,6 +178,8 @@ def eci_optimization(
             )
             continue
 
+        if solver == "milp" and not proven:
+            n_unproven += 1
         acts = mat.columns[cand][chosen]
         n_new = chosen.sum()
         achieved = (
@@ -170,9 +196,19 @@ def eci_optimization(
                 "eci_projected": float(base_eci),
                 "eci_target": target,
                 "eci_achieved": float(achieved),
+                "optimal": bool(proven),
             })
+
+    if n_unproven:
+        warnings.warn(
+            f"{n_unproven} location(s) reached the {time_limit}s solver limit; "
+            "their portfolios are the best feasible ones found (see the "
+            "`optimal` column). Raise `time_limit` to keep searching.",
+            RuntimeWarning, stacklevel=2,
+        )
 
     return pd.DataFrame(
         rows, columns=["location", "activity", "effort", "pci_projected",
-                       "eci_projected", "eci_target", "eci_achieved"],
+                       "eci_projected", "eci_target", "eci_achieved",
+                       "optimal"],
     )

@@ -59,9 +59,21 @@ def trim_core(
     The surviving sub-matrix, same type as the input. With a DataFrame
     the original labels are preserved, so dropped units can be recovered
     by reindexing (`result.reindex(mat.index)`).
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> mat.loc["R4"] = 0                       # a location with no data
+    >>> ec.trim_core(mat).index.tolist()
+    ['R1', 'R2', 'R3']
     """
     is_df = isinstance(mat, pd.DataFrame)
-    work = mat.astype(float) if is_df else pd.DataFrame(validate_matrix(mat))
+    arr = validate_matrix(mat)
+    work = (pd.DataFrame(arr, index=mat.index, columns=mat.columns)
+            if is_df else pd.DataFrame(arr))
 
     # All-zero rows/columns first (always degenerate, whatever the core)
     work = work.loc[work.sum(axis=1) > 0, work.sum(axis=0) > 0]

@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Union
 
-from ..core.utils import validate_matrix, safe_divide, binarize
+from ..core.utils import validate_matrix, safe_divide, binarize, align_square
 from ..core.rca import rca as compute_rca
 
 
@@ -44,7 +44,7 @@ def _get_mcp_and_phi(
             else phi_dict["product"]
         )
     else:
-        phi_arr = phi.values if isinstance(phi, pd.DataFrame) else np.array(phi, dtype=float)
+        phi_arr = align_square(phi, mat.columns if is_df else None, m.shape[1])
 
     return m, phi_arr, is_df
 
@@ -55,6 +55,7 @@ def relatedness_density(
     use_rca: bool = True,
     threshold: float = 1.0,
     proximity_method: str = "max",
+    percent: bool = True,
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
     Relatedness density for each (region, activity) pair.
@@ -62,7 +63,8 @@ def relatedness_density(
     density_{rc} = (M * Phi)_{rc} / rowSums(Phi)_c * 100
 
     Fraction of activities related to c that region r already has,
-    expressed as a percentage.
+    expressed as a percentage (0-100) by default, or as a share (0-1)
+    with ``percent=False``.
 
     Parameters
     ----------
@@ -76,10 +78,24 @@ def relatedness_density(
         Binarization threshold.
     proximity_method : str
         Normalization method for proximity ('max', 'sqrt', 'min').
+    percent : bool
+        If True (default) return 0-100; if False return 0-1, the scale
+        used by `distance` (= 1 - density) and `cross_relatedness`.
 
     Returns
     -------
-    R x C relatedness density matrix (values 0–100).
+    R x C relatedness density matrix.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> ec.relatedness_density(mat).round(1).values.tolist()
+    [[0.0, 33.3, 33.3], [100.0, 66.7, 66.7], [100.0, 100.0, 100.0]]
+    >>> ec.relatedness_density(mat, percent=False).round(2).loc["R1"].tolist()
+    [0.0, 0.33, 0.33]
     """
     is_df = isinstance(mat, pd.DataFrame)
     row_index = mat.index if is_df else None
@@ -89,7 +105,7 @@ def relatedness_density(
 
     col_sums_phi = phi_arr.sum(axis=0, keepdims=True)  # 1 x C
     numerator = m @ phi_arr                              # R x C
-    density = safe_divide(numerator, col_sums_phi) * 100
+    density = safe_divide(numerator, col_sums_phi) * (100 if percent else 1)
 
     if is_df:
         return pd.DataFrame(density, index=row_index, columns=col_index)
@@ -125,6 +141,7 @@ def relatedness_density_internal(
     use_rca: bool = True,
     threshold: float = 1.0,
     proximity_method: str = "max",
+    percent: bool = True,
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
     Internal relatedness density: density values for activities
@@ -139,7 +156,7 @@ def relatedness_density_internal(
 
     col_sums_phi = phi_arr.sum(axis=0, keepdims=True)
     numerator = m @ phi_arr
-    density = safe_divide(numerator, col_sums_phi) * 100
+    density = safe_divide(numerator, col_sums_phi) * (100 if percent else 1)
 
     mask = m == 0
     density_internal = density.copy()
@@ -156,6 +173,7 @@ def relatedness_density_external(
     use_rca: bool = True,
     threshold: float = 1.0,
     proximity_method: str = "max",
+    percent: bool = True,
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
     External relatedness density: density values for activities
@@ -170,7 +188,7 @@ def relatedness_density_external(
 
     col_sums_phi = phi_arr.sum(axis=0, keepdims=True)
     numerator = m @ phi_arr
-    density = safe_divide(numerator, col_sums_phi) * 100
+    density = safe_divide(numerator, col_sums_phi) * (100 if percent else 1)
 
     mask = m == 1
     density_external = density.copy()
@@ -189,7 +207,7 @@ def relative_relatedness(
     proximity_method: str = "max",
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
-    Relative relatedness (Pinheiro et al. 2021, eq. 7): z-transform of the
+    Relative relatedness (Pinheiro et al. 2022, eq. 7): z-transform of the
     relatedness density against the statistics of the region's option set
     (activities it does NOT currently hold, M_{rc} = 0).
 

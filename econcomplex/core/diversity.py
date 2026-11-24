@@ -30,6 +30,15 @@ def diversity(
     Returns
     -------
     pd.Series indexed by region.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> ec.diversity(mat).tolist(), ec.ubiquity(mat).tolist()
+    ([1.0, 2.0, 3.0], [2.0, 2.0, 2.0])
     """
     is_df = isinstance(mat, pd.DataFrame)
     index = mat.index if is_df else None

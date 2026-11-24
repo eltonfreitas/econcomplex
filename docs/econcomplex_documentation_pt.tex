@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.0.1}\par
+  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.1.0}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -182,7 +182,7 @@
     Compat\'{i}vel com Python 3.9+ (NumPy 1.x e 2.x)
   }\par
   \vfill
-  {\small\color{pygray} Junho de 2026}
+  {\small\color{pygray} Novembro de 2026}
 \end{titlepage}
 
 %% --- Indice --------------------------------------------------
@@ -228,7 +228,7 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \subsection{Estrutura de M\'{o}dulos}
 
 \begin{center}
-\begin{tabular}{lp{9cm}}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{10cm}}
 \toprule
 \textbf{M\'{o}dulo} & \textbf{Conte\'{u}do} \\
 \midrule
@@ -263,15 +263,16 @@ c\'{a}lculo duplicado).
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
-\begin{tabular}{lp{8.6cm}}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{10.4cm}}
 \toprule
 \textbf{Porta de entrada} & \textbf{Delega para (avan\c{c}adas)} \\
 \midrule
 \texttt{eci\_pci(method=...)} & \texttt{eci\_pci\_eigenvector},
   \texttt{method\_of\_reflections}, \texttt{fitness\_complexity}
   (variantes: \texttt{mor\_regions}, \texttt{mor\_activities}) \\
-\texttt{proximity(continuous=..., continuous\_method=...)} &
-  \texttt{continuous\_proximity}; atalhos \texttt{cosine\_proximity},
+\texttt{proximity(continuous=...)} &
+  \texttt{continuous\_proximity}; atalhos \texttt{product\_proximity}, \texttt{location\_proximity} (devolvem a matriz), \texttt{cosine\_proximity},
   \texttt{correlation\_proximity} \\
 \texttt{compute\_complexity()} & pipeline completo por per\'{i}odo sobre
   \texttt{eci\_pci}, \texttt{proximity}, \texttt{density}, COI/COG \\
@@ -291,6 +292,7 @@ c\'{a}lculo duplicado).
 \texttt{pgi} / \texttt{peii}  & \texttt{product\_gini\_index} / \texttt{product\_emissions\_index} \\
 \texttt{spec\_coefficient}    & \texttt{specialization\_coefficient} \\
 \texttt{cross\_space\_proximity} & \texttt{cross\_proximity} \\
+\texttt{exits} & \texttt{exit} (nome que n\~{a}o encobre a fun\c{c}\~{a}o embutida do Python) \\
 \texttt{location\_quotient}   & \texttt{rca} (f\'{o}rmula id\^{e}ntica) \\
 \bottomrule
 \end{tabular}
@@ -350,6 +352,18 @@ $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
         por an\'{a}lise (ex.: CNAE 2 d\'{i}gitos \textit{ou} CNAE 4
         d\'{i}gitos, n\~{a}o misturados).
 \end{enumerate}
+
+\begin{notebox}
+  A biblioteca imp\~{o}e as regras 2 e 3: uma matriz com c\'{e}lulas
+  negativas, \texttt{NaN} ou infinitas gera um \texttt{ValueError} que diz
+  quantas c\'{e}lulas s\~{a}o afetadas. Entradas auxiliares passadas como
+  objetos pandas rotulados (uma \texttt{Series} de PIB ou de
+  popula\c{c}\~{a}o, um vetor de PCI, uma matriz de proximidade) s\~{a}o
+  casadas com a matriz \textbf{pelo r\'{o}tulo}: a ordem n\~{a}o importa e
+  r\'{o}tulos a mais s\~{a}o ignorados; um r\'{o}tulo da matriz que falte
+  gera um erro que o nomeia. Listas, arrays e \texttt{Series} com
+  \'{i}ndice inteiro padr\~{a}o s\~{a}o lidos por posi\c{c}\~{a}o.
+\end{notebox}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 \subsection{Nomes das Colunas --- Dicion\'{a}rio \texttt{cols}}
@@ -506,7 +520,7 @@ import sys
 sys.path.insert(0, "/caminho/para/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.0.1
+print(ec.__version__)   # 1.1.0
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -917,7 +931,9 @@ model = ec.calibrate_steppingstone(df, "regiao", "setor", "empregos",
 W  = ec.effort_matrix(mat, model)            # RCA adicional por candidato
 fc = ec.forecast_specialization(mat, model)  # rca, mcp, pci, eci
 
-# 3. Portfolio de menor esforco que eleva o ECI de cada local em 0.1
+# 3. Portfolio de menor esforco que eleva o ECI de cada local em 0.1.
+#    time_limit limita o solver exato por local (padrao 5 s);
+#    a coluna `optimal` diz se a otimalidade foi provada.
 portfolio = ec.eci_optimization(mat, model, delta_eci=0.1)
 
 # 4. Opcional: meta de crescimento - converte meta (3.5%/ano)
@@ -1222,7 +1238,7 @@ print(otimo["sequence"][:10], otimo["improvement"])
 %% ============================================================
 \section{Refer\^{e}ncia da API}
 
-Invent\'{a}rio completo das 87 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
+Invent\'{a}rio completo das 90 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
 por m\'{o}dulo. As assinaturas mostram os par\^{a}metros e seus valores
 padr\~{a}o; consulte os docstrings no c\'{o}digo
 (\texttt{help(ec.funcao)}) para a documenta\c{c}\~{a}o completa de cada
@@ -1292,7 +1308,7 @@ originais dos indicadores utilizados (ver Refer\^{e}ncias).
 
 \begin{lstlisting}[language={}, caption={Verificar vers\~{a}o da biblioteca}]
 import econcomplex as ec
-print(ec.__version__)   # 1.0.1
+print(ec.__version__)   # 1.1.0
 \end{lstlisting}
 
 \end{document}

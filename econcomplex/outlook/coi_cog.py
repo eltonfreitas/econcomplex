@@ -11,7 +11,9 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Union
 
-from ..core.utils import validate_matrix, safe_divide, binarize
+from ..core.utils import (
+    validate_matrix, safe_divide, binarize, align_vector, align_square,
+)
 from ..core.rca import rca as compute_rca
 from ..relatedness.density import relatedness_density
 
@@ -51,12 +53,25 @@ def complexity_outlook_index(
     Returns
     -------
     pd.Series indexed by region.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> pci = pd.Series({"C": 3.0, "A": 1.0, "B": 2.0})   # any order: matched by label
+    >>> ec.coi(mat, pci).round(2).tolist()
+    [1.67, 1.0, 0.0]
     """
     is_df = isinstance(mat, pd.DataFrame)
     row_index = mat.index if is_df else None
 
     arr = validate_matrix(mat)
-    pci_arr = np.array(pci, dtype=float)
+    labels = mat.columns if is_df else None
+    pci_arr = align_vector(pci, labels, arr.shape[1], "pci")
+    if phi is not None:
+        phi = align_square(phi, labels, arr.shape[1])
 
     if use_rca:
         m = binarize(compute_rca(arr), threshold)
@@ -117,7 +132,7 @@ def complexity_outlook_gain(
     col_index = mat.columns if is_df else None
 
     arr = validate_matrix(mat)
-    pci_arr = np.array(pci, dtype=float)
+    pci_arr = align_vector(pci, col_index, arr.shape[1], "pci")
 
     if use_rca:
         m = binarize(compute_rca(arr), threshold)
@@ -134,7 +149,7 @@ def complexity_outlook_gain(
             else phi_dict["product"]
         )
     else:
-        phi_arr = phi.values if isinstance(phi, pd.DataFrame) else np.array(phi, dtype=float)
+        phi_arr = align_square(phi, col_index, arr.shape[1])
 
     # phi_norm_{cc'} = phi_{cc'} / sum_{c''} phi_{cc''}
     phi_row_sums = phi_arr.sum(axis=1, keepdims=True)

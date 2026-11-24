@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Union
 
-from ..core.utils import validate_matrix, safe_divide
+from ..core.utils import validate_matrix, safe_divide, align_vector
 
 # np.trapz was renamed to np.trapezoid in NumPy 2.0 and the old name removed
 try:
@@ -135,7 +135,8 @@ def hoover_gini(
     if pop is None:
         pop_arr = arr.sum(axis=1)
     else:
-        pop_arr = np.array(pop, dtype=float)
+        pop_arr = align_vector(pop, mat.index if is_df else None,
+                               arr.shape[0], "pop")
 
     total_pop = pop_arr.sum()
     col_sums = arr.sum(axis=0)  # C

@@ -10,24 +10,26 @@ py-economic-complexity.
 Quick start
 -----------
 >>> import econcomplex as ec
->>> import pandas as pd
 >>>
->>> # Long-format data: location × activity × value
->>> df = pd.read_csv("my_data.csv")
+>>> # Long-format data: location x activity x value (here, synthetic;
+>>> # with your own data use pd.read_csv and your column names)
+>>> df = ec.make_sample_data(n_locs=30, n_acts=15, seed=42)
 >>>
 >>> # Full pipeline (single period)
 >>> result = ec.compute_complexity(
 ...     df,
-...     cols={"loc": "region", "act": "sector", "val": "employment"},
+...     cols={"loc": "loc", "act": "act", "val": "val"},
 ...     method="eigenvector",
 ... )
 >>>
 >>> # Individual indicators
->>> mat = ec.pivot_to_matrix(df, "region", "sector", "employment")
+>>> mat = ec.pivot_to_matrix(df, "loc", "act", "val")
 >>> rca_mat    = ec.rca(mat)
 >>> eci, pci   = ec.eci_pci(mat)
->>> phi        = ec.proximity(mat)["product"]
+>>> phi        = ec.product_proximity(mat)
 >>> density    = ec.relatedness_density(mat, phi=phi)
+>>> density.shape
+(30, 15)
 
 Submodules
 ----------
@@ -55,7 +57,7 @@ the same objects as their canonical functions (see the API map in the
 documentation).
 """
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __author__ = "Elton Freitas and contributors"
 
 # ── Core ──────────────────────────────────────────────────────────────────────
@@ -81,6 +83,8 @@ from .complexity.subnational import subnational_eci
 # ── Relatedness ────────────────────────────────────────────────────────────────
 from .relatedness.proximity import (
     proximity,
+    product_proximity,
+    location_proximity,
     continuous_proximity,
     cosine_proximity,
     correlation_proximity,
@@ -134,6 +138,7 @@ from .dynamics.growth import growth_rate, growth_matrix, growth_rates
 from .dynamics.entry_exit import (
     entry,
     exit,
+    exits,
     entry_exit_summary,
     entry_tracking,
     exit_tracking,
@@ -180,7 +185,8 @@ __all__ = [
     "fitness_complexity",
     "subnational_eci",
     # relatedness
-    "proximity", "continuous_proximity",
+    "proximity", "product_proximity", "location_proximity",
+    "continuous_proximity",
     "cosine_proximity", "correlation_proximity",
     "relatedness_density", "density", "relatedness", "distance",
     "relatedness_density_internal", "relatedness_density_external",
@@ -203,7 +209,7 @@ __all__ = [
     "ease_of_recombination", "modular_complexity", "modular_complexity_avg",
     # dynamics
     "growth_rate", "growth_matrix", "growth_rates",
-    "entry", "exit", "entry_exit_summary",
+    "entry", "exit", "exits", "entry_exit_summary",
     "entry_tracking", "exit_tracking",
     # outlook
     "complexity_outlook_index", "complexity_outlook_gain", "coi", "cog",

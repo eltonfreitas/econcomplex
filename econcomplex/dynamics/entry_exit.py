@@ -124,6 +124,10 @@ def exit(
     return result
 
 
+# Preferred name: `exit` shadows the Python builtin when star-imported
+exits = exit
+
+
 def entry_exit_summary(
     mats: List[Union[np.ndarray, pd.DataFrame]],
     use_rca: bool = True,

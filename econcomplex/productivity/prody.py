@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Union
 
-from ..core.utils import validate_matrix, safe_divide
+from ..core.utils import validate_matrix, safe_divide, align_vector
 from ..core.rca import rca as compute_rca
 
 
@@ -44,10 +44,7 @@ def prody(
     col_index = mat.columns if is_df else None
 
     arr = validate_matrix(mat)
-    gdp_arr = np.array(gdp, dtype=float)
-
-    if len(gdp_arr) != arr.shape[0]:
-        raise ValueError("Length of gdp must equal number of rows in mat.")
+    gdp_arr = align_vector(gdp, mat.index if is_df else None, arr.shape[0], "gdp")
 
     if use_rca:
         lq = compute_rca(arr)
@@ -93,7 +90,7 @@ def expy(
     row_index = mat.index if is_df else None
 
     arr = validate_matrix(mat)
-    gdp_arr = np.array(gdp, dtype=float)
+    gdp_arr = align_vector(gdp, row_index, arr.shape[0], "gdp")
 
     prody_arr = prody(arr, gdp_arr, use_rca=use_rca)
     if isinstance(prody_arr, pd.Series):
@@ -139,10 +136,8 @@ def product_gini_index(
     col_index = mat.columns if is_df else None
 
     arr = validate_matrix(mat)
-    gini_arr = np.array(gini_vec, dtype=float)
-
-    if len(gini_arr) != arr.shape[0]:
-        raise ValueError("Length of gini_vec must equal number of rows in mat.")
+    gini_arr = align_vector(gini_vec, mat.index if is_df else None,
+                            arr.shape[0], "gini_vec")
 
     rca_mat = compute_rca(arr)
     if isinstance(rca_mat, pd.DataFrame):
@@ -190,10 +185,8 @@ def product_emissions_index(
     col_index = mat.columns if is_df else None
 
     arr = validate_matrix(mat)
-    em_arr = np.array(emissions, dtype=float)
-
-    if len(em_arr) != arr.shape[0]:
-        raise ValueError("Length of emissions must equal number of rows in mat.")
+    em_arr = align_vector(emissions, mat.index if is_df else None,
+                          arr.shape[0], "emissions")
 
     rca_mat = compute_rca(arr)
     if isinstance(rca_mat, pd.DataFrame):

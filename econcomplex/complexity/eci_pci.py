@@ -87,6 +87,20 @@ def eci_pci(
     -------
     (eci, pci) as pd.Series or ndarrays, aligned with the input matrix
     (NaN for units removed by trimming).
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> eci, pci = ec.eci_pci(mat)                  # method="eigenvector"
+    >>> eci.round(2).tolist()
+    [-1.34, 1.07, 0.27]
+    >>> fitness, complexity = ec.eci_pci(mat, method="fitness")
+    >>> mat.loc["R4"] = 0                           # no data: trimmed, NaN
+    >>> ec.eci_pci(mat)[0].round(2).tolist()
+    [-1.34, 1.07, 0.27, nan]
     """
     if trim:
         from ..core.preprocess import trim_core

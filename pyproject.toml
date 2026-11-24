@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "econcomplex"
-version = "1.0.1"
+version = "1.1.0"
 description = "Python library for economic complexity and regional science indicators"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -29,6 +29,8 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Information Analysis"
 ]
 dependencies = [
@@ -60,4 +62,5 @@ network = [
 include = ["econcomplex*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "econcomplex"]
+addopts = "--doctest-modules"

@@ -3,7 +3,9 @@ Cross-space proximity and relatedness between two different activity spaces.
 
 References
 ----------
-Catalan et al. (2020) "Cross-space proximity and relatedness".
+Catalán, Navarrete & Figueroa (2022) "The scientific and technological
+cross-space: is technological diversification driven by scientific
+endogenous capacity?", Research Policy 51(8), 104016.
 """
 
 import numpy as np
@@ -109,6 +111,14 @@ def cross_relatedness(
     col_b = x_phi.columns if isinstance(x_phi, pd.DataFrame) else None
 
     arr_a = validate_matrix(mat_a)
+    if is_df and isinstance(x_phi, pd.DataFrame):
+        missing = mat_a.columns.difference(x_phi.index)
+        if len(missing):
+            raise ValueError(
+                f"x_phi is missing {len(missing)} activity label(s) of mat_a, "
+                f"e.g. {list(missing[:3])}."
+            )
+        x_phi = x_phi.reindex(index=mat_a.columns)
     phi_arr = (
         x_phi.values if isinstance(x_phi, pd.DataFrame) else np.array(x_phi, dtype=float)
     )

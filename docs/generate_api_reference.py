@@ -56,6 +56,8 @@ PT = {
     "fitness_complexity": "Algoritmo Fitness--Complexity (Tacchella et al.\\ 2012).",
     "subnational_eci": "ECI subnacional projetado com PCI externo.",
     "proximity": "Matrizes de proximidade entre produtos e/ou regi\\~{o}es (discreta ou cont\\'{i}nua).",
+    "product_proximity": "Matriz de proximidade entre atividades, devolvida diretamente (atalho de proximity).",
+    "location_proximity": "Matriz de proximidade entre regi\\~{o}es, devolvida diretamente (atalho de proximity).",
     "continuous_proximity": "Proximidade cont\\'{i}nua a partir do RCA (correla\\c{c}\\~{a}o ou cosseno).",
     "cosine_proximity": "Atalho: proximidade cont\\'{i}nua por cosseno.",
     "correlation_proximity": "Atalho: proximidade cont\\'{i}nua por correla\\c{c}\\~{a}o.",

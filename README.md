@@ -1,9 +1,9 @@
 # econcomplex
 
-[![version](https://img.shields.io/badge/version-1.0.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)](tests/)
+[![tests](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml/badge.svg)](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml)
 
 **econcomplex** is a Python library for **economic complexity and regional
 science indicators**. It consolidates, in a single coherent API, the tools
@@ -31,7 +31,7 @@ diffusion) that, to our knowledge, is not available in any other package.
 | **ECI Optimization** | Stepping-stone forecast model, entry-effort matrix, exact 0–1 program for minimal-effort diversification portfolios, growth targeting (Stojkoski & Hidalgo 2026) |
 | **Strategic diffusion** | Complex-contagion calibration, five diversification strategies, optimal entry sequencing (Alshamsi, Pinheiro & Hidalgo 2018) |
 
-87 public functions in total — the PDF documentation carries a complete API
+90 public functions in total — the PDF documentation carries a complete API
 reference and an interpretation guide for every indicator family.
 
 ## Installation
@@ -53,7 +53,7 @@ Requires Python ≥ 3.9 with `numpy ≥ 1.21` (1.x **and** 2.x supported),
 git clone https://github.com/eltonfreitas/econcomplex.git
 cd econcomplex
 pip install -e .[dev]
-pytest          # 81 tests
+pytest          # tests + docstring examples
 ```
 
 ## Quick start
@@ -83,7 +83,7 @@ mat = ec.pivot_to_matrix(df, "region", "sector", "employment")
 eci, pci   = ec.eci_pci(mat)                      # eigenvector method (default)
 eci2, pci2 = ec.eci_pci(mat, method="fitness")    # same call, other method
 
-phi     = ec.proximity(mat)["product"]            # product space
+phi     = ec.product_proximity(mat)               # product space
 density = ec.density(mat, phi=phi)                # 0–100 % relatedness density
 coi     = ec.coi(mat, pci, phi=phi)               # diversification potential
 ```
@@ -155,7 +155,7 @@ bound to the same objects (`density`, `hhi`, `coi`, `pgi`, …).
 
 ## Validation
 
-The 81-test suite includes exact validations against the literature: the
+The test suite includes exact validations against the literature: the
 eigenvector ECI/PCI uses the proper non-symmetric solver; the strategic
 diffusion module reproduces the closed-form solution of Alshamsi et al.
 (2018, eq. 2) on the wheel network; relative relatedness follows Pinheiro
@@ -170,7 +170,7 @@ library recovers the canonical ECI country ranking.
   author  = {Freitas, Elton},
   title   = {econcomplex: economic complexity and regional science indicators in Python},
   year    = {2026},
-  version = {1.0.0},
+  version = {1.1.0},
   url     = {https://github.com/eltonfreitas/econcomplex}
 }
 ```

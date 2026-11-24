@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Tuple, Union
 
-from ..core.utils import validate_matrix, binarize, normalize_zscore
+from ..core.utils import validate_matrix, binarize, align_vector
 from ..core.rca import rca as compute_rca
 
 
@@ -26,6 +26,11 @@ def subnational_eci(
 
     Each region's ECI is the mean PCI of activities it has RCA in:
       ECI_r = mean(PCI_c for c where M_{rc} = 1)
+
+    A labelled `pci_external` is matched to the columns of `mat` by label,
+    so it may come in any order and carry extra activities; activities of
+    `mat` without an external PCI are left out of the mean. Regions with
+    no specialization get NaN.
 
     Useful when comparing subnational units to a global product space,
     or when the dataset is too small to compute reliable eigenvectors.
@@ -46,6 +51,17 @@ def subnational_eci(
     Returns
     -------
     (eci, pci_external) as pd.Series or ndarrays.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> pci = pd.Series({"C": 3.0, "A": 1.0, "B": 2.0})   # e.g. a national PCI
+    >>> eci, _ = ec.subnational_eci(mat, pci, standardize=False)
+    >>> eci.tolist()
+    [1.0, 2.5, 2.0]
     """
     is_df = isinstance(mat, pd.DataFrame)
     row_index = mat.index if is_df else None
@@ -58,19 +74,20 @@ def subnational_eci(
     else:
         m = binarize(arr, threshold)
 
-    pci_arr = np.array(pci_external, dtype=float)
-    if len(pci_arr) != m.shape[1]:
-        raise ValueError("Length of pci_external must match number of columns in mat.")
+    pci_arr = align_vector(pci_external, col_index, m.shape[1],
+                           "pci_external", allow_missing=True)
 
-    row_sums = m.sum(axis=1)
-    eci_raw = np.where(
-        row_sums > 0,
-        (m @ pci_arr) / row_sums,
-        0.0,
-    )
+    # Activities without an external PCI do not enter the mean
+    has_pci = np.isfinite(pci_arr)
+    m_valid = m[:, has_pci]
+    row_sums = m_valid.sum(axis=1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        eci_raw = np.where(row_sums > 0,
+                           (m_valid @ pci_arr[has_pci]) / row_sums, np.nan)
 
     if standardize:
-        eci_raw = normalize_zscore(eci_raw)
+        sd = np.nanstd(eci_raw)
+        eci_raw = (eci_raw - np.nanmean(eci_raw)) / sd if sd > 0 else eci_raw * 0.0
 
     if is_df:
         pci_out = (

@@ -9,7 +9,8 @@ References
 ----------
 Stojkoski & Hidalgo (2026) "Optimizing economic complexity",
 Research Policy 55, 105454.
-Pinheiro et al. (2021) for relative relatedness.
+Pinheiro, Hartmann, Boschma & Hidalgo (2022), Research Policy 51(8), 104323,
+for relative relatedness.
 """
 
 import numpy as np
@@ -31,7 +32,7 @@ def _features(mat: pd.DataFrame, threshold: float, proximity_method: str):
     dens = relatedness_density(mat, threshold=threshold,
                                 proximity_method=proximity_method)
     omega = dens.values / 100.0  # 0-1 scale, as in the paper
-    # Relative relatedness (Pinheiro et al. 2021, eq. 7): z-transform
+    # Relative relatedness (Pinheiro et al. 2022, eq. 7): z-transform
     # against the statistics of the location's option set (RCA < threshold).
     # The same standardization is applied to specialized cells so the exit
     # model shares the scale of the entry model.

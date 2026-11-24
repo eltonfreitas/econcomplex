@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.1.0] — 2026-11-24
+
+### Fixed
+- **Label alignment.** Auxiliary inputs given as labelled pandas objects are
+  now matched to the matrix by label instead of by position. Before, a
+  `Series` or `DataFrame` with the same labels in a different order silently
+  produced wrong results. Affects `prody`, `expy`, `pgi`, `peii`, `rpop`,
+  `hoover_index`, `hoover_gini`, `coi`, `cog`, every density function (`phi`),
+  `cross_relatedness` (`x_phi`), `subnational_eci`, `modular_complexity`
+  (`eor`) and the strategic-diffusion functions (`active`). Lists, arrays and
+  Series with a default integer index are still taken positionally; a missing
+  label raises a `ValueError` naming it.
+- **Input validation.** Matrices with NaN/infinite or negative cells now raise
+  a clear `ValueError` at the entry point. NaN used to surface as a misleading
+  "trimming to the (1, 1)-core" error and negative values were accepted.
+- **`eci_optimization` no longer stalls.** The exact solver could run
+  indefinitely on locations with many near-equivalent candidates. It is now
+  capped by `time_limit` (default 5 s per location); when the cap is hit the
+  best feasible portfolio found is returned, never worse than the greedy one.
+- `subnational_eci` returns NaN (it returned 0) for regions with no
+  specialization, and accepts an external PCI in any order, with extra
+  activities, or missing some of the matrix's activities.
+- Citations: Catalán, Navarrete & Figueroa (2022) for the cross-space, and
+  Pinheiro et al. (2022) for relative relatedness.
+
+### Added
+- `product_proximity` and `location_proximity`: return the proximity matrix
+  directly instead of the `{"product": ..., "location": ...}` dictionary.
+- `percent` option in `relatedness_density` and its internal/external
+  variants: `percent=False` returns shares (0-1), the scale of `distance`
+  and `cross_relatedness`. The default (0-100) is unchanged.
+- `exits`, the preferred name for `exit` (which shadows the Python builtin).
+- Runnable `Examples` in the docstrings of the main entry points, executed
+  by the test suite (`pytest --doctest-modules`).
+- Continuous integration (GitHub Actions): Python 3.9 to 3.14 and NumPy 1.x.
+- `eci_optimization` output has an `optimal` column (True when the solver
+  proved optimality) and warns once when locations reach the time limit.
+- Known-answer tests for the 25 public functions that had no direct test,
+  plus a regression test that reproduces the 1.0.1 results to 1e-7.
+
+### Note
+- The 1.0.1 entry below says outputs were "byte-for-byte identical" to 1.0.0;
+  the check actually used a tolerance of 1e-9.
+
 ## [1.0.1] — 2026-06-13
 
 ### Changed

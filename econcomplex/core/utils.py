@@ -40,8 +40,17 @@ def melt_matrix(
     )
 
 
-def validate_matrix(mat: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
-    """Return a 2-D numpy array; raise on bad input."""
+def validate_matrix(
+    mat: Union[np.ndarray, pd.DataFrame],
+    nonnegative: bool = True,
+) -> np.ndarray:
+    """
+    Return a 2-D float array; raise a clear error on bad input.
+
+    Rejects NaN/infinite cells and, unless ``nonnegative=False``, negative
+    values: every indicator of the library is defined for non-negative
+    quantities (employment, exports, counts, RCA).
+    """
     if isinstance(mat, pd.DataFrame):
         arr = mat.values.astype(float)
     elif isinstance(mat, np.ndarray):
@@ -50,12 +59,75 @@ def validate_matrix(mat: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         arr = np.array(mat, dtype=float)
     if arr.ndim != 2:
         raise ValueError("Input must be a 2-D matrix.")
+    n_bad = int((~np.isfinite(arr)).sum())
+    if n_bad:
+        raise ValueError(
+            f"Input matrix has {n_bad} NaN or infinite cell(s). Fill them "
+            "(e.g. `mat.fillna(0)`) or drop the affected rows/columns first."
+        )
+    if nonnegative and (arr < 0).any():
+        raise ValueError(
+            f"Input matrix has {int((arr < 0).sum())} negative cell(s); the "
+            "indicators are defined for non-negative values."
+        )
+    return arr
+
+
+def align_vector(vec, labels, n: int, name: str = "vector",
+                 allow_missing: bool = False) -> np.ndarray:
+    """
+    Return `vec` as a float array ordered like `labels`.
+
+    A labelled ``pd.Series`` is matched to the matrix by label, so its
+    order does not matter and extra labels are ignored. Lists, arrays and
+    Series with a default integer index are taken positionally and must
+    have length `n`. Labels of the matrix absent from `vec` raise an
+    error unless ``allow_missing=True`` (they become NaN).
+    """
+    by_label = (
+        isinstance(vec, pd.Series) and labels is not None
+        and not (isinstance(vec.index, pd.RangeIndex)
+                 and not isinstance(labels, pd.RangeIndex))
+    )
+    if by_label:
+        if vec.index.has_duplicates:
+            raise ValueError(f"{name} has duplicated labels.")
+        missing = pd.Index(labels).difference(vec.index)
+        if len(missing) and not allow_missing:
+            raise ValueError(
+                f"{name} is missing {len(missing)} label(s) of the matrix, "
+                f"e.g. {list(missing[:3])}."
+            )
+        return vec.reindex(labels).to_numpy(dtype=float)
+    arr = np.asarray(vec, dtype=float).ravel()
+    if arr.shape[0] != n:
+        raise ValueError(f"Length of {name} ({arr.shape[0]}) must be {n}.")
+    return arr
+
+
+def align_square(mat, labels, n: int, name: str = "phi") -> np.ndarray:
+    """
+    Return a square matrix (e.g. a proximity matrix) as a float array with
+    rows and columns ordered like `labels`. DataFrames are matched by
+    label; arrays are taken positionally and must be n x n.
+    """
+    if isinstance(mat, pd.DataFrame) and labels is not None:
+        missing = pd.Index(labels).difference(mat.index.intersection(mat.columns))
+        if len(missing):
+            raise ValueError(
+                f"{name} is missing {len(missing)} activity label(s) of the "
+                f"matrix, e.g. {list(missing[:3])}."
+            )
+        return mat.reindex(index=labels, columns=labels).to_numpy(dtype=float)
+    arr = np.asarray(mat, dtype=float)
+    if arr.shape != (n, n):
+        raise ValueError(f"{name} must be {n} x {n}; got {arr.shape}.")
     return arr
 
 
 def binarize(mat: Union[np.ndarray, pd.DataFrame], threshold: float = 1.0) -> np.ndarray:
     """Return binary matrix: 1 where mat >= threshold, else 0."""
-    arr = validate_matrix(mat)
+    arr = validate_matrix(mat, nonnegative=False)
     return (arr >= threshold).astype(float)
 
 
@@ -115,6 +187,15 @@ def make_sample_data(
     pd.DataFrame
         Long format with columns [loc_col, act_col, val_col],
         containing only positive entries.
+
+    Examples
+    --------
+    >>> import econcomplex as ec
+    >>> df = ec.make_sample_data(n_locs=30, n_acts=15, seed=42)
+    >>> df.columns.tolist()
+    ['loc', 'act', 'val']
+    >>> ec.pivot_to_matrix(df, "loc", "act", "val").shape
+    (30, 15)
     """
     rng = np.random.default_rng(seed)
 

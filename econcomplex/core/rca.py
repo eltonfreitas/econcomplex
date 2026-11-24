@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Union
 
-from .utils import validate_matrix, safe_divide, binarize
+from .utils import validate_matrix, safe_divide, binarize, align_vector
 
 
 def rca(
@@ -35,6 +35,15 @@ def rca(
     Returns
     -------
     Same type as input (DataFrame or ndarray).
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> ec.rca(mat).values.tolist()
+    [[2.0, 0.0, 0.0], [0.0, 2.0, 2.0], [1.0, 1.0, 1.0]]
     """
     is_df = isinstance(mat, pd.DataFrame)
     index = mat.index if is_df else None
@@ -88,10 +97,7 @@ def rpop(
     columns = mat.columns if is_df else None
 
     arr = validate_matrix(mat)
-    pop_arr = np.array(pop, dtype=float).reshape(-1, 1)  # R × 1
-
-    if len(pop_arr) != arr.shape[0]:
-        raise ValueError("Length of pop must equal number of rows in mat.")
+    pop_arr = align_vector(pop, index, arr.shape[0], "pop").reshape(-1, 1)  # R × 1
 
     world_pop = pop_arr.sum()
     col_sums = arr.sum(axis=0, keepdims=True)  # 1 × C

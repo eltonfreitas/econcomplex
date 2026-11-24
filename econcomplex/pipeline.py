@@ -95,6 +95,14 @@ def compute_complexity(
     Original DataFrame with new columns:
       rca, mcp, diversity, ubiquity, eci, pci, density, distance, [coi, cog]
       [fitness, complexity] (when method='fitness')
+
+    Examples
+    --------
+    >>> import econcomplex as ec
+    >>> df = ec.make_sample_data(n_locs=30, n_acts=15, seed=42)
+    >>> out = ec.compute_complexity(df, cols={"loc": "loc", "act": "act", "val": "val"})
+    >>> sorted(set(out.columns) - set(df.columns))
+    ['cog', 'coi', 'density', 'distance', 'diversity', 'eci', 'mcp', 'pci', 'rca', 'ubiquity']
     """
     loc_col = cols.get("loc") or cols.get("location")
     act_col = cols.get("act") or cols.get("activity") or cols.get("product")
