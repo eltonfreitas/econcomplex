@@ -24,7 +24,9 @@ jobs:
           allow-prereleases: true
       # EXTRA goes through an environment variable so that "numpy<2" is
       # passed to pip as a word instead of being read as a shell redirection
-      - run: pip install -e . pytest $EXTRA
+      # the [ml] extra (scikit-learn) is installed so that the prediction
+      # tests run; the library itself imports it lazily
+      - run: pip install -e .[ml] pytest $EXTRA
         env:
           EXTRA: ${{ matrix.extra }}
       - run: pytest -q

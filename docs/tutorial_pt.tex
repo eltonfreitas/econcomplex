@@ -1,0 +1,481 @@
+\section{Tutorial: Dos Dados a uma Lista de Alvos}
+
+Este tutorial acompanha uma análise do começo ao fim: da tabela
+bruta até uma lista curta de alvos de diversificação para uma região, e
+depois o teste de se o método que gerou a lista prevê para onde as
+regiões de fato foram. Cada passo mostra o código, o que ele imprime e
+como ler o resultado. Os dados são sintéticos
+(\fn{make\_sample\_data}), de modo que todo número abaixo é reproduzido
+ao rodar \texttt{examples/tutorial.py}; com os seus dados, basta trocar o
+Passo 1 e manter o resto.
+
+O exemplo acompanha a região \texttt{L045}, que tem um número mediano de
+especializações. Os rótulos de regiões e atividades são códigos
+arbitrários.
+
+\subsection{Passo 1: Da Tabela à Matriz}
+
+A biblioteca parte de uma tabela longa: uma linha por região e
+atividade, com um valor (emprego, exportações, patentes).
+\fn{pivot\_to\_matrix} a transforma na matriz regiões $\times$
+atividades que todas as funções recebem.
+
+\begin{lstlisting}
+df = ec.make_sample_data(n_locs=60, n_acts=40, seed=7)
+print(df.head(3))
+print(len(df), "rows |", df["loc"].nunique(), "regions |",
+      df["act"].nunique(), "activities")
+
+mat = ec.pivot_to_matrix(df, "loc", "act", "val")
+print("matrix:", mat.shape)
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+    loc   act        val
+0  L001  A001   2.450677
+1  L002  A001  20.941576
+2  L003  A001   3.358559
+1450 rows | 60 regions | 40 activities
+matrix: (60, 40)
+\end{lstlisting}
+
+Com o seu arquivo, a primeira linha vira
+\texttt{df = pd.read\_csv("meus\_dados.csv")} e mudam os três nomes de
+coluna. Vale conferir duas coisas antes de seguir, porque o pivot as
+esconde: pares de região e atividade repetidos são somados, e pares
+ausentes viram zero. Valores negativos ou faltantes são recusados pelas
+funções, com um erro que nomeia o problema.
+
+\subsection{Passo 2: Quem É Especializado em Quê}
+
+Os valores brutos refletem sobretudo o tamanho: uma região grande
+tem mais de tudo. A VCR (o quociente locacional, quando o dado é
+emprego) divide a participação da atividade na região pela participação
+dela na economia inteira, e a região conta como especializada onde
+$\text{VCR} \geq 1$. A matriz binária $M$ registra essas
+especializações; as somas das linhas são a diversidade de cada região e
+as das colunas, a ubiquidade de cada atividade.
+
+\begin{lstlisting}
+rca = ec.rca(mat)
+M = ec.mcp(mat)                    # 1 where RCA >= 1
+diversity = ec.diversity(mat)      # specializations per region
+ubiquity = ec.ubiquity(mat)        # specialized regions per activity
+
+region = "L045"
+print(rca.loc[region].nlargest(3).round(2))
+print("specializations of", region, "=", int(diversity[region]))
+print("median diversity =", diversity.median(),
+      "| median ubiquity =", ubiquity.median())
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+act
+A019    7.97
+A009    3.62
+A004    3.25
+Name: L045, dtype: float64
+specializations of L045 = 11
+median diversity = 11.0 | median ubiquity = 17.5
+\end{lstlisting}
+
+A \texttt{L045} é especializada em 11 das 40
+atividades, e a região mediana em 11. A sua
+especialização mais forte tem VCR de 7{,}97: a
+atividade pesa esse número de vezes mais na região do que na economia
+como um todo. O limiar de 1 é o argumento \texttt{threshold} de toda
+função que binariza, e \texttt{use\_rca=False} dispensa a VCR quando a
+matriz já é um índice ou uma tabela 0/1.
+
+\subsection{Passo 3: Complexidade, e Quanto Confiar Nela}
+
+O ECI ordena as regiões pela complexidade daquilo em que são
+especializadas, e o PCI ordena as atividades pela complexidade das
+regiões que as têm. \fn{eci\_pci} devolve os dois; o padrão é o método
+do autovetor, e \texttt{method=} troca para reflexos, Fitness ou GENEPY
+na mesma chamada. \fn{eci\_diagnostics} diz em seguida quão firme é o
+ranking nesta matriz em particular.
+
+\begin{lstlisting}
+eci, pci = ec.eci_pci(mat)
+order = eci.sort_values(ascending=False)
+print(order.round(2).iloc[[0, 1, -2, -1]])
+print("ECI of", region, "=", round(eci[region], 2), "| rank",
+      int(eci.rank(ascending=False)[region]), "of", len(eci))
+
+diag = ec.eci_diagnostics(mat, n_boot=100, seed=1)
+keys = ["gap", "corr_diversity", "rank_stability_mean", "sign_flips"]
+print(diag[keys].round(3))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+loc
+L002    1.63
+L005    1.54
+L059   -1.94
+L056   -2.38
+Name: eci, dtype: float64
+ECI of L045 = -0.22 | rank 35 of 60
+gap                    0.115
+corr_diversity         0.773
+rank_stability_mean    0.954
+sign_flips             0.000
+Name: eci_diagnostics, dtype: float64
+\end{lstlisting}
+
+Os dois índices são escores z desta matriz: a \texttt{L045} tem ECI
+de $-$0{,}22, posição 35
+entre 60. Por serem relativos, o ECI de dois anos ou de duas
+classificações não se compara em nível, só em posição; uma região ou
+atividade devolvida como \texttt{NaN} ficou de fora por não ter nenhuma
+especialização. Os diagnósticos aqui tranquilizam: o ECI tem correlação
+de 0{,}77 com a diversidade e, quando um quinto das
+atividades é retirado ao acaso, o ranking mantém correlação de postos de
+0{,}95 com o original e nunca sai invertido. Em
+matrizes pequenas ou esparsas esses números costumam ser bem piores. Se
+a correlação com a diversidade for próxima de zero, o sinal do índice é
+arbitrário, e convém conferi-lo com renda ou salários antes de ler ``ECI
+alto'' como ``complexo''.
+
+\subsection{Passo 4: O Que Está ao Alcance}
+
+Duas atividades são próximas quando as mesmas regiões tendem a ser
+especializadas nas duas. A partir da matriz de proximidade $\phi$, a
+densidade de relatedness mede, para cada região e atividade, quanto do
+que é relacionado à atividade a região já tem. É a medida básica da
+biblioteca para a viabilidade de uma atividade numa região.
+\fn{relatedness\_density\_external} guarda só as atividades que a
+região não tem, que são as suas opções.
+
+\begin{lstlisting}
+phi = ec.product_proximity(mat)                  # proximity matrix
+density = ec.relatedness_density(mat, phi=phi)   # 0 to 100
+options = ec.relatedness_density_external(mat, phi=phi)
+
+nearest = options.loc[region].nlargest(4)
+print(nearest.round(1))
+
+best = nearest.index[0]
+why = ec.density_contributions(mat, region, best, phi=phi)
+print(why.head(4).round(1))
+print("sum of all contributions =", round(why.sum(), 1))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+act
+A017    38.1
+A001    37.8
+A005    35.6
+A013    35.2
+Name: L045, dtype: float64
+act
+A004    4.8
+A014    4.0
+A023    4.0
+A003    3.8
+Name: contribution, dtype: float64
+sum of all contributions = 38.1
+\end{lstlisting}
+
+A atividade mais próxima que a \texttt{L045} não tem é a
+\texttt{A017}, com densidade de 38{,}1: ponderando
+pela proximidade, a região tem esse percentual do que é relacionado a
+ela. \fn{density\_contributions} abre o número. Ela lista as atividades
+da região que aproximam a \texttt{A017}, e as contribuições somam a
+densidade. É a frase que entra na ficha de uma região: ``a
+\texttt{A017} está ao alcance porque a região já tem
+\texttt{A004}, \texttt{A014} e
+\texttt{A023}''.
+
+\subsection{Passo 5: O Que Vale a Pena Alcançar}
+
+A viabilidade diz o que está ao alcance, não o que vale a pena
+alcançar. O segundo eixo é uma escolha de quem analisa: complexidade,
+salários, crescimento, emissões. \fn{desirability\_index} padroniza cada
+indicador e tira a média ponderada, com os pesos declarados. A série de
+salários abaixo é simulada e faz as vezes de uma fonte externa.
+
+\begin{lstlisting}
+rng = np.random.default_rng(7)
+wage = 1000 * np.exp(0.3 * pci + rng.normal(0, 0.3, len(pci)))
+indicators = pd.DataFrame({"pci": pci, "wage": wage})
+weights = {"pci": 0.6, "wage": 0.4}
+
+desirability = ec.desirability_index(indicators, weights)
+robust = ec.weight_sensitivity(indicators, weights, top=10, seed=1)
+print(robust.head(4).round(2))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+      score  rank  rank_mean  rank_p05  rank_p95  top_share
+act                                                        
+A035   1.96     1       1.20       1.0       3.0        1.0
+A038   1.61     2       3.42       2.0      10.0        1.0
+A037   1.19     3       4.83       3.0       9.0        1.0
+A040   1.17     4       5.20       4.0       7.0        1.0
+\end{lstlisting}
+
+Os pesos são um julgamento, e o ranking não deveria depender
+deles. \fn{weight\_sensitivity} sorteia os pesos mil vezes em torno dos
+escolhidos e registra onde cada atividade vai parar. A
+\texttt{A035} é a primeira com os pesos escolhidos e fica
+entre as dez melhores em 100\,\% dos
+sorteios. Quando \texttt{rank\_p05} e \texttt{rank\_p95} ficam distantes,
+a posição da atividade depende dos pesos, e o relatório deve dizer isso.
+Um indicador que conta contra a atividade, como emissões, entra com peso
+negativo.
+
+\subsection{Passo 6: A Lista Curta}
+
+Com os dois eixos, cada opção da região cai em um de quatro
+quadrantes. Os cortes são as medianas das opções da própria região, de
+modo que ``viável'' quer dizer viável em comparação com o que mais essa
+região poderia fazer. \fn{opportunity\_alignment} resume o quadro num
+número: a correlação entre os dois eixos nas opções da região.
+
+\begin{lstlisting}
+quadrants = ec.strategy_quadrants(options, desirability)
+print(quadrants.loc[region].value_counts())
+
+alignment = ec.opportunity_alignment(options, desirability)
+print("alignment of", region, "=", round(alignment[region], 2))
+
+shortlist = pd.DataFrame({
+    "density": options.loc[region],
+    "desirability": desirability,
+    "quadrant": quadrants.loc[region],
+}).dropna()
+desirable = shortlist["quadrant"].isin(["short jump", "long bet"])
+wanted = shortlist[desirable]
+print(wanted.sort_values("density", ascending=False).head(4).round(2))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+L045
+low value     13
+long bet      13
+avoid          2
+short jump     1
+Name: count, dtype: int64
+alignment of L045 = -0.87
+      density  desirability    quadrant
+act                                    
+A024    30.24          0.91  short jump
+A030    28.85          0.71    long bet
+A026    28.40          0.52    long bet
+A028    25.92          0.95    long bet
+\end{lstlisting}
+
+Das 29 atividades que a \texttt{L045} não tem, só
+1 é salto curto (viável e desejável);
+13 são apostas longas
+(desejáveis, mas distantes) e
+13 estão ao alcance,
+mas valem pouco. O alinhamento de $-$0{,}87 diz o mesmo: nas
+opções desta região, quanto mais próxima a atividade, menos desejável
+ela tende a ser. É a situação comum de regiões de complexidade baixa ou
+intermediária, e ela muda o que a lista curta precisa ser. Com tão
+poucos saltos curtos, a lista útil é a metade desejável das opções
+ordenada pela densidade: o único salto curto, a
+\texttt{A024}, seguido das apostas longas menos
+distantes, a \texttt{A030} e a
+\texttt{A026}, com densidades entre
+28{,}4 e 30{,}2. Numa
+região
+com alinhamento positivo, os saltos curtos encheriam a lista sozinhos.
+Quantas apostas não relacionadas fazer, e em que ordem, é o que
+\fn{optimize\_sequence} responde, e \fn{eci\_optimization} devolve o
+conjunto de novas atividades que alcança um ECI-alvo com o menor esforço
+(ver as seções de Difusão Estratégica e de Otimização de ECI).
+
+\subsection{Passo 7: Lendo o Resultado por Listas de Política}
+
+Políticas costumam ser escritas como listas de atividades: uma
+missão, uma cadeia produtiva, uma taxonomia verde. As funções de lista
+leem a mesma matriz por meio de uma lista. Abaixo, as quinze últimas
+atividades fazem as vezes de uma missão e três grupos de atividades, dos
+elos de uma cadeia.
+
+\begin{lstlisting}
+acts = list(mat.columns)
+lists = {"mission": acts[25:]}
+feasibility = density / 100            # shares, 0 to 1
+tab = ec.list_complexity_potential(mat, pci, feasibility, lists)
+print(tab.loc[region].round(2))
+
+chain = {"inputs": acts[0:6], "components": acts[15:21],
+         "assembly": acts[33:39]}
+links = ec.missing_links(mat, chain, feasibility, cut=0.4)
+print(links.loc[region])
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+         presence  potential  n_present  n_list
+list                                           
+mission       0.0       0.23          0      15
+inputs        present
+components    present
+assembly      missing
+Name: L045, dtype: object
+\end{lstlisting}
+
+A \texttt{L045} é especializada em
+0 das
+15 atividades da missão,
+que aqui são as mais complexas. \texttt{presence} soma o PCI das
+atividades da lista que ela tem, e \texttt{potential} é o PCI médio das
+que faltam, cada uma ponderada pela sua densidade; com uma
+lista de produtos verdes, são o índice e o potencial de complexidade
+verde. Na cadeia, um elo é \texttt{present} quando a região é
+especializada em pelo menos uma das suas atividades, \texttt{feasible}
+quando alguma atividade do elo tem densidade de 40\,\% ou mais, e
+\texttt{missing} caso contrário. \fn{transition\_risk} aplica a mesma
+lógica a atividades que tendem a encolher.
+
+\subsection{Passo 8: A Densidade Prevê a Entrada?}
+
+Tudo até aqui supõe que a densidade diz para onde as regiões
+vão. Com dois períodos isso pode ser testado: calculam-se os escores com
+o primeiro período e verifica-se se eles ordenam as entradas observadas
+até o segundo. Aqui o segundo período é simulado, com crescimento mais
+rápido onde a densidade é alta; com dados reais, carregue o ano
+posterior no lugar dele.
+
+\begin{lstlisting}
+size = np.outer(mat.sum(axis=1), mat.sum(axis=0)) / mat.values.sum()
+mat_t1 = (mat * rng.lognormal(0, 0.3, mat.shape)
+          + size * rng.lognormal(0, 1.0, mat.shape)
+          * 3 * (density / 100) ** 2)
+
+entered, at_risk = ec.entry_targets(rca, ec.rca(mat_t1))
+print(int(at_risk.values.sum()), "cells at risk |",
+      int(entered.sum().sum()), "entries")
+
+scores = {"density": density,
+          "relative": ec.relative_relatedness(mat, phi=phi),
+          "persistence": rca}
+val = ec.validate_entry(scores, entered, k=(5,),
+                        baseline="persistence", n_boot=200, seed=1)
+cols = ["auc", "auc_within", "precision@5"]
+print(val["value"].unstack()[cols].round(3))
+print(val.loc[("density", "auc")].round(3))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+1400 cells at risk | 67 entries
+metric         auc  auc_within  precision@5
+score                                      
+density      0.788       0.646        0.073
+persistence  0.686       0.626        0.097
+relative     0.639       0.646        0.073
+value      0.788
+lo         0.734
+hi         0.839
+diff       0.102
+diff_lo    0.039
+diff_hi    0.170
+Name: (density, auc), dtype: float64
+\end{lstlisting}
+
+Uma célula está em risco quando a VCR é menor que 0,5 no início,
+e entra quando a VCR chega a 1; o intervalo evita contar células que só
+oscilam em torno de 1. De 1400 células em risco,
+67 entraram. A AUC é a probabilidade de uma
+entrada ficar acima de uma não entrada no ranking:
+0{,}79 para a densidade e
+0{,}69 para a persistência, que é
+a VCR inicial. \texttt{auc\_within} calcula o mesmo dentro de cada região
+e tira a média. É o número que importa para escolher entre as opções de
+uma região, e é menor porque parte da AUC agregada vem de distinguir
+regiões entre si: dentro das regiões, a densidade chega a
+0{,}65 e a persistência a
+0{,}63, uma distância bem
+menor. \texttt{precision@5} é a parcela das cinco opções mais
+bem colocadas de cada região que entraram. O último bloco compara a
+densidade com a persistência: ganho de
+0{,}10 na AUC, com intervalo de 95\,\%
+de 0{,}04 a
+0{,}17, obtido reamostrando regiões.
+Para o teste ser honesto, todo escore tem de usar só dados do primeiro
+período, inclusive a matriz de proximidade.
+
+\subsection{Passo 9: Um Modelo de Previsão e o Emprego Esperado (Opcional)}
+
+Com várias medidas de viabilidade, um modelo pode combiná-las.
+\fn{build\_features} empilha as camadas numa tabela de células e
+acrescenta controles; \fn{predict\_entry} faz validação cruzada por
+região, de modo que a probabilidade de cada célula vem de um modelo que
+nunca viu a sua região. Este passo exige o scikit-learn
+(\texttt{pip install "econcomplex[ml]"}).
+
+\begin{lstlisting}
+layers = {"density": density, "implied": ec.implied_rca(mat)}
+X = ec.build_features(mat, layers, at_risk=at_risk)
+scores["model"] = ec.predict_entry(X, entered, model="logit", seed=1)
+out = ec.validate_entry(scores, entered, k=(5,))["value"].unstack()
+print(out.loc[["density", "model"], ["auc", "auc_within"]].round(3))
+
+importance = ec.explain_entry(X, entered, model="logit", seed=1)
+print(importance.head(3).round(3))
+
+# next window: fit on t0 -> t1, predict from what is observed at t1
+phi_t1 = ec.product_proximity(mat_t1)
+layers_t1 = {"density": ec.relatedness_density(mat_t1, phi=phi_t1),
+             "implied": ec.implied_rca(mat_t1)}
+X_t1 = ec.build_features(mat_t1, layers_t1,
+                         at_risk=ec.rca(mat_t1) < 0.5)
+prob = ec.predict_entry(X, entered, model="logit",
+                        new_features=X_t1, calibrate=True)
+jobs = ec.potential_employment(prob, mat_t1)
+print(jobs.groupby("region")["expected"].sum().nlargest(3).round(1))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+metric     auc  auc_within
+score                     
+density  0.788       0.646
+model    0.792       0.643
+                 importance    std  p_value  significant
+density               0.273  0.099    0.020         True
+log_region_size       0.040  0.037    0.137        False
+rca                   0.023  0.021    0.137        False
+region
+L019    540.4
+L016    530.3
+L017    519.1
+Name: expected, dtype: float64
+\end{lstlisting}
+
+O modelo entra em \fn{validate\_entry} como mais um escore. Aqui
+ele empata com a densidade pura (AUC de 0{,}792
+contra 0{,}788, e
+0{,}643 contra
+0{,}646 dentro das regiões), que é o que
+se espera de dados simulados só a partir da densidade. Um modelo só compensa a maquinaria a mais
+quando ganha essa comparação fora da amostra. \fn{explain\_entry}
+embaralha um atributo de cada vez nas regiões fora do treino e informa a
+queda da AUC: a densidade sustenta a previsão
+(0{,}27) e nenhum outro atributo se
+distingue estatisticamente de zero. Para a janela seguinte, a mesma função recebe
+\texttt{new\_features}: o modelo é ajustado na primeira janela e
+aplicado ao que se observa no fim dela. \fn{potential\_employment}
+multiplica então cada probabilidade calibrada pelo tamanho que a
+atividade teria na região com quociente locacional 1, e a soma por
+região é o emprego esperado em novas especializações.
+
+\subsection{Antes de Usar os Resultados}
+
+Alguns pontos respondem pela maior parte dos erros no uso aplicado
+desses indicadores.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item ECI e PCI são relativos a uma matriz. Para acompanhar uma região
+    no tempo, compare posições, ou projete um PCI fixo em cada ano com
+    \fn{subnational\_eci}.
+  \item \texttt{NaN} quer dizer que a unidade ficou de fora (sem
+    especialização, ou não é uma opção); não é um zero.
+  \item Em dados esparsos, em que muitas regiões têm uma ou duas
+    especializações, calcule a complexidade no núcleo conectado, com
+    \texttt{dmin=2, umin=2}.
+  \item A densidade vem em percentual (0 a 100) por padrão e como
+    parcela com \texttt{percent=False}. Cortes como o de
+    \fn{missing\_links} são lidos na escala da matriz que você passa.
+  \item Vetores externos (PIB, população, salários, PCI de outra fonte)
+    são casados com a matriz pelo rótulo, em qualquer ordem; um rótulo
+    ausente gera erro, em vez de ser preenchido.
+  \item Em qualquer teste de previsão, a matriz de proximidade e todos
+    os escores usam só o primeiro período.
+  \item Declare os pesos do índice de desejabilidade e informe como o
+    ranking se move quando eles mudam.
+\end{itemize}

@@ -24,7 +24,7 @@ def eci_pci(
     mat: Union[np.ndarray, pd.DataFrame],
     use_rca: bool = True,
     threshold: float = 1.0,
-    method: Literal["eigenvector", "reflections", "fitness"] = "eigenvector",
+    method: Literal["eigenvector", "reflections", "fitness", "genepy"] = "eigenvector",
     iterations: Optional[int] = None,
     extremality: float = 1.0,
     tol: float = 1e-10,
@@ -50,6 +50,9 @@ def eci_pci(
     - 'fitness': non-linear Fitness-Complexity algorithm of
       Tacchella et al. (2012) (delegates to `fitness_complexity`;
       returns raw fitness/complexity scores, not z-scores).
+    - 'genepy': GENEPY index of Sciarra et al. (2020), which combines
+      the Fitness and ECI views (delegates to `genepy`; non-negative
+      scores, not z-scores).
 
     Parameters
     ----------
@@ -60,7 +63,7 @@ def eci_pci(
     threshold : float
         Binarization threshold.
     method : str
-        'eigenvector', 'reflections', or 'fitness'.
+        'eigenvector', 'reflections', 'fitness' or 'genepy'.
     iterations : int, optional
         Iterations for 'reflections' and 'fitness' (default 20 for both,
         matching the R `economiccomplexity` package; for 'fitness' it is
@@ -140,6 +143,9 @@ def eci_pci(
             iterations=iterations if iterations is not None else 20,
             extremality=extremality, tol=tol, log_fitness=log_fitness,
         )
+    if method == "genepy":
+        from .genepy import genepy
+        return genepy(mat, use_rca=use_rca, threshold=threshold)
     raise ValueError(
-        "method must be 'eigenvector', 'reflections', or 'fitness'."
+        "method must be 'eigenvector', 'reflections', 'fitness' or 'genepy'."
     )

@@ -16,7 +16,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 GROUP_ORDER = ["core", "complexity", "relatedness", "specialization",
                "inequality", "productivity", "patents", "dynamics",
-               "outlook", "optimization", "pipeline"]
+               "outlook", "optimization", "strategy", "policy", "prediction",
+               "pipeline"]
 
 GROUP_TITLES = {
     "core": ("Core", "Core"),
@@ -30,6 +31,11 @@ GROUP_TITLES = {
     "outlook": ("Complexity Outlook", "Complexity Outlook"),
     "optimization": ("ECI Optimization and Strategic Diffusion",
                      "Otimiza\\c{c}\\~{a}o de ECI e Difus\\~{a}o Estrat\\'{e}gica"),
+    "strategy": ("Strategy: Desirability and Quadrants",
+                 "Estrat\\'{e}gia: Desejabilidade e Quadrantes"),
+    "policy": ("Policy Lists", "Listas de Pol\\'{i}tica"),
+    "prediction": ("Entry Prediction and Validation",
+                   "Previs\\~{a}o de Entradas e Valida\\c{c}\\~{a}o"),
     "pipeline": ("Unified Pipeline", "Pipeline Unificado"),
 }
 
@@ -100,6 +106,28 @@ PT = {
     "exit_tracking": "Sa\\'{i}das em formato longo (painel).",
     "complexity_outlook_index": "COI: potencial de diversifica\\c{c}\\~{a}o rumo a atividades complexas.",
     "complexity_outlook_gain": "COG: ganho de COI ao desenvolver cada atividade.",
+    "genepy": "GENEPY (Sciarra et al. 2020): combina os dois primeiros autovetores da proximidade entre regi\\~{o}es.",
+    "eci_diagnostics": "Diagn\\'{o}sticos do ECI: gap espectral, rela\\c{c}\\~{a}o com a diversidade e estabilidade do ranking.",
+    "implied_rca": "VCR impl\\'{i}cita (Hausmann, Stock \\& Y{\\i}ld{\\i}r{\\i}m 2022): VCR esperada a partir das k unidades mais parecidas.",
+    "io_relatedness": "Relatedness por insumo-produto: participa\\c{c}\\~{o}es nas vendas e compras entre setores.",
+    "opportunity_alignment": "Correla\\c{c}\\~{a}o, por regi\\~{a}o, entre viabilidade e desejabilidade das suas op\\c{c}\\~{o}es.",
+    "transition_risk": "Exposi\\c{c}\\~{a}o a atividades em risco, lock-in e perspectiva de transi\\c{c}\\~{a}o (Andres et al. 2023).",
+    "potential_employment": "Tamanho esperado das entradas: probabilidade $\\times$ tamanho de chegada (QL = 1 ou quantis de entrantes).",
+    "build_features": "Tabela de atributos por c\\'{e}lula (regi\\~{a}o, atividade): camadas de densidade e controles.",
+    "predict_entry": "Probabilidade de entrada fora da amostra (gradient boosting, floresta, logit); exige scikit-learn.",
+    "explain_entry": "Import\\^{a}ncia dos atributos por permuta\\c{c}\\~{a}o em regi\\~{o}es fora do treino, com p-valor.",
+    "density_contributions": "Contribui\\c{c}\\~{a}o de cada atividade presente para a densidade de um par (regi\\~{a}o, atividade).",
+    "decomposed_density": "Densidade l\\'{i}quida dos efeitos fixos de regi\\~{a}o e de atividade.",
+    "skill_relatedness": "Relatedness por fluxos entre atividades (ex.: trocas de emprego), observado sobre esperado.",
+    "spatial_density": "Parcela dos vizinhos especializados em cada atividade, com pesos espaciais do usu\\'{a}rio.",
+    "desirability_index": "\\'{I}ndice de desejabilidade: m\\'{e}dia ponderada de indicadores padronizados por atividade.",
+    "weight_sensitivity": "Estabilidade do ranking de desejabilidade sob pesos sorteados (Dirichlet).",
+    "strategy_quadrants": "Classifica as op\\c{c}\\~{o}es de cada regi\\~{a}o nos quadrantes viabilidade $\\times$ desejabilidade.",
+    "list_complexity_potential": "Presen\\c{c}a e potencial de cada regi\\~{a}o em listas de atividades (generaliza GCI/GCP).",
+    "list_density": "Parcela da densidade que vem das atividades de cada lista.",
+    "missing_links": "Elos presentes, vi\\'{a}veis e ausentes de uma cadeia, por regi\\~{a}o.",
+    "entry_targets": "Alvo bin\\'{a}rio de entrada e conjunto em risco entre dois per\\'{i}odos.",
+    "validate_entry": "Valida preditores de entrada: AUC, AUC intra-regi\\~{a}o, precis\\~{a}o/revoca\\c{c}\\~{a}o em k, Brier, bootstrap.",
     "calibrate_steppingstone": "Calibra o modelo forward com steppingstone (OLS de entrada/sa\\'{i}da).",
     "effort_matrix": "Esfor\\c{c}o $W_{cp}$: RCA adicional necess\\'{a}rio para entrar em cada atividade.",
     "forecast_specialization": "Proje\\c{c}\\~{a}o sem pol\\'{i}tica (W=0): RCA, Mcp, PCI e ECI futuros.",

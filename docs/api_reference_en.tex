@@ -31,6 +31,8 @@
 \texttt{\footnotesize mor\_activities(mat, use\_rca=True, threshold=1.0, steps=19)} & {\small Method of Reflections -- activity/technology side only.} \\[2pt]
 \texttt{\footnotesize fitness\_complexity(mat, use\_rca=True, threshold=1.0, iterations=20, extremality=1.0, tol=1e-10, log\_fitness=False)} & {\small Fitness-Complexity algorithm.} \\[2pt]
 \texttt{\footnotesize subnational\_eci(mat, pci\_external, use\_rca=True, threshold=1.0, standardize=True)} & {\small Subnational ECI using an externally supplied PCI vector.} \\[2pt]
+\texttt{\footnotesize genepy(mat, use\_rca=True, threshold=1.0)} & {\small GENEPY index of regions and activities (advanced implementation; prefer ``eci\_pci(mat, method="genepy")``, which adds the automatic trimming of degenerate units).} \\[2pt]
+\texttt{\footnotesize eci\_diagnostics(mat, n\_boot=100, share=0.8, use\_rca=True, threshold=1.0, seed=None)} & {\small How much can the ECI ranking of this matrix be trusted?} \\[2pt]
 \bottomrule
 \end{longtable}
 
@@ -52,6 +54,12 @@
 \texttt{\footnotesize relatedness\_density\_internal(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Internal relatedness density: density values for activities the region ALREADY has (M\_{rc} = 1).} \\[2pt]
 \texttt{\footnotesize relatedness\_density\_external(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small External relatedness density: density values for activities the region does NOT yet have (M\_{rc} = 0).} \\[2pt]
 \texttt{\footnotesize relative\_relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relative relatedness (Pinheiro et al.} \\[2pt]
+\texttt{\footnotesize density\_contributions(mat, region, activity, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Which activities of a region make another activity feasible there.} \\[2pt]
+\texttt{\footnotesize decomposed\_density(density, tol=1e-10, max\_iter=1000)} & {\small Relatedness density net of region and activity fixed effects.} \\[2pt]
+\texttt{\footnotesize skill\_relatedness(flows, symmetric=False, exclude\_diagonal=True, normalize=True)} & {\small Skill relatedness between activities from a matrix of flows.} \\[2pt]
+\texttt{\footnotesize spatial\_density(mat, W, use\_rca=True, threshold=1.0)} & {\small Share of a region's neighbours that are specialized in each activity.} \\[2pt]
+\texttt{\footnotesize implied\_rca(mat, space='activity', k=None, cap=5.0, use\_rca=True)} & {\small Implied comparative advantage (Hausmann, Stock \& Yıldırım 2022).} \\[2pt]
+\texttt{\footnotesize io\_relatedness(Z, shares='sales', method='mean')} & {\small Relatedness between industries from an input-output table.} \\[2pt]
 \texttt{\footnotesize co\_occurrence(mat, diagonal=False)} & {\small Co-occurrence matrix: number of times two activities appear together across regions/events.} \\[2pt]
 \texttt{\footnotesize relatedness\_index(mat, method='cosine', diagonal=False)} & {\small Pairwise relatedness index between activities from co-occurrence.} \\[2pt]
 \texttt{\footnotesize z\_score\_novelty(incidence)} & {\small Z-score of technological novelty (atypicality of co-occurrence).} \\[2pt]
@@ -164,6 +172,44 @@
 \texttt{\footnotesize expected\_diversification\_time(adjacency, active0, sequence, B=1.0, alpha=1.0)} & {\small Expected total time of a fixed sequence of targets (activity labels).} \\[2pt]
 \texttt{\footnotesize compare\_strategies(adjacency, active0, B=1.0, alpha=1.0, n\_random=10, seed=0)} & {\small Expected total diversification time of each heuristic strategy ('random' averaged over `n\_random` runs).} \\[2pt]
 \texttt{\footnotesize optimize\_sequence(adjacency, active0, B=1.0, alpha=1.0, n\_iter=2000, seed=0)} & {\small Approximate the optimal diversification sequence by simulated annealing over target orderings (pairwise-swap proposals), starting from the greedy sequence.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{strategy} --- Strategy: Desirability and Quadrants}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize desirability\_index(indicators, weights=None, standardize='z')} & {\small Weighted combination of indicators of how desirable each activity is.} \\[2pt]
+\texttt{\footnotesize weight\_sensitivity(indicators, weights=None, standardize='z', n\_draws=1000, concentration=1.0, top=10, seed=None)} & {\small Stability of the desirability ranking when the weights change.} \\[2pt]
+\texttt{\footnotesize strategy\_quadrants(feasibility, desirability, by\_region=True, cut='median')} & {\small Classify each region's options by feasibility and desirability.} \\[2pt]
+\texttt{\footnotesize opportunity\_alignment(feasibility, desirability, method='spearman', min\_options=3)} & {\small Are a region's nearby opportunities also its valuable ones?} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{policy} --- Policy Lists}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize list\_complexity\_potential(mat, value, feasibility, lists, use\_rca=True, threshold=1.0, average='list')} & {\small What a region has, and could reach, within a list of activities.} \\[2pt]
+\texttt{\footnotesize list\_density(mat, lists, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Part of the relatedness density that comes from each list.} \\[2pt]
+\texttt{\footnotesize missing\_links(mat, links, feasibility, cut, use\_rca=True, threshold=1.0)} & {\small Which links of a chain a region has, could reach, or lacks.} \\[2pt]
+\texttt{\footnotesize transition\_risk(mat, exposed, pci=None, targets=None, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Exposure of each region to a list of activities at risk, and how easily it can move out of them.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{prediction} --- Entry Prediction and Validation}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Function} & \textbf{Description} \\
+\midrule\endhead
+\texttt{\footnotesize entry\_targets(rca\_t0, rca\_t1, values\_t1=None, lower=0.5, upper=1.0, min\_value=None)} & {\small Binary entry target and risk set between two periods.} \\[2pt]
+\texttt{\footnotesize validate\_entry(scores, target, k=(10, 20), baseline=None, n\_boot=0, seed=None)} & {\small How well do scores computed at t0 predict the entries observed by t1?} \\[2pt]
+\texttt{\footnotesize potential\_employment(prob, values, arrival='lq1', entrants=None, quantiles=(0.25, 0.5, 0.75))} & {\small Expected size of the activities a region may enter.} \\[2pt]
+\texttt{\footnotesize build\_features(mat, layers=None, at\_risk=None, region\_vars=None, activity\_vars=None, controls=True, use\_rca=True, threshold=1.0)} & {\small Table of features for each (region, activity) cell.} \\[2pt]
+\texttt{\footnotesize predict\_entry(features, target, model='gbm', mode='layers', new\_features=None, groups=None, n\_splits=5, calibrate=False, min\_entries=5, seed=None, return\_model=False)} & {\small Predicted probability of entry, out of sample.} \\[2pt]
+\texttt{\footnotesize explain\_entry(features, target, model='gbm', groups=None, n\_splits=5, n\_repeats=10, alpha=0.05, seed=None)} & {\small Which features carry the prediction of entry, out of sample.} \\[2pt]
 \bottomrule
 \end{longtable}
 

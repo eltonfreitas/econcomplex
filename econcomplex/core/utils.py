@@ -125,6 +125,20 @@ def align_square(mat, labels, n: int, name: str = "phi") -> np.ndarray:
     return arr
 
 
+def align_matrix(mat, rows, cols, name: str = "matrix") -> np.ndarray:
+    """
+    Return an R x C matrix as a float array ordered like `rows` and `cols`.
+    DataFrames are matched by label (cells absent from `mat` become NaN);
+    arrays are taken positionally and must have the right shape.
+    """
+    if isinstance(mat, pd.DataFrame):
+        return mat.reindex(index=rows, columns=cols).to_numpy(dtype=float)
+    arr = np.asarray(mat, dtype=float)
+    if arr.shape != (len(rows), len(cols)):
+        raise ValueError(f"{name} must be {(len(rows), len(cols))}; got {arr.shape}.")
+    return arr
+
+
 def binarize(mat: Union[np.ndarray, pd.DataFrame], threshold: float = 1.0) -> np.ndarray:
     """Return binary matrix: 1 where mat >= threshold, else 0."""
     arr = validate_matrix(mat, nonnegative=False)

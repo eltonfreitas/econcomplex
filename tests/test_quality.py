@@ -62,8 +62,9 @@ def test_baseline_1_0_1_reproduced():
         res = ec.compute_complexity(
             df, cols={"loc": "loc", "act": "act", "val": "val"}
         ).sort_values(["loc", "act"])
+    # "cog" is not compared: its normalization was corrected in 1.2.0
     for col in ["rca", "mcp", "diversity", "ubiquity", "eci", "pci",
-                "density", "distance", "coi", "cog"]:
+                "density", "distance", "coi"]:
         np.testing.assert_allclose(res[col].to_numpy(dtype=float),
                                    base[f"pipe_{col}"], rtol=1e-7, atol=1e-9,
                                    err_msg=col)

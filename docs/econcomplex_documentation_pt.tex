@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.1.0}\par
+  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.2.0}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -215,6 +215,9 @@ refer\^{e}ncia na literatura:
 # Do PyPI (recomendado)
 pip install econcomplex
 
+# Opcional: modelos de previsao (acrescenta o scikit-learn)
+pip install "econcomplex[ml]"
+
 # Versao de desenvolvimento mais recente, direto do GitHub
 pip install git+https://github.com/eltonfreitas/econcomplex.git
 
@@ -235,9 +238,11 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \texttt{core}           & RCA, RPOP, Mcp, diversidade, ubiquidade, \texttt{trim\_core},
                           \texttt{make\_sample\_data}, utilit\'{a}rios \\
 \texttt{complexity}     & ECI/PCI --- porta de entrada \'{u}nica \texttt{eci\_pci(method=...)}
-                          (eigenvector, reflections, fitness), ECI subnacional \\
+                          (eigenvector, reflections, fitness, genepy), ECI subnacional, diagn\'{o}sticos do ECI \\
 \texttt{relatedness}    & Proximidade (discreta, cont\'{i}nua, cosseno, correla\c{c}\~{a}o),
-                          densidade, dist\^{a}ncia, co-ocorr\^{e}ncia, cross-space \\
+                          densidade, dist\^{a}ncia, co-ocorr\^{e}ncia, cross-space,
+                          relatedness por fluxos, densidade espacial,
+                          contribui\c{c}\~{o}es e decomposi\c{c}\~{a}o da densidade, VCR impl\'{i}cita, relatedness por insumo-produto \\
 \texttt{specialization} & LQ, Hachman, Krugman, coef.\ especializa\c{c}\~{a}o, similaridade \\
 \texttt{inequality}     & Gini, Gini locacional, Hoover-Gini, HHI, entropia Shannon \\
 \texttt{productivity}   & PRODY, EXPY, PGI, PEII \\
@@ -246,6 +251,12 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \texttt{outlook}        & COI, COG (Complexity Outlook) \\
 \texttt{optimization}   & Otimiza\c{c}\~{a}o de ECI (Stojkoski \& Hidalgo 2026), metas de
                           crescimento, difus\~{a}o estrat\'{e}gica (Alshamsi et al.\ 2018) \\
+\texttt{strategy}       & \'{I}ndice de desejabilidade, sensibilidade aos pesos,
+                          quadrantes viabilidade $\times$ desejabilidade, alinhamento de oportunidades \\
+\texttt{policy}         & Listas de atividades (listas verdes, miss\~{o}es, cadeias):
+                          presen\c{c}a e potencial, densidade por lista, elos ausentes, risco de transi\c{c}\~{a}o \\
+\texttt{prediction}     & Alvos de entrada, valida\c{c}\~{a}o de preditores, modelos de
+                          previs\~{a}o (scikit-learn opcional), tamanho esperado das entradas \\
 \texttt{pipeline}       & Fun\c{c}\~{a}o \texttt{compute\_complexity()} --- pipeline unificado \\
 \bottomrule
 \end{tabular}
@@ -520,7 +531,7 @@ import sys
 sys.path.insert(0, "/caminho/para/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.1.0
+print(ec.__version__)   # 1.2.0
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -713,6 +724,9 @@ print(eci_evolucao)
 \end{notebox}
 
 %% ============================================================
+\input{tutorial_pt}
+
+%% ============================================================
 \section{Indicadores do N\'{u}cleo (\texttt{core})}
 
 \subsection{Vantagem Comparativa Revelada (RCA)}
@@ -801,6 +815,55 @@ fit_log, comp_log = ec.fitness_complexity(mat, log_fitness=True)
 eci_sub = ec.subnational_eci(mat_sub, pci_nacional)
 \end{lstlisting}
 
+\subsection{GENEPY (Sciarra et al., 2020)}
+
+\begin{sloppypar}
+O GENEPY reconcilia as duas vis\~{o}es de complexidade. A matriz
+bin\'{a}ria \'{e} reescalada em $W_{cp} = M_{cp} / (k_c\,k'_p)$, com $k_c$ a
+diversidade e $k'_p = \sum_c M_{cp}/k_c$; a proximidade entre locais \'{e}
+$N = WW^{\top}$ com diagonal zero. Com $X_1, X_2$ os dois primeiros
+autovetores e $\lambda_1, \lambda_2$ seus autovalores,
+\end{sloppypar}
+
+\[
+  \text{GENEPY}_c = \Big(\sum_{i=1}^{2} \lambda_i X_{c,i}^2\Big)^{2}
+                    + 2 \sum_{i=1}^{2} \lambda_i^{2} X_{c,i}^{2}
+\]
+
+O primeiro autovetor \'{e} um Fitness linearizado e o segundo se relaciona
+com o ECI. A implementa\c{c}\~{a}o segue o c\'{o}digo publicado pelos autores
+(os dois autovalores de maior valor absoluto) e \'{e} testada contra uma
+transcri\c{c}\~{a}o dele.
+
+\subsection{Diagn\'{o}sticos do ECI}
+
+\begin{sloppypar}
+O ECI por autovetor separa os locais ao longo do principal eixo de
+diferen\c{c}a no que eles fazem (Mealy, Farmer \& Teytelboym, 2019). Em
+matrizes subnacionais pequenas ou esparsas essa separa\c{c}\~{a}o pode n\~{a}o
+ser n\'{i}tida nem est\'{a}vel. \fn{eci\_diagnostics} informa o gap espectral
+entre o segundo e o terceiro autovalores, a correla\c{c}\~{a}o do ECI com a
+diversidade e a estabilidade do ranking quando o ECI \'{e} recalculado em
+subconjuntos aleat\'{o}rios das atividades.
+\end{sloppypar}
+
+\begin{warnbox}
+  Um autovetor n\~{a}o tem sinal pr\'{o}prio: a biblioteca orienta o ECI para
+  que ele se correlacione positivamente com a diversidade. Mealy et al.\
+  encontram correla\c{c}\~{a}o positiva para pa\'{i}ses, nula para estados
+  dos EUA e negativa para autoridades locais do Reino Unido. Quando
+  \texttt{corr\_diversity} for fraca, confira a orienta\c{c}\~{a}o com uma
+  vari\'{a}vel externa (renda, sal\'{a}rios) antes de ler ``ECI alto'' como
+  ``complexo''.
+\end{warnbox}
+
+\begin{lstlisting}[caption={GENEPY e diagn\'{o}sticos do ECI}]
+g_regions, g_activities = ec.eci_pci(mat, method="genepy")
+
+diag = ec.eci_diagnostics(mat, n_boot=100, seed=1)
+diag[["gap", "corr_diversity", "rank_stability_mean", "sign_flips"]]
+\end{lstlisting}
+
 %% ============================================================
 \section{Product Space e Relatedness (\texttt{relatedness})}
 
@@ -845,6 +908,126 @@ rca_rel = ec.relatedness(mat, phi_d)  # densidades de relatedness
 # phi_cross: proximidade entre setores e tecnologias (matrizes diferentes)
 phi_cross = ec.cross_space_proximity(mat_setor, mat_tech)
 density_c = ec.cross_relatedness(mat_setor, phi_cross)
+\end{lstlisting}
+
+\subsection{Explicando e Decompondo a Densidade}
+
+\begin{sloppypar}
+A densidade \'{e} uma soma sobre as atividades que o local j\'{a} tem, e
+por isso pode ser aberta. \fn{density\_contributions} lista quanto cada
+atividade presente $k$ acrescenta \`{a} densidade de um par,
+$M_{ik}\,\phi_{kj} / \sum_k \phi_{kj}$; as contribui\c{c}\~{o}es somam
+$\omega_{ij}$ e d\~{a}o a explica\c{c}\~{a}o direta de uma oportunidade
+(``$j$ est\'{a} pr\'{o}xima porque a regi\~{a}o j\'{a} faz A, B e C'').
+\end{sloppypar}
+
+A densidade tamb\'{e}m \'{e} mecanicamente maior em locais diversificados
+e varia com a posi\c{c}\~{a}o da atividade na rede.
+\fn{decomposed\_density} retira os dois efeitos de n\'{i}vel e fica com o
+que \'{e} espec\'{i}fico do par: o res\'{i}duo da regress\~{a}o com
+efeitos fixos de local e de atividade,
+$\omega_{ij} = a_i + b_j + e_{ij}$, que na matriz completa \'{e}
+$e_{ij} = \omega_{ij} - \bar\omega_{i\cdot} - \bar\omega_{\cdot j} +
+\bar\omega$. C\'{e}lulas \texttt{NaN} ficam fora da estima\c{c}\~{a}o.
+Nomaler \& Verspagen (2024) regridem a densidade na diversidade do local
+e na ubiquidade da atividade e chamam o res\'{i}duo de ``variedade
+relacionada''; os efeitos fixos usados aqui absorvem as duas, junto com
+qualquer outro fator do local ou da atividade.
+
+\begin{lstlisting}[caption={Contribui\c{c}\~{o}es para a densidade e densidade l\'{i}quida de efeitos fixos}]
+contrib = ec.density_contributions(mat, "my_region", "target",
+                                   phi=phi_d)
+contrib.head(5)   # activities that pull the target closer
+contrib.sum()     # equals the density of the pair
+
+specific = ec.decomposed_density(ec.density(mat, phi=phi_d))
+# fixed effects estimated only on the activities each region lacks
+external = ec.relatedness_density_external(mat, phi=phi_d)
+specific_ext = ec.decomposed_density(external)
+\end{lstlisting}
+
+\subsection{Skill Relatedness (fluxos entre atividades)}
+
+Duas atividades s\~{a}o relacionadas quando os trabalhadores se movem
+entre elas mais do que o esperado (Neffke \& Henning, 2013; Neffke, Otto
+\& Weyh, 2017). Com $F_{ij}$ o fluxo da atividade $i$ para a $j$:
+
+\[
+  SR_{ij} = \frac{F_{ij}}{F_{i\cdot}\,F_{\cdot j} / F_{\cdot\cdot}},
+  \qquad
+  \widetilde{SR}_{ij} = \frac{SR_{ij} - 1}{SR_{ij} + 1} \in [-1, 1)
+\]
+
+Zero significa ``tantas trocas quanto o esperado''. A medida \'{e}
+dirigida; \texttt{symmetric=True} tira a m\'{e}dia das duas dire\c{c}\~{o}es
+depois da transforma\c{c}\~{a}o, como em Neffke, Otto \& Weyh (2017). A mesma fun\c{c}\~{a}o serve para qualquer
+contagem origem $\times$ destino (ocupa\c{c}\~{o}es, fluxos entre
+regi\~{o}es).
+
+\begin{lstlisting}[caption={Skill relatedness a partir de trocas de emprego}]
+# long table of job switches: origin, destination, workers
+flows  = ec.pivot_to_matrix(switches, "origin", "destination",
+                            "workers")
+sr     = ec.skill_relatedness(flows)                  # directed
+sr_sym = ec.skill_relatedness(flows, symmetric=True)  # undirected
+
+# as a proximity matrix: pairs with more flows than expected
+phi_skill = sr_sym.clip(lower=0).fillna(0)
+density_skill = ec.density(mat, phi=phi_skill)
+\end{lstlisting}
+
+\subsection{Densidade Espacial}
+
+O an\'{a}logo espacial da densidade: a parcela dos vizinhos de um local
+que j\'{a} s\~{a}o especializados na atividade (Bahar, Hausmann \&
+Hidalgo, 2014; Boschma, Mart\'{i}n \& Minondo, 2017),
+
+\[
+  SD_{ij} = \frac{\sum_{i'} w_{ii'}\,M_{i'j}}{\sum_{i'} w_{ii'}}
+\]
+
+Os pesos $w$ s\~{a}o fornecidos pelo usu\'{a}rio (contiguidade, inverso
+da dist\^{a}ncia, fluxos pendulares), de modo que nenhuma biblioteca
+geogr\'{a}fica \'{e} necess\'{a}ria. Locais sem vizinhos recebem
+\texttt{NaN}.
+
+\begin{lstlisting}[caption={Densidade espacial}]
+# W: regions x regions (contiguity, inverse distance, flows...)
+sd = ec.spatial_density(mat, W)   # share of neighbours, 0 to 1
+\end{lstlisting}
+
+\subsection{Vantagem Comparativa Impl\'{i}cita e Relatedness por Insumo-Produto}
+
+\begin{sloppypar}
+\fn{implied\_rca} (Hausmann, Stock \& Y{\i}ld{\i}r{\i}m, 2022) prev\^{e} a
+VCR de um local numa atividade a partir do que unidades parecidas fazem,
+usando as pr\'{o}prias intensidades em vez da presen\c{c}a bin\'{a}ria. A
+similaridade \'{e} $(1 + \text{corr})/2$ dos vetores de VCR (limitados a 5
+s\'{o} nesta etapa); a previs\~{a}o \'{e} a m\'{e}dia ponderada pela
+similaridade sobre os $k$ vizinhos mais pr\'{o}ximos ($k = \sqrt{N}$ por
+padr\~{a}o), sem a pr\'{o}pria unidade. \texttt{space="activity"} usa as
+atividades parecidas dentro do local; \texttt{space="region"}, os locais
+parecidos dentro da atividade. Uma c\'{e}lula muito abaixo do seu valor
+impl\'{i}cito tende a crescer.
+\end{sloppypar}
+
+\begin{sloppypar}
+\fn{io\_relatedness} constr\'{o}i uma matriz de proximidade a partir de
+uma tabela de insumo-produto: a parcela das vendas intermedi\'{a}rias do
+setor $i$ que vai para $j$, em m\'{e}dia com a dire\c{c}\~{a}o inversa,
+$IOR_{ij} = \tfrac12\,(Z_{ij}/Z_{i\cdot} + Z_{ji}/Z_{j\cdot})$
+(Essletzbichler, 2015, seguindo Fan \& Lang, 2000). Participa\c{c}\~{o}es
+nas compras e o m\'{a}ximo das duas dire\c{c}\~{o}es s\~{a}o op\c{c}\~{o}es.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={VCR impl\'{i}cita e relatedness por insumo-produto}]
+implied_act = ec.implied_rca(mat)                  # similar activities
+implied_reg = ec.implied_rca(mat, space="region")  # similar regions
+gap = implied_act - ec.rca(mat)       # > 0: below what peers suggest
+
+# Z: sellers x buyers block of an input-output table
+phi_io = ec.io_relatedness(Z)                       # (sales shares, mean)
+density_io = ec.density(mat, phi=phi_io)
 \end{lstlisting}
 
 %% ============================================================
@@ -906,6 +1089,26 @@ o \textbf{COG} mede o ganho esperado de complexidade:
   \text{COI}_c = \sum_p (1 - M_{cp})\,\omega_{cp}\,Q_p
 \]
 
+\[
+  \text{COG}_{cp} = (1 - M_{cp}) \sum_{p'} (1 - M_{cp'})\,
+     \frac{\phi_{pp'}}{\sum_{p''} \phi_{p''p'}}\,Q_{p'}
+\]
+
+Entrar em $p$ eleva a densidade de cada outra atividade ausente $p'$ em
+$\phi_{pp'}/\sum_{p''}\phi_{p''p'}$, e cada ganho \'{e} valorado por
+$Q_{p'}$: o COG \'{e} o aumento resultante do COI (bruto do termo da
+pr\'{o}pria $p$, que sai da soma).
+
+\begin{notebox}
+  \textbf{Alterado na 1.2.0.} At\'{e} a vers\~{a}o 1.2.0 o COG era
+  normalizado pela proximidade total da atividade-alvo $p$, e n\~{a}o pela
+  de cada $p'$. As duas formas s\'{o} coincidem quando todas as atividades
+  t\^{e}m a mesma proximidade total; os valores mudam pouco
+  (correla\c{c}\~{a}o em torno de 0,97 com os anteriores nos dados de
+  exemplo). A forma atual coincide com a do \texttt{py-ecomplexity} do
+  Growth Lab e \'{e} testada contra a varia\c{c}\~{a}o efetiva do COI.
+\end{notebox}
+
 \begin{lstlisting}[caption={COI e COG}]
 coi = ec.coi(mat, pci, phi=phi_d)
 cog = ec.cog(mat, pci, phi=phi_d)
@@ -965,6 +1168,266 @@ seq = ec.diversification_strategy(adj, active0, B=fit["B"],
                                   alpha=fit["alpha"], strategy="greedy")
 tabela = ec.compare_strategies(adj, active0, B=fit["B"], alpha=fit["alpha"])
 otimo  = ec.optimize_sequence(adj, active0, B=fit["B"], alpha=fit["alpha"])
+\end{lstlisting}
+
+%% ============================================================
+\section{Estrat\'{e}gia: Desejabilidade e Quadrantes (\texttt{strategy})}
+
+Escolher alvos de diversifica\c{c}\~{a}o envolve duas perguntas: o que
+est\'{a} ao alcance (\emph{viabilidade} --- densidade, relatedness
+relativa, probabilidade prevista) e o que vale a pena ter
+(\emph{desejabilidade}). Este m\'{o}dulo torna a segunda expl\'{i}cita e
+combina as duas.
+
+\fn{desirability\_index} p\~{o}e cada indicador numa escala comum
+(z-score por padr\~{a}o) e tira a m\'{e}dia ponderada,
+$D_j = \sum_k w_k z_{jk} / \sum_k |w_k|$. Os pesos s\~{a}o uma escolha
+normativa e devem ser publicados; \fn{weight\_sensitivity} sorteia pesos
+de uma distribui\c{c}\~{a}o de Dirichlet centrada nos escolhidos e mostra
+quanto a posi\c{c}\~{a}o de cada atividade se move.
+\fn{strategy\_quadrants} classifica ent\~{a}o as op\c{c}\~{o}es de cada
+local, com cortes calculados dentro do local (Balland et al., 2019;
+Pinheiro et al., 2022):
+
+\begin{center}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Quadrante} & \textbf{Leitura} & \textbf{Viabilidade} & \textbf{Desejabilidade} \\
+\midrule
+\texttt{short jump} & salto curto  & acima do corte & acima do corte \\
+\texttt{long bet}   & aposta longa & abaixo         & acima \\
+\texttt{low value}  & baixo valor  & acima          & abaixo \\
+\texttt{avoid}      & evitar       & abaixo         & abaixo \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[caption={Desejabilidade, sensibilidade aos pesos e quadrantes}]
+# one column per indicator, one row per activity
+indicators = pd.DataFrame({"pci": pci, "wage": wage, "pgi": pgi})
+weights    = {"pci": 0.5, "wage": 0.3, "pgi": -0.2}  # negative: against
+
+desirability = ec.desirability_index(indicators, weights)
+robust = ec.weight_sensitivity(indicators, weights, n_draws=1000,
+                               top=20, seed=1)
+# robust["top_share"]: share of the weightings with the activity
+# among the 20 best
+
+# NaN where the activity is already present; cuts by region
+options   = ec.relatedness_density_external(mat, phi=phi_d)
+quadrants = ec.strategy_quadrants(options, desirability)
+quadrants.loc["my_region"].value_counts()
+\end{lstlisting}
+
+\begin{sloppypar}
+\fn{opportunity\_alignment} resume o quadro por local: a correla\c{c}\~{a}o,
+entre as suas op\c{c}\~{o}es, de viabilidade e desejabilidade. Valores
+negativos indicam locais cujas oportunidades pr\'{o}ximas t\^{e}m baixo
+valor. Formaliza uma compara\c{c}\~{a}o que Mealy \& Coyle (2022) fazem
+visualmente; parte do padr\~{a}o \'{e} mec\^{a}nica (locais complexos t\^{e}m
+atividades complexas por perto), ent\~{a}o compare locais de complexidade
+semelhante.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Alinhamento entre viabilidade e desejabilidade}]
+# > 0: nearby options are also the valuable ones; < 0: long bets needed
+alignment = ec.opportunity_alignment(options, desirability)
+\end{lstlisting}
+
+%% ============================================================
+\section{Listas de Pol\'{i}tica (\texttt{policy})}
+
+Uma \emph{lista} \'{e} qualquer conjunto de atividades que interessa a
+uma pol\'{i}tica: produtos verdes, as atividades de uma miss\~{a}o ou de
+uma cadeia produtiva, atividades expostas a uma transi\c{c}\~{a}o. As
+listas entram como \texttt{\{nome: [atividades]\}} ou como tabela
+booleana (atividades $\times$ listas).
+
+\fn{list\_complexity\_potential} calcula, para cada local $c$ e lista
+$L$,
+
+\[
+  \text{presen\c{c}a}_{cL} = \sum_{p \in L} M_{cp}\,v_p, \qquad
+  \text{potencial}_{cL} = \frac{1}{|L|} \sum_{p \in L} (1 - M_{cp})\,f_{cp}\,v_p
+\]
+
+\begin{sloppypar}
+com $v$ um valor por atividade (PCI, sal\'{a}rio) e $f$ uma medida de
+viabilidade. Generaliza o Green Complexity Index e o Green Complexity
+Potential de Mealy \& Teytelboym (2022) para qualquer lista, valor e
+viabilidade. O potencial deles \'{e} a m\'{e}dia sobre os produtos verdes
+que o pa\'{i}s n\~{a}o tem, com o PCI reescalado para $[0,1]$: use
+\texttt{average="missing"} e \texttt{value=ec.normalize\_01(pci)}. Com a
+lista de todas as atividades e $f$ = densidade,
+$\text{potencial} \times |L|$ \'{e} o COI. \fn{list\_density} devolve a
+parcela da densidade que se apoia nas atividades de cada lista (mesmo
+denominador da densidade, logo as parcelas s\~{a}o aditivas).
+\fn{missing\_links} agrupa as atividades de uma cadeia em elos e informa,
+por local, quais elos est\~{a}o presentes, s\~{a}o vi\'{a}veis ou faltam.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Indicadores para listas de atividades}]
+lists = {"green": green_codes, "mission_health": health_codes}
+
+# feasibility: density as a share, or a predicted probability
+feas = ec.density(mat, phi=phi_d, percent=False)
+tab  = ec.list_complexity_potential(mat, pci, feas, lists)
+tab["potential"].unstack()                  # regions x lists
+
+# density that rests on brown activities (R x C)
+parts = ec.list_density(mat, {"brown": brown_codes}, phi=phi_d)
+parts["brown"]
+
+chain = {"inputs": [...], "components": [...], "assembly": [...]}
+ec.missing_links(mat, chain, feas, cut=0.25)
+# status of each link: present / feasible / missing
+\end{lstlisting}
+
+\begin{sloppypar}
+\fn{transition\_risk} mede a exposi\c{c}\~{a}o de cada local a uma lista de
+atividades que tendem a encolher --- a lista ``marrom'' de Andres et
+al.\ (2023) --- e a facilidade de sair delas. Com $s_{cb}$ a
+participa\c{c}\~{a}o da atividade $b$ no valor total do local e
+$\widetilde{Q}_b$ o PCI reescalado para $[0,1]$:
+\end{sloppypar}
+
+\[
+  \text{exposi\c{c}\~{a}o}_c = \sum_{b} s_{cb}, \qquad
+  \text{lock-in}_c = \sum_{b} s_{cb}\,(1 - \widetilde{Q}_b), \qquad
+  TO_b = \frac{\operatorname{mean}_{q \in T}\,\phi_{bq}}
+              {\operatorname{mean}_{p}\,\phi_{bp}}
+\]
+
+A \emph{perspectiva} (outlook) de um local \'{e} a m\'{e}dia de $TO_b$ sobre
+as atividades expostas em que ele \'{e} especializado; acima de 1, elas
+est\~{a}o mais pr\'{o}ximas da lista-alvo $T$ (atividades verdes, ou tudo o
+que n\~{a}o \'{e} exposto) do que da atividade m\'{e}dia.
+
+\begin{lstlisting}[caption={Exposi\c{c}\~{a}o, lock-in e perspectiva de transi\c{c}\~{a}o}]
+risk = ec.transition_risk(mat, brown_codes, pci=pci,
+                          targets=green_codes, phi=phi_d)
+risk.sort_values("lock_in", ascending=False).head()
+\end{lstlisting}
+
+%% ============================================================
+\section{Previs\~{a}o de Entradas e Valida\c{c}\~{a}o (\texttt{prediction})}
+
+A relatedness \'{e} \'{u}til para a pol\'{i}tica na medida em que prev\^{e}
+onde os locais de fato se diversificam. Este m\'{o}dulo testa isso fora
+da amostra, para qualquer preditor.
+
+\fn{entry\_targets} define o evento: uma c\'{e}lula est\'{a} \emph{em
+risco} quando $\text{RCA}_{t_0} < 0{,}5$ e \emph{entra} quando
+$\text{RCA}_{t_1} \geq 1$ (os dois limiares s\~{a}o par\^{a}metros; pode-se
+exigir um tamanho m\'{i}nimo). O intervalo entre os limiares evita contar
+c\'{e}lulas que apenas oscilam em torno de RCA $= 1$.
+
+\fn{validate\_entry} compara uma ou mais matrizes de escore com o alvo.
+Um escore \'{e} qualquer medida em que maior significa ``mais prov\'{a}vel
+de entrar'': densidade, relatedness relativa, a probabilidade prevista
+por um modelo, a RCA inicial, uma regra de bolso.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabular}{l>{\raggedright\arraybackslash}p{10.5cm}}
+\toprule
+\textbf{M\'{e}trica} & \textbf{Leitura} \\
+\midrule
+\texttt{auc} & AUC-ROC agregada sobre todas as c\'{e}lulas em risco;
+  0,5 = sem informa\c{c}\~{a}o. \\
+\texttt{auc\_within} & M\'{e}dia da AUC calculada dentro de cada local: a
+  capacidade de ordenar as op\c{c}\~{o}es \emph{de um dado local}, livre
+  das diferen\c{c}as de tamanho e diversifica\c{c}\~{a}o entre locais. \\
+\texttt{average\_precision} & \'{A}rea sob a curva precis\~{a}o--revoca\c{c}\~{a}o;
+  informativa quando as entradas s\~{a}o raras. \\
+\texttt{precision@k} & Parcela das $k$ op\c{c}\~{o}es mais bem ranqueadas
+  do local que entraram. \\
+\texttt{recall@k} & Parcela das entradas do local encontradas entre as
+  suas $k$ op\c{c}\~{o}es mais bem ranqueadas. \\
+\texttt{brier} & Erro quadr\'{a}tico m\'{e}dio do escore como probabilidade
+  (s\'{o} para escores em $[0,1]$). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Com \texttt{n\_boot} $> 0$ a fun\c{c}\~{a}o acrescenta intervalos de
+95\,\% por bootstrap de locais e, com \texttt{baseline}, a diferen\c{c}a
+de cada m\'{e}trica em rela\c{c}\~{a}o a um preditor de refer\^{e}ncia.
+
+\begin{warnbox}
+  Para um teste honesto, todo escore --- inclusive a matriz de
+  proximidade por tr\'{a}s de uma densidade --- deve usar apenas dados
+  at\'{e} $t_0$, e as previs\~{o}es de modelos devem ser fora da amostra.
+\end{warnbox}
+
+\begin{lstlisting}[caption={Os escores preveem a entrada?}]
+# everything on the right-hand side uses data up to t0 only
+rca0, rca1 = ec.rca(mat_t0), ec.rca(mat_t1)
+target, at_risk = ec.entry_targets(rca0, rca1, values_t1=mat_t1,
+                                   min_value=10)
+
+phi0   = ec.product_proximity(mat_t0)
+scores = {"density":     ec.density(mat_t0, phi=phi0),
+          "relative":    ec.relative_relatedness(mat_t0, phi=phi0),
+          "persistence": rca0}
+val = ec.validate_entry(scores, target, k=(10, 20),
+                        baseline="persistence", n_boot=200, seed=1)
+val["value"].unstack()   # scores x metrics
+val.loc["density"]       # value, 95% interval, diff. to baseline
+\end{lstlisting}
+
+\subsection{Previs\~{a}o com Aprendizado de M\'{a}quina (opcional)}
+
+\begin{sloppypar}
+Com o scikit-learn instalado (\texttt{pip install econcomplex[ml]}) a
+biblioteca tamb\'{e}m ajusta modelos de previs\~{a}o. \fn{build\_features}
+empilha quaisquer matrizes local $\times$ atividade --- densidades
+calculadas com diferentes matrizes de proximidade, densidade espacial,
+VCR impl\'{i}cita --- numa tabela de c\'{e}lulas e acrescenta controles (VCR
+inicial, tamanho e diversidade do local, tamanho e ubiquidade da
+atividade). \fn{predict\_entry} devolve a probabilidade de entrada
+\emph{fora da amostra}: os locais s\~{a}o divididos em grupos e cada
+c\'{e}lula \'{e} prevista por um modelo que nunca viu o seu local, de modo
+que o resultado entra direto em \fn{validate\_entry}, ao lado das
+densidades simples. Modelos: gradient boosting (padr\~{a}o), floresta
+aleat\'{o}ria, regress\~{a}o log\'{i}stica (a refer\^{e}ncia transparente) ou
+qualquer classificador do scikit-learn. \texttt{mode="vector"} ajusta um
+modelo por atividade com o vetor inteiro de VCR do local, sem matriz de
+proximidade (Tacchella et al., 2023; Albora et al., 2023).
+\end{sloppypar}
+
+\begin{sloppypar}
+\fn{explain\_entry} informa quais atributos sustentam a previs\~{a}o:
+import\^{a}ncia por permuta\c{c}\~{a}o (queda da AUC) em locais fora do
+treino, com p-valor. \fn{potential\_employment} converte probabilidades
+calibradas em quantidades,
+$\text{prob}_{cp} \times \text{chegada}_{cp}$, em que o tamanho de chegada
+\'{e} o que d\'{a} quociente locacional 1
+($E_{c\cdot}E_{\cdot p}/E_{\cdot\cdot}$) ou um quantil do que os entrantes
+passados alcan\c{c}aram.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Das densidades a um modelo de previs\~{a}o e ao emprego esperado}]
+# pip install econcomplex[ml]
+layers = {"density": ec.density(mat_t0, phi=phi0),
+          "implied": ec.implied_rca(mat_t0),
+          "spatial": ec.spatial_density(mat_t0, W)}
+X = ec.build_features(mat_t0, layers, at_risk=at_risk)
+
+# out of sample: each region is predicted by a model that never saw it
+scores["gbm"]   = ec.predict_entry(X, target, model="gbm", seed=1)
+scores["logit"] = ec.predict_entry(X, target, model="logit", seed=1)
+ec.validate_entry(scores, target, baseline="density")["value"].unstack()
+
+ec.explain_entry(X, target, seed=1)   # which layers carry the prediction
+
+# next window: fit on t0 -> t1, predict from the features observed at t1
+X_t1 = ec.build_features(mat_t1, layers_t1, at_risk=ec.rca(mat_t1) < 0.5)
+prob = ec.predict_entry(X, target, new_features=X_t1, calibrate=True)
+jobs = ec.potential_employment(prob, mat_t1)        # arrival at LQ = 1
+jobs.groupby("region")["expected"].sum()
 \end{lstlisting}
 
 %% ============================================================
@@ -1046,13 +1509,11 @@ Guia r\'{a}pido de leitura dos principais resultados. Todos os
 apenas dentro da mesma matriz (mesmo per\'{i}odo e mesma
 classifica\c{c}\~{a}o de atividades).
 
-\begin{center}
-\renewcommand{\arraystretch}{1.35}
-\small
-\begin{tabular}{lp{3.2cm}p{8.6cm}}
+{\renewcommand{\arraystretch}{1.35}\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{8.6cm}}
 \toprule
 \textbf{Indicador} & \textbf{Faixa t\'{i}pica} & \textbf{Leitura} \\
-\midrule
+\midrule\endhead
 ECI / PCI & z-score (m\'{e}dia 0, dp 1) & Maior = local / atividade mais
   complexo. \texttt{NaN} = unidade podada por diversidade/ubiquidade
   zero. \\
@@ -1073,6 +1534,29 @@ COI & sem limite & Maior = mais atividades complexas ao alcance
   (potencial de diversifica\c{c}\~{a}o). \\
 COG & $\geq 0$ por atividade & Ganho de COI se o local desenvolver a
   atividade; identifica apostas estrat\'{e}gicas. \\
+Skill relatedness & $[-1, 1)$ & $>0$: mais fluxos entre as duas
+  atividades do que o esperado; $-1$: nenhum fluxo. \\
+Densidade espacial & $[0, 1]$ & Parcela dos vizinhos j\'{a}
+  especializados na atividade. \\
+Densidade decomposta & res\'{i}duo (m\'{e}dia 0) & $>0$: o par est\'{a} mais
+  pr\'{o}ximo do que as m\'{e}dias do local e da atividade explicam. \\
+\'{I}ndice de desejabilidade & unidades de z-score & Maior = mais
+  desej\'{a}vel sob os pesos declarados; ler junto com
+  \texttt{weight\_sensitivity}. \\
+Potencial da lista & unidades de $v$ & Valor m\'{e}dio das atividades
+  ausentes da lista, descontado pela viabilidade. \\
+AUC (entrada) & $[0, 1]$; 0,5 = acaso & Probabilidade de uma entrada
+  ficar acima de uma n\~{a}o entrada no ranking.\\
+GENEPY & $\geq 0$ & Maior = mais complexo; combina as vis\~{o}es de
+  Fitness e ECI. N\~{a}o padronizado. \\
+VCR impl\'{i}cita & unidades de VCR & VCR esperada a partir de atividades
+  ou locais parecidos; observada abaixo da impl\'{i}cita sugere espa\c{c}o
+  para crescer. \\
+Alinhamento de oportunidades & $[-1, 1]$ & $<0$: as op\c{c}\~{o}es
+  pr\'{o}ximas do local s\~{a}o as de menor valor. \\
+Lock-in / perspectiva & $[0,1]$ / em torno de 1 & Exposi\c{c}\~{a}o
+  ponderada pela baixa complexidade; perspectiva $>1$ = atividades
+  expostas pr\'{o}ximas dos alvos. \\
 Gini locacional & $[0, 0{,}5]$ & Maior = atividade geograficamente mais
   concentrada. \\
 HHI (normalizado) & $[0, 1]$ & Maior = portf\'{o}lio do local mais
@@ -1087,8 +1571,7 @@ Cont\'{a}gio $B$, $\alpha$ & $B \in (0,1]$, $\alpha \approx 1$ &
   $\alpha > 1$: atividades relacionadas se refor\c{c}am
   (cont\'{a}gio complexo). \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}}
 
 \begin{warnbox}
   Insumos como PIB per capita (PRODY/EXPY), popula\c{c}\~{a}o (RPOP),
@@ -1238,7 +1721,7 @@ print(otimo["sequence"][:10], otimo["improvement"])
 %% ============================================================
 \section{Refer\^{e}ncia da API}
 
-Invent\'{a}rio completo das 90 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
+Invent\'{a}rio completo das 112 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
 por m\'{o}dulo. As assinaturas mostram os par\^{a}metros e seus valores
 padr\~{a}o; consulte os docstrings no c\'{o}digo
 (\texttt{help(ec.funcao)}) para a documenta\c{c}\~{a}o completa de cada
@@ -1296,6 +1779,92 @@ do pacote instalado por \texttt{docs/generate\_api\_reference.py}.
     Stojkoski, V., Hidalgo, C.A. (2026). Optimizing economic complexity.
     \textit{Research Policy}, 55, 105454.
 
+  \item[Li \& Neffke (2024)]
+    Li, Y., Neffke, F. (2024). Evaluating the principle of relatedness:
+    Estimation, drivers and implications for policy. \textit{Research
+    Policy}, 53(3), 104952.
+
+  \item[Balland et al.\ (2019)]
+    Balland, P.-A., Boschma, R., Crespo, J., Rigby, D.L. (2019). Smart
+    specialization policy in the European Union: relatedness, knowledge
+    complexity and regional diversification. \textit{Regional Studies},
+    53(9), 1252--1268.
+
+  \item[Bahar, Hausmann \& Hidalgo (2014)]
+    Bahar, D., Hausmann, R., Hidalgo, C.A. (2014). Neighbors and the
+    evolution of the comparative advantage of nations: Evidence of
+    international knowledge diffusion? \textit{Journal of International
+    Economics}, 92(1), 111--123.
+
+  \item[Boschma, Mart\'{i}n \& Minondo (2017)]
+    Boschma, R., Mart\'{i}n, V., Minondo, A. (2017). Neighbour regions as
+    the source of new industries. \textit{Papers in Regional Science},
+    96(2), 227--246.
+
+  \item[Mealy \& Teytelboym (2022)]
+    Mealy, P., Teytelboym, A. (2022). Economic complexity and the green
+    economy. \textit{Research Policy}, 51(8), 103948.
+
+  \item[Neffke \& Henning (2013)]
+    Neffke, F., Henning, M. (2013). Skill relatedness and firm
+    diversification. \textit{Strategic Management Journal}, 34(3),
+    297--316.
+
+  \item[Neffke, Otto \& Weyh (2017)]
+    Neffke, F., Otto, A., Weyh, A. (2017). Inter-industry labor flows.
+    \textit{Journal of Economic Behavior \& Organization}, 142, 275--292.
+
+  \item[Nomaler \& Verspagen (2024)]
+    Nomaler, \"{O}., Verspagen, B. (2024). Related or unrelated diversification: What is smart specialization?
+    \textit{Structural Change and Economic Dynamics}, 70, 503--515.
+
+  \item[Albora et al.\ (2023)]
+    Albora, G., Pietronero, L., Tacchella, A., Zaccaria, A. (2023).
+    Product progression: a machine learning approach to forecasting
+    industrial upgrading. \textit{Scientific Reports}, 13, 1481.
+
+  \item[Andres et al.\ (2023)]
+    Andres, P., Mealy, P., Handler, N., Fankhauser, S. (2023). Stranded
+    nations? Transition risks and opportunities towards a clean economy.
+    \textit{Environmental Research Letters}, 18(4), 045004.
+
+  \item[Breiman (2001)]
+    Breiman, L. (2001). Random forests. \textit{Machine Learning}, 45,
+    5--32.
+
+  \item[Essletzbichler (2015)]
+    Essletzbichler, J. (2015). Relatedness, industrial branching and
+    technological cohesion in US metropolitan areas. \textit{Regional
+    Studies}, 49(5), 752--766.
+
+  \item[Fan \& Lang (2000)]
+    Fan, J.P.H., Lang, L.H.P. (2000). The measurement of relatedness: An
+    application to corporate diversification. \textit{The Journal of
+    Business}, 73(4), 629--660.
+
+  \item[Hausmann, Stock \& Y{\i}ld{\i}r{\i}m (2022)]
+    Hausmann, R., Stock, D.P., Y{\i}ld{\i}r{\i}m, M.A. (2022). Implied
+    comparative advantage. \textit{Research Policy}, 51(8), 104143.
+
+  \item[Mealy \& Coyle (2022)]
+    Mealy, P., Coyle, D. (2022). To them that hath: economic complexity
+    and local industrial strategy in the UK. \textit{International Tax
+    and Public Finance}, 29(2), 358--377.
+
+  \item[Mealy, Farmer \& Teytelboym (2019)]
+    Mealy, P., Farmer, J.D., Teytelboym, A. (2019). Interpreting economic
+    complexity. \textit{Science Advances}, 5(1), eaau1705.
+
+  \item[Sciarra et al.\ (2020)]
+    Sciarra, C., Chiarotti, G., Ridolfi, L., Laio, F. (2020). Reconciling
+    contrasting views on economic complexity. \textit{Nature
+    Communications}, 11, 3352.
+
+  \item[Tacchella et al.\ (2023)]
+    Tacchella, A., Zaccaria, A., Miccheli, M., Pietronero, L. (2023).
+    Relatedness in the era of machine learning. \textit{Chaos, Solitons
+    \& Fractals}, 176, 114071.
+
 \end{description}
 
 %% ============================================================
@@ -1308,7 +1877,7 @@ originais dos indicadores utilizados (ver Refer\^{e}ncias).
 
 \begin{lstlisting}[language={}, caption={Verificar vers\~{a}o da biblioteca}]
 import econcomplex as ec
-print(ec.__version__)   # 1.1.0
+print(ec.__version__)   # 1.2.0
 \end{lstlisting}
 
 \end{document}

@@ -31,6 +31,8 @@
 \texttt{\footnotesize mor\_activities(mat, use\_rca=True, threshold=1.0, steps=19)} & {\small Reflex\~{o}es apenas do lado das atividades.} \\[2pt]
 \texttt{\footnotesize fitness\_complexity(mat, use\_rca=True, threshold=1.0, iterations=20, extremality=1.0, tol=1e-10, log\_fitness=False)} & {\small Algoritmo Fitness--Complexity (Tacchella et al.\ 2012).} \\[2pt]
 \texttt{\footnotesize subnational\_eci(mat, pci\_external, use\_rca=True, threshold=1.0, standardize=True)} & {\small ECI subnacional projetado com PCI externo.} \\[2pt]
+\texttt{\footnotesize genepy(mat, use\_rca=True, threshold=1.0)} & {\small GENEPY (Sciarra et al. 2020): combina os dois primeiros autovetores da proximidade entre regi\~{o}es.} \\[2pt]
+\texttt{\footnotesize eci\_diagnostics(mat, n\_boot=100, share=0.8, use\_rca=True, threshold=1.0, seed=None)} & {\small Diagn\'{o}sticos do ECI: gap espectral, rela\c{c}\~{a}o com a diversidade e estabilidade do ranking.} \\[2pt]
 \bottomrule
 \end{longtable}
 
@@ -52,6 +54,12 @@
 \texttt{\footnotesize relatedness\_density\_internal(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Densidade restrita \`{a}s atividades j\'{a} presentes.} \\[2pt]
 \texttt{\footnotesize relatedness\_density\_external(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Densidade restrita \`{a}s atividades ausentes.} \\[2pt]
 \texttt{\footnotesize relative\_relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relatedness relativa: z-score no option set (Pinheiro et al.\ 2022).} \\[2pt]
+\texttt{\footnotesize density\_contributions(mat, region, activity, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Contribui\c{c}\~{a}o de cada atividade presente para a densidade de um par (regi\~{a}o, atividade).} \\[2pt]
+\texttt{\footnotesize decomposed\_density(density, tol=1e-10, max\_iter=1000)} & {\small Densidade l\'{i}quida dos efeitos fixos de regi\~{a}o e de atividade.} \\[2pt]
+\texttt{\footnotesize skill\_relatedness(flows, symmetric=False, exclude\_diagonal=True, normalize=True)} & {\small Relatedness por fluxos entre atividades (ex.: trocas de emprego), observado sobre esperado.} \\[2pt]
+\texttt{\footnotesize spatial\_density(mat, W, use\_rca=True, threshold=1.0)} & {\small Parcela dos vizinhos especializados em cada atividade, com pesos espaciais do usu\'{a}rio.} \\[2pt]
+\texttt{\footnotesize implied\_rca(mat, space='activity', k=None, cap=5.0, use\_rca=True)} & {\small VCR impl\'{i}cita (Hausmann, Stock \& Y{\i}ld{\i}r{\i}m 2022): VCR esperada a partir das k unidades mais parecidas.} \\[2pt]
+\texttt{\footnotesize io\_relatedness(Z, shares='sales', method='mean')} & {\small Relatedness por insumo-produto: participa\c{c}\~{o}es nas vendas e compras entre setores.} \\[2pt]
 \texttt{\footnotesize co\_occurrence(mat, diagonal=False)} & {\small Matriz de coocorr\^{e}ncia entre atividades.} \\[2pt]
 \texttt{\footnotesize relatedness\_index(mat, method='cosine', diagonal=False)} & {\small \'{I}ndice de relatedness por coocorr\^{e}ncia (probabilidade, associa\c{c}\~{a}o, cosseno, Jaccard).} \\[2pt]
 \texttt{\footnotesize z\_score\_novelty(incidence)} & {\small Z-score de novidade (atipicidade da coocorr\^{e}ncia).} \\[2pt]
@@ -164,6 +172,44 @@
 \texttt{\footnotesize expected\_diversification\_time(adjacency, active0, sequence, B=1.0, alpha=1.0)} & {\small Tempo total esperado de uma sequ\^{e}ncia fixa de alvos.} \\[2pt]
 \texttt{\footnotesize compare\_strategies(adjacency, active0, B=1.0, alpha=1.0, n\_random=10, seed=0)} & {\small Compara o tempo total das cinco estrat\'{e}gias heur\'{i}sticas.} \\[2pt]
 \texttt{\footnotesize optimize\_sequence(adjacency, active0, B=1.0, alpha=1.0, n\_iter=2000, seed=0)} & {\small Recozimento simulado sobre sequ\^{e}ncias; nunca pior que a gulosa.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{strategy} --- Estrat\'{e}gia: Desejabilidade e Quadrantes}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize desirability\_index(indicators, weights=None, standardize='z')} & {\small \'{I}ndice de desejabilidade: m\'{e}dia ponderada de indicadores padronizados por atividade.} \\[2pt]
+\texttt{\footnotesize weight\_sensitivity(indicators, weights=None, standardize='z', n\_draws=1000, concentration=1.0, top=10, seed=None)} & {\small Estabilidade do ranking de desejabilidade sob pesos sorteados (Dirichlet).} \\[2pt]
+\texttt{\footnotesize strategy\_quadrants(feasibility, desirability, by\_region=True, cut='median')} & {\small Classifica as op\c{c}\~{o}es de cada regi\~{a}o nos quadrantes viabilidade $\times$ desejabilidade.} \\[2pt]
+\texttt{\footnotesize opportunity\_alignment(feasibility, desirability, method='spearman', min\_options=3)} & {\small Correla\c{c}\~{a}o, por regi\~{a}o, entre viabilidade e desejabilidade das suas op\c{c}\~{o}es.} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{policy} --- Listas de Pol\'{i}tica}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize list\_complexity\_potential(mat, value, feasibility, lists, use\_rca=True, threshold=1.0, average='list')} & {\small Presen\c{c}a e potencial de cada regi\~{a}o em listas de atividades (generaliza GCI/GCP).} \\[2pt]
+\texttt{\footnotesize list\_density(mat, lists, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Parcela da densidade que vem das atividades de cada lista.} \\[2pt]
+\texttt{\footnotesize missing\_links(mat, links, feasibility, cut, use\_rca=True, threshold=1.0)} & {\small Elos presentes, vi\'{a}veis e ausentes de uma cadeia, por regi\~{a}o.} \\[2pt]
+\texttt{\footnotesize transition\_risk(mat, exposed, pci=None, targets=None, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Exposi\c{c}\~{a}o a atividades em risco, lock-in e perspectiva de transi\c{c}\~{a}o (Andres et al. 2023).} \\[2pt]
+\bottomrule
+\end{longtable}
+
+\subsection{\texttt{prediction} --- Previs\~{a}o de Entradas e Valida\c{c}\~{a}o}
+\begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
+\toprule
+\textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
+\midrule\endhead
+\texttt{\footnotesize entry\_targets(rca\_t0, rca\_t1, values\_t1=None, lower=0.5, upper=1.0, min\_value=None)} & {\small Alvo bin\'{a}rio de entrada e conjunto em risco entre dois per\'{i}odos.} \\[2pt]
+\texttt{\footnotesize validate\_entry(scores, target, k=(10, 20), baseline=None, n\_boot=0, seed=None)} & {\small Valida preditores de entrada: AUC, AUC intra-regi\~{a}o, precis\~{a}o/revoca\c{c}\~{a}o em k, Brier, bootstrap.} \\[2pt]
+\texttt{\footnotesize potential\_employment(prob, values, arrival='lq1', entrants=None, quantiles=(0.25, 0.5, 0.75))} & {\small Tamanho esperado das entradas: probabilidade $\times$ tamanho de chegada (QL = 1 ou quantis de entrantes).} \\[2pt]
+\texttt{\footnotesize build\_features(mat, layers=None, at\_risk=None, region\_vars=None, activity\_vars=None, controls=True, use\_rca=True, threshold=1.0)} & {\small Tabela de atributos por c\'{e}lula (regi\~{a}o, atividade): camadas de densidade e controles.} \\[2pt]
+\texttt{\footnotesize predict\_entry(features, target, model='gbm', mode='layers', new\_features=None, groups=None, n\_splits=5, calibrate=False, min\_entries=5, seed=None, return\_model=False)} & {\small Probabilidade de entrada fora da amostra (gradient boosting, floresta, logit); exige scikit-learn.} \\[2pt]
+\texttt{\footnotesize explain\_entry(features, target, model='gbm', groups=None, n\_splits=5, n\_repeats=10, alpha=0.05, seed=None)} & {\small Import\^{a}ncia dos atributos por permuta\c{c}\~{a}o em regi\~{o}es fora do treino, com p-valor.} \\[2pt]
 \bottomrule
 \end{longtable}
 

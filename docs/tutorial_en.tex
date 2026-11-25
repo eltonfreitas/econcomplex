@@ -1,0 +1,476 @@
+\section{Tutorial: From the Data to a List of Targets}
+
+This tutorial follows one analysis from the raw table to a shortlist
+of diversification targets for a region, and then tests whether the
+method behind the shortlist predicts where regions actually went. Each
+step shows the code, what it prints and how to read it. The data are
+synthetic (\fn{make\_sample\_data}), so every number below is reproduced
+by running \texttt{examples/tutorial.py}; with your own data, replace
+Step 1 and keep the rest.
+
+The example follows region \texttt{L045}, which has an average number of
+specializations. Region and activity labels are arbitrary codes.
+
+\subsection{Step 1: From the Table to the Matrix}
+
+The library starts from a long table: one row per region and
+activity, with a value (employment, exports, patents).
+\fn{pivot\_to\_matrix} turns it into the regions $\times$ activities
+matrix that every function takes.
+
+\begin{lstlisting}
+df = ec.make_sample_data(n_locs=60, n_acts=40, seed=7)
+print(df.head(3))
+print(len(df), "rows |", df["loc"].nunique(), "regions |",
+      df["act"].nunique(), "activities")
+
+mat = ec.pivot_to_matrix(df, "loc", "act", "val")
+print("matrix:", mat.shape)
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+    loc   act        val
+0  L001  A001   2.450677
+1  L002  A001  20.941576
+2  L003  A001   3.358559
+1450 rows | 60 regions | 40 activities
+matrix: (60, 40)
+\end{lstlisting}
+
+With your own file the first line becomes
+\texttt{df = pd.read\_csv("my\_data.csv")} and the three column names
+change. Two things are worth checking before going on, because the
+pivot hides them: pairs of region and activity that appear twice are
+summed, and pairs that are absent become zero. Negative or missing
+values are rejected by the functions with an error that names the
+problem.
+
+\subsection{Step 2: Who Is Specialized in What}
+
+Raw values mostly reflect size: a large region has more of
+everything. The RCA (the location quotient, when the data are
+employment) divides the share of the activity in the region by its share
+in the whole economy, and a region counts as specialized where
+$\text{RCA} \geq 1$. The binary matrix $M$ records those
+specializations; its row sums are the diversity of each region and its
+column sums the ubiquity of each activity.
+
+\begin{lstlisting}
+rca = ec.rca(mat)
+M = ec.mcp(mat)                    # 1 where RCA >= 1
+diversity = ec.diversity(mat)      # specializations per region
+ubiquity = ec.ubiquity(mat)        # specialized regions per activity
+
+region = "L045"
+print(rca.loc[region].nlargest(3).round(2))
+print("specializations of", region, "=", int(diversity[region]))
+print("median diversity =", diversity.median(),
+      "| median ubiquity =", ubiquity.median())
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+act
+A019    7.97
+A009    3.62
+A004    3.25
+Name: L045, dtype: float64
+specializations of L045 = 11
+median diversity = 11.0 | median ubiquity = 17.5
+\end{lstlisting}
+
+\texttt{L045} is specialized in 11 of the
+40 activities, and the median region in 11. Its
+strongest specialization has an RCA of 7.97: the
+activity weighs that many times more in the region than in the economy
+as a whole. The threshold of 1 is the \texttt{threshold} argument of
+every function that binarizes, and \texttt{use\_rca=False} skips the RCA
+when the matrix is already an index or a 0/1 table.
+
+\subsection{Step 3: Complexity, and How Far to Trust It}
+
+The ECI ranks regions by the complexity of what they are
+specialized in, and the PCI ranks activities by the complexity of the
+regions that have them. \fn{eci\_pci} returns the two; the default is
+the eigenvector method, and \texttt{method=} switches to reflections,
+Fitness or GENEPY in the same call. \fn{eci\_diagnostics} then says how
+firm the ranking is for this particular matrix.
+
+\begin{lstlisting}
+eci, pci = ec.eci_pci(mat)
+order = eci.sort_values(ascending=False)
+print(order.round(2).iloc[[0, 1, -2, -1]])
+print("ECI of", region, "=", round(eci[region], 2), "| rank",
+      int(eci.rank(ascending=False)[region]), "of", len(eci))
+
+diag = ec.eci_diagnostics(mat, n_boot=100, seed=1)
+keys = ["gap", "corr_diversity", "rank_stability_mean", "sign_flips"]
+print(diag[keys].round(3))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+loc
+L002    1.63
+L005    1.54
+L059   -1.94
+L056   -2.38
+Name: eci, dtype: float64
+ECI of L045 = -0.22 | rank 35 of 60
+gap                    0.115
+corr_diversity         0.773
+rank_stability_mean    0.954
+sign_flips             0.000
+Name: eci_diagnostics, dtype: float64
+\end{lstlisting}
+
+Both indices are z-scores of this matrix: \texttt{L045} has an ECI
+of $-$0.22, rank 35 of
+60. Because they are relative, the ECI of two years or of two
+classifications cannot be compared in level, only in rank; a region or
+activity returned as \texttt{NaN} was left out for having no
+specialization at all. The diagnostics are reassuring here: the ECI has
+a correlation of 0.77 with diversity, and when a
+fifth of the activities is dropped at random the ranking keeps a rank
+correlation of 0.95 with the original and
+never comes out inverted. In small or sparse matrices these numbers are
+often much worse. If the correlation with diversity is close to zero,
+the sign of the index is arbitrary, and it should be checked against
+income or wages before ``high ECI'' is read as ``complex''.
+
+\subsection{Step 4: What Is Within Reach}
+
+Two activities are close when the same regions tend to be
+specialized in both. From the proximity matrix $\phi$, relatedness
+density measures, for each region and activity, how much of what is
+related to the activity the region already has. It is the library's
+basic measure of how feasible an activity is for a region.
+\fn{relatedness\_density\_external} keeps only the activities the region
+does not have, which are its options.
+
+\begin{lstlisting}
+phi = ec.product_proximity(mat)                  # proximity matrix
+density = ec.relatedness_density(mat, phi=phi)   # 0 to 100
+options = ec.relatedness_density_external(mat, phi=phi)
+
+nearest = options.loc[region].nlargest(4)
+print(nearest.round(1))
+
+best = nearest.index[0]
+why = ec.density_contributions(mat, region, best, phi=phi)
+print(why.head(4).round(1))
+print("sum of all contributions =", round(why.sum(), 1))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+act
+A017    38.1
+A001    37.8
+A005    35.6
+A013    35.2
+Name: L045, dtype: float64
+act
+A004    4.8
+A014    4.0
+A023    4.0
+A003    3.8
+Name: contribution, dtype: float64
+sum of all contributions = 38.1
+\end{lstlisting}
+
+The closest activity \texttt{L045} lacks is \texttt{A017}, with
+a density of 38.1: weighting by proximity, the region
+has that percentage of what is related to it. \fn{density\_contributions}
+opens the number. It lists the activities of the region that bring
+\texttt{A017} closer, and their contributions add up to the density.
+This is the sentence that goes into a regional profile:
+``\texttt{A017} is within reach because the region already has
+\texttt{A004}, \texttt{A014} and
+\texttt{A023}''.
+
+\subsection{Step 5: What Is Worth Reaching}
+
+Feasibility says what is within reach, not what is worth
+reaching. The second axis is a choice of the analyst: complexity, wages,
+growth, emissions. \fn{desirability\_index} standardizes each indicator
+and takes their weighted mean, with the weights written down. The wage
+series below is simulated and stands for an external source.
+
+\begin{lstlisting}
+rng = np.random.default_rng(7)
+wage = 1000 * np.exp(0.3 * pci + rng.normal(0, 0.3, len(pci)))
+indicators = pd.DataFrame({"pci": pci, "wage": wage})
+weights = {"pci": 0.6, "wage": 0.4}
+
+desirability = ec.desirability_index(indicators, weights)
+robust = ec.weight_sensitivity(indicators, weights, top=10, seed=1)
+print(robust.head(4).round(2))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+      score  rank  rank_mean  rank_p05  rank_p95  top_share
+act                                                        
+A035   1.96     1       1.20       1.0       3.0        1.0
+A038   1.61     2       3.42       2.0      10.0        1.0
+A037   1.19     3       4.83       3.0       9.0        1.0
+A040   1.17     4       5.20       4.0       7.0        1.0
+\end{lstlisting}
+
+The weights are a judgment, so the ranking should not hang on
+them. \fn{weight\_sensitivity} redraws the weights a thousand times
+around the chosen ones and records where each activity lands.
+\texttt{A035} is first with the chosen weights and stays
+among the ten best in 100\,\% of the
+draws. When \texttt{rank\_p05} and \texttt{rank\_p95} are far apart, the
+position of the activity depends on the weights, and the report should
+say so. An indicator that counts against an activity, such as emissions,
+takes a negative weight.
+
+\subsection{Step 6: The Shortlist}
+
+With the two axes, each option of the region falls in one of
+four quadrants. The cuts are the medians of the region's own options, so
+``feasible'' means feasible compared with what else this region could
+do. \fn{opportunity\_alignment} summarizes the picture in one number:
+the correlation between the two axes among the region's options.
+
+\begin{lstlisting}
+quadrants = ec.strategy_quadrants(options, desirability)
+print(quadrants.loc[region].value_counts())
+
+alignment = ec.opportunity_alignment(options, desirability)
+print("alignment of", region, "=", round(alignment[region], 2))
+
+shortlist = pd.DataFrame({
+    "density": options.loc[region],
+    "desirability": desirability,
+    "quadrant": quadrants.loc[region],
+}).dropna()
+desirable = shortlist["quadrant"].isin(["short jump", "long bet"])
+wanted = shortlist[desirable]
+print(wanted.sort_values("density", ascending=False).head(4).round(2))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+L045
+low value     13
+long bet      13
+avoid          2
+short jump     1
+Name: count, dtype: int64
+alignment of L045 = -0.87
+      density  desirability    quadrant
+act                                    
+A024    30.24          0.91  short jump
+A030    28.85          0.71    long bet
+A026    28.40          0.52    long bet
+A028    25.92          0.95    long bet
+\end{lstlisting}
+
+Of the 29 activities \texttt{L045} lacks, only
+1 is a short jump (feasible and desirable);
+13 are long bets
+(desirable but far) and
+13 are within reach
+but of low value. The alignment of $-$0.87 says the same:
+among this region's options, the closer an activity is, the less
+desirable it tends to be. This is the usual situation of regions of low
+or middling complexity, and it changes what the shortlist has to be.
+With so few short jumps, the useful list is the desirable half of the
+options ordered by density: the one short jump,
+\texttt{A024}, followed by the long bets that are least
+far, \texttt{A030} and \texttt{A026},
+with densities between 28.4 and
+30.2. In a region with positive alignment the
+short jumps would fill the list by themselves. How many unrelated bets
+to make, and in which order, is what \fn{optimize\_sequence} answers,
+and \fn{eci\_optimization} returns the set of new activities that
+reaches a target ECI with the least effort (see the sections on
+Strategic Diffusion and ECI Optimization).
+
+\subsection{Step 7: Reading the Result Through Policy Lists}
+
+Policies are usually written as lists of activities: a mission,
+a value chain, a green taxonomy. The list functions read the same matrix
+through a list. Below, the last fifteen activities stand for a mission
+and three groups of activities for the links of a chain.
+
+\begin{lstlisting}
+acts = list(mat.columns)
+lists = {"mission": acts[25:]}
+feasibility = density / 100            # shares, 0 to 1
+tab = ec.list_complexity_potential(mat, pci, feasibility, lists)
+print(tab.loc[region].round(2))
+
+chain = {"inputs": acts[0:6], "components": acts[15:21],
+         "assembly": acts[33:39]}
+links = ec.missing_links(mat, chain, feasibility, cut=0.4)
+print(links.loc[region])
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+         presence  potential  n_present  n_list
+list                                           
+mission       0.0       0.23          0      15
+inputs        present
+components    present
+assembly      missing
+Name: L045, dtype: object
+\end{lstlisting}
+
+\texttt{L045} is specialized in
+0 of the
+15 activities of the
+mission, which here are the most complex ones. \texttt{presence} adds
+the PCI of the activities it has from the list, and \texttt{potential}
+is the mean PCI of those it lacks, each weighted by its density; with a list of green products these are the green
+complexity index and potential. For the chain, a link is
+\texttt{present} when the region is specialized in at least one of its
+activities, \texttt{feasible} when some activity of the link has a
+density of 40\,\% or more, and \texttt{missing} otherwise.
+\fn{transition\_risk} applies the same logic to activities expected to
+shrink.
+
+\subsection{Step 8: Does Density Predict Entry?}
+
+Everything so far assumes that density says where regions will
+go. With two periods this can be tested: compute the scores with the
+first period and see whether they rank the entries observed by the
+second. Here the second period is simulated, with faster growth where
+density is high; with real data, load the later year in its place.
+
+\begin{lstlisting}
+size = np.outer(mat.sum(axis=1), mat.sum(axis=0)) / mat.values.sum()
+mat_t1 = (mat * rng.lognormal(0, 0.3, mat.shape)
+          + size * rng.lognormal(0, 1.0, mat.shape)
+          * 3 * (density / 100) ** 2)
+
+entered, at_risk = ec.entry_targets(rca, ec.rca(mat_t1))
+print(int(at_risk.values.sum()), "cells at risk |",
+      int(entered.sum().sum()), "entries")
+
+scores = {"density": density,
+          "relative": ec.relative_relatedness(mat, phi=phi),
+          "persistence": rca}
+val = ec.validate_entry(scores, entered, k=(5,),
+                        baseline="persistence", n_boot=200, seed=1)
+cols = ["auc", "auc_within", "precision@5"]
+print(val["value"].unstack()[cols].round(3))
+print(val.loc[("density", "auc")].round(3))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+1400 cells at risk | 67 entries
+metric         auc  auc_within  precision@5
+score                                      
+density      0.788       0.646        0.073
+persistence  0.686       0.626        0.097
+relative     0.639       0.646        0.073
+value      0.788
+lo         0.734
+hi         0.839
+diff       0.102
+diff_lo    0.039
+diff_hi    0.170
+Name: (density, auc), dtype: float64
+\end{lstlisting}
+
+A cell is at risk when its RCA is below 0.5 at the start, and it
+enters when the RCA reaches 1; the gap avoids counting cells that only
+hover around 1. Of 1400 cells at risk,
+67 entered. The AUC is the probability that an
+entry is ranked above a non-entry: 0.79
+for density and 0.69 for
+persistence, the initial RCA. \texttt{auc\_within} computes the same
+inside each region and averages. It is the number that matters for
+choosing among the options of one region, and it is lower because part
+of the pooled AUC comes from telling regions apart: inside regions,
+density reaches 0.65 and
+persistence 0.63, a much
+smaller distance.
+\texttt{precision@5} is the share of each region's five best-ranked
+options that entered. The last block compares density with persistence:
+a gain of 0.10 in AUC, with a 95\,\%
+interval from 0.04 to
+0.17 obtained by resampling
+regions. For the test to be honest, every score has to use data from the
+first period only, the proximity matrix included.
+
+\subsection{Step 9: A Prediction Model and Expected Jobs (Optional)}
+
+With several measures of feasibility, a model can combine them.
+\fn{build\_features} stacks the layers into one table of cells and adds
+controls; \fn{predict\_entry} cross-validates by region, so that the
+probability of each cell comes from a model that never saw its region.
+This step needs scikit-learn
+(\texttt{pip install "econcomplex[ml]"}).
+
+\begin{lstlisting}
+layers = {"density": density, "implied": ec.implied_rca(mat)}
+X = ec.build_features(mat, layers, at_risk=at_risk)
+scores["model"] = ec.predict_entry(X, entered, model="logit", seed=1)
+out = ec.validate_entry(scores, entered, k=(5,))["value"].unstack()
+print(out.loc[["density", "model"], ["auc", "auc_within"]].round(3))
+
+importance = ec.explain_entry(X, entered, model="logit", seed=1)
+print(importance.head(3).round(3))
+
+# next window: fit on t0 -> t1, predict from what is observed at t1
+phi_t1 = ec.product_proximity(mat_t1)
+layers_t1 = {"density": ec.relatedness_density(mat_t1, phi=phi_t1),
+             "implied": ec.implied_rca(mat_t1)}
+X_t1 = ec.build_features(mat_t1, layers_t1,
+                         at_risk=ec.rca(mat_t1) < 0.5)
+prob = ec.predict_entry(X, entered, model="logit",
+                        new_features=X_t1, calibrate=True)
+jobs = ec.potential_employment(prob, mat_t1)
+print(jobs.groupby("region")["expected"].sum().nlargest(3).round(1))
+\end{lstlisting}
+\begin{lstlisting}[language={}, numbers=none, backgroundcolor=\color{white}, frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, xleftmargin=1.5em]
+metric     auc  auc_within
+score                     
+density  0.788       0.646
+model    0.792       0.643
+                 importance    std  p_value  significant
+density               0.273  0.099    0.020         True
+log_region_size       0.040  0.037    0.137        False
+rca                   0.023  0.021    0.137        False
+region
+L019    540.4
+L016    530.3
+L017    519.1
+Name: expected, dtype: float64
+\end{lstlisting}
+
+The model enters \fn{validate\_entry} as one more score. Here it
+ties with plain density (an AUC of 0.792 against
+0.788, and
+0.643 against
+0.646 inside regions), which is what
+one expects from data that were simulated from density alone. A model is worth its extra machinery
+only when it wins this comparison out of sample. \fn{explain\_entry}
+shuffles one feature at a time in the held-out regions and reports the
+fall in AUC: density carries the prediction
+(0.27) and no other feature is
+statistically distinguishable from zero. For the next window the same function takes
+\texttt{new\_features}: the model is fitted on the first window and
+applied to what is observed at the end of it. \fn{potential\_employment}
+then multiplies each calibrated probability by the size the activity
+would have in the region with a location quotient of 1, and the sum by
+region is the expected employment in new specializations.
+
+\subsection{Before Using the Results}
+
+A few points account for most of the mistakes in applied work with these
+indicators.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item ECI and PCI are relative to one matrix. To follow a region over
+    time, compare ranks, or project a fixed PCI on each year with
+    \fn{subnational\_eci}.
+  \item \texttt{NaN} means that the unit was left out (no
+    specialization, or not an option); it is not a zero.
+  \item In sparse data, where many regions have one or two
+    specializations, compute complexity on the connected core with
+    \texttt{dmin=2, umin=2}.
+  \item Density comes in percent (0 to 100) by default and as a share
+    with \texttt{percent=False}. Cuts such as the one of
+    \fn{missing\_links} are read on the scale of the matrix you pass.
+  \item External vectors (GDP, population, wages, PCI from another
+    source) are matched to the matrix by label, in any order; a label
+    that is missing raises an error instead of being filled.
+  \item In any test of prediction, the proximity matrix and every score
+    use the first period only.
+  \item State the weights of the desirability index and report how the
+    ranking moves when they change.
+\end{itemize}

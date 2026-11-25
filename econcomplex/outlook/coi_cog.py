@@ -103,10 +103,22 @@ def complexity_outlook_gain(
     Complexity Outlook Gain (COG).
 
     COG_{rc} = (1 - M_{rc}) * sum_{c'} (
-        (1 - M_{rc'}) * phi_{cc'} * PCI_{c'} / sum_{c''} phi_{cc''}
+        (1 - M_{rc'}) * phi_{cc'} * PCI_{c'} / sum_{c''} phi_{c''c'}
     )
 
-    Gain in COI if region r were to develop activity c.
+    How much the Complexity Outlook Index of region r would rise if it
+    developed activity c: entering c raises the density of every other
+    missing activity c' by phi_{cc'} / sum_{c''} phi_{c''c'}, and each of
+    those gains is valued at PCI_{c'}. The sum runs over the activities
+    the region lacks today, c included, so this is the gross gain: it
+    does not subtract the term density_{rc} * PCI_c that leaves the COI
+    once c is no longer a missing activity. Cells where the region is
+    already specialized are 0.
+
+    This is the form used by the Growth Lab's ``py-ecomplexity``. Up to
+    version 1.1.0 the normalization used the proximity total of the
+    target activity c instead of that of each c'; the two only coincide
+    when every activity has the same total proximity.
 
     Parameters
     ----------
@@ -151,27 +163,11 @@ def complexity_outlook_gain(
     else:
         phi_arr = align_square(phi, col_index, arr.shape[1])
 
-    # phi_norm_{cc'} = phi_{cc'} / sum_{c''} phi_{cc''}
-    phi_row_sums = phi_arr.sum(axis=1, keepdims=True)
-    phi_norm = safe_divide(phi_arr, phi_row_sums)  # C x C
-
-    # For each region r: weighted PCI of non-present activities
-    # inner = sum_{c'} (1 - M_{rc'}) * phi_norm_{cc'} * PCI_{c'}
-    # Shape: R x C
-    # (1 - m): R x C
-    # phi_norm * pci: sum over c' of phi_norm[c, c'] * pci[c'] = (phi_norm @ pci): C
-    # But conditioned on (1 - m): need element-wise
-
-    cog = np.zeros_like(m)
-    phi_pci = phi_norm * pci_arr[None, :]   # C x C, entry [c, c'] = phi_norm[c,c'] * PCI[c']
-
-    for r in range(m.shape[0]):
-        not_present = (1 - m[r])  # C
-        # For each target activity c: sum_{c'} (1 - m[r,c']) * phi_norm[c, c'] * PCI[c']
-        cog[r] = not_present * (phi_pci @ not_present)
-
-    # Mask to non-present only
-    cog = cog * (1 - m)
+    # weight of each missing activity c': PCI_{c'} / total proximity of c'
+    # (the denominator of its density), spread over the targets c by phi
+    weight = safe_divide(pci_arr, phi_arr.sum(axis=0))
+    not_present = 1 - m
+    cog = not_present * (not_present @ (phi_arr * weight[None, :]).T)
 
     if is_df:
         return pd.DataFrame(cog, index=row_index, columns=col_index)

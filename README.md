@@ -1,6 +1,6 @@
 # econcomplex
 
-[![version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.2.0-blue)](CHANGELOG.md)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![tests](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml/badge.svg)](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml)
@@ -20,18 +20,21 @@ diffusion) that, to our knowledge, is not available in any other package.
 
 | Group | Indicators |
 |---|---|
-| **Complexity** | ECI / PCI through a single entry point — `eci_pci(mat, method="eigenvector" \| "reflections" \| "fitness")` — plus subnational ECI projected with an external PCI |
-| **Relatedness / Product Space** | Proximity (discrete, correlation, cosine), relatedness density, distance, relative relatedness (option-set z-score), co-occurrence indices, cross-space proximity between two activity spaces |
+| **Complexity** | ECI / PCI through a single entry point — `eci_pci(mat, method="eigenvector" \| "reflections" \| "fitness")` — plus subnational ECI projected with an external PCI, the GENEPY index (`method="genepy"`) and diagnostics of how reliable the ECI ranking is |
+| **Relatedness / Product Space** | Proximity (discrete, correlation, cosine), relatedness density, distance, relative relatedness (option-set z-score), co-occurrence indices, cross-space proximity between two activity spaces, skill relatedness from flows, spatial density, density contributions and fixed-effects decomposition, implied comparative advantage, input-output relatedness |
 | **Specialization** | Location quotient, Hachman, Krugman, Hoover specialization coefficient, export similarity |
 | **Inequality / Concentration** | Gini, locational Gini, Hoover-Gini, Hoover index, Herfindahl-Hirschman, Shannon entropy |
 | **Productivity** | PRODY, EXPY, Product Gini Index, Product Emissions Intensity Index |
 | **Patents** | Ease of recombination, modular complexity |
 | **Dynamics** | Growth rates, entry/exit tracking — matrix-pair and long-panel APIs |
 | **Outlook** | Complexity Outlook Index (COI) and Gain (COG) |
+| **Strategy** | Desirability index with explicit weights, sensitivity of the ranking to the weights, feasibility × desirability quadrants, opportunity alignment |
+| **Policy lists** | Presence and potential of a region in any list of activities (green lists, missions, value chains), density that rests on a list, missing links of a chain, transition risk (exposure, lock-in, outlook) |
+| **Entry prediction** | Entry targets with a risk set, and out-of-sample validation of any predictor: AUC, within-region AUC, precision/recall@k, Brier, bootstrap by region; optional prediction models (gradient boosting, random forest, logit) with out-of-sample probabilities, feature importance and expected size of entries |
 | **ECI Optimization** | Stepping-stone forecast model, entry-effort matrix, exact 0–1 program for minimal-effort diversification portfolios, growth targeting (Stojkoski & Hidalgo 2026) |
 | **Strategic diffusion** | Complex-contagion calibration, five diversification strategies, optimal entry sequencing (Alshamsi, Pinheiro & Hidalgo 2018) |
 
-90 public functions in total — the PDF documentation carries a complete API
+112 public functions in total — the PDF documentation carries a complete API
 reference and an interpretation guide for every indicator family.
 
 ## Installation
@@ -47,7 +50,8 @@ pip install git+https://github.com/eltonfreitas/econcomplex.git
 ```
 
 Requires Python ≥ 3.10 with `numpy ≥ 1.21` (1.x **and** 2.x supported),
-`pandas ≥ 1.3`, `scipy ≥ 1.9`. For local development:
+`pandas ≥ 1.3`, `scipy ≥ 1.9`. The prediction models are optional and need
+scikit-learn: `pip install "econcomplex[ml]"`. For local development:
 
 ```bash
 git clone https://github.com/eltonfreitas/econcomplex.git
@@ -116,6 +120,35 @@ best = ec.optimize_sequence(adj, ec.mcp(mat).loc["my_region"],
                             B=fit["B"], alpha=fit["alpha"])
 ```
 
+### 4. From indicators to a strategy
+
+```python
+# why is an activity within reach, and what is specific to the pair?
+ec.density_contributions(mat, "my_region", "target_activity", phi=phi)
+specific = ec.decomposed_density(density)          # net of region/activity effects
+
+# what is worth having, and how robust is that ranking to the weights?
+indicators   = pd.DataFrame({"pci": pci, "wage": wage})
+desirability = ec.desirability_index(indicators, weights={"pci": 0.6, "wage": 0.4})
+robust       = ec.weight_sensitivity(indicators, seed=1)
+
+# short jumps, long bets, low value, avoid — per region
+options   = ec.relatedness_density_external(mat, phi=phi)
+quadrants = ec.strategy_quadrants(options, desirability)
+
+# does a score computed at t0 predict the entries observed by t1?
+target, at_risk = ec.entry_targets(ec.rca(mat_t0), ec.rca(mat_t1))
+ec.validate_entry({"density": ec.density(mat_t0), "persistence": ec.rca(mat_t0)},
+                  target, baseline="persistence", n_boot=200)
+
+# optional (pip install "econcomplex[ml]"): a model on several layers,
+# predicted out of sample, region by region
+X    = ec.build_features(mat_t0, {"density": ec.density(mat_t0),
+                                  "implied": ec.implied_rca(mat_t0)}, at_risk=at_risk)
+prob = ec.predict_entry(X, target, model="gbm", seed=1)
+ec.explain_entry(X, target, seed=1)            # which layers carry the prediction
+```
+
 ## Data format
 
 The high-level API expects **long-format** (tidy) data — one row per
@@ -135,15 +168,20 @@ data: `df = ec.make_sample_data(n_locs=50, n_acts=30, seed=42)`.
 
 ## Documentation and examples
 
-- **Technical documentation (PDF)** — formulas, step-by-step usage,
+- **Technical documentation (PDF)** — a step-by-step tutorial with code and
+  output, formulas,
   interpretation guide, and the complete API reference:
   [English](docs/econcomplex_documentation_en.pdf) ·
   [Português](docs/econcomplex_documentation_pt.pdf)
   (LaTeX sources in [docs/](docs/))
-- **Runnable examples**: [examples/basic_usage.py](examples/basic_usage.py)
-  (guided tour of every indicator group) and
+- **Runnable examples**: [examples/tutorial.py](examples/tutorial.py)
+  (the step-by-step tutorial of the PDF, from the data to a list of targets),
+  [examples/basic_usage.py](examples/basic_usage.py)
+  (guided tour of every indicator group),
   [examples/eci_optimization.py](examples/eci_optimization.py)
-  (optimization layer end to end)
+  (optimization layer end to end) and
+  [examples/diversification_strategy.py](examples/diversification_strategy.py)
+  (validation of relatedness, desirability, quadrants and policy lists)
 - **In-code reference**: every function has a full NumPy-style docstring —
   `help(ec.eci_pci)`
 - **[CHANGELOG.md](CHANGELOG.md)** — release history
@@ -170,7 +208,7 @@ library recovers the canonical ECI country ranking.
   author  = {Freitas, Elton},
   title   = {econcomplex: economic complexity and regional science indicators in Python},
   year    = {2026},
-  version = {1.1.0},
+  version = {1.2.0},
   url     = {https://github.com/eltonfreitas/econcomplex}
 }
 ```

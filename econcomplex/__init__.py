@@ -39,7 +39,9 @@ complexity    : eci_pci() — single entry point (eigenvector, reflections,
                 subnational ECI
 relatedness   : proximity (discrete/continuous/cosine/correlation),
                 relatedness density, distance, co-occurrence,
-                z-score novelty, cross-space proximity/relatedness
+                z-score novelty, cross-space proximity/relatedness,
+                skill relatedness (flows), spatial density, density
+                contributions and fixed-effects decomposition
 specialization: location quotient, Hachman, Krugman, specialization coeff,
                 export similarity
 inequality    : Gini, locational Gini, Hoover-Gini, Hoover index,
@@ -50,6 +52,12 @@ dynamics      : growth rates, entry/exit tracking (matrix and panel APIs)
 outlook       : COI, COG (Complexity Outlook)
 optimization  : ECI Optimization (Stojkoski & Hidalgo 2026), growth
                 targeting, strategic diffusion (Alshamsi et al. 2018)
+strategy      : desirability index, sensitivity to weights,
+                feasibility x desirability quadrants
+policy        : indicators for lists of activities (green lists, missions,
+                value chains): presence and potential, list density,
+                missing links
+prediction    : entry targets and validation of entry predictors
 pipeline      : high-level compute_complexity() function
 
 Note: short names like density, hhi, coi, cog, pgi are aliases bound to
@@ -57,7 +65,7 @@ the same objects as their canonical functions (see the API map in the
 documentation).
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "Elton Freitas and contributors"
 
 # ── Core ──────────────────────────────────────────────────────────────────────
@@ -79,6 +87,8 @@ from .complexity.eigenvector import eci_pci_eigenvector
 from .complexity.reflections import method_of_reflections, mor_regions, mor_activities
 from .complexity.fitness import fitness_complexity
 from .complexity.subnational import subnational_eci
+from .complexity.genepy import genepy
+from .complexity.diagnostics import eci_diagnostics
 
 # ── Relatedness ────────────────────────────────────────────────────────────────
 from .relatedness.proximity import (
@@ -97,7 +107,13 @@ from .relatedness.density import (
     relatedness_density_internal,
     relatedness_density_external,
     relative_relatedness,
+    density_contributions,
+    decomposed_density,
 )
+from .relatedness.flows import skill_relatedness
+from .relatedness.spatial import spatial_density
+from .relatedness.implied import implied_rca
+from .relatedness.input_output import io_relatedness
 from .relatedness.cooccurrence import co_occurrence, relatedness_index, z_score_novelty
 from .relatedness.cross_space import cross_proximity, cross_relatedness, cross_space_proximity
 
@@ -169,6 +185,23 @@ from .optimization import (
     optimize_sequence,
 )
 
+# ── Strategy: desirability, sensitivity to weights, quadrants ─────────────────
+from .strategy import (
+    desirability_index, weight_sensitivity, strategy_quadrants,
+    opportunity_alignment,
+)
+
+# ── Policy lists (missions, value chains, green lists) ────────────────────────
+from .policy import (
+    list_complexity_potential, list_density, missing_links, transition_risk,
+)
+
+# ── Entry prediction: targets and validation ──────────────────────────────────
+from .prediction import (
+    entry_targets, validate_entry, potential_employment,
+    build_features, predict_entry, explain_entry,
+)
+
 # ── High-level pipeline ────────────────────────────────────────────────────────
 from .pipeline import compute_complexity
 
@@ -183,7 +216,7 @@ __all__ = [
     "eci_pci", "eci_pci_eigenvector",
     "method_of_reflections", "mor_regions", "mor_activities",
     "fitness_complexity",
-    "subnational_eci",
+    "subnational_eci", "genepy", "eci_diagnostics",
     # relatedness
     "proximity", "product_proximity", "location_proximity",
     "continuous_proximity",
@@ -191,6 +224,9 @@ __all__ = [
     "relatedness_density", "density", "relatedness", "distance",
     "relatedness_density_internal", "relatedness_density_external",
     "relative_relatedness",
+    "density_contributions", "decomposed_density",
+    "skill_relatedness", "spatial_density", "implied_rca",
+    "io_relatedness",
     "co_occurrence", "relatedness_index", "z_score_novelty",
     "cross_proximity", "cross_relatedness", "cross_space_proximity",
     # specialization
@@ -221,6 +257,15 @@ __all__ = [
     "proximity_network", "activation_probabilities", "calibrate_contagion",
     "diversification_strategy", "expected_diversification_time",
     "compare_strategies", "optimize_sequence",
+    # strategy
+    "desirability_index", "weight_sensitivity", "strategy_quadrants",
+    "opportunity_alignment",
+    # policy lists
+    "list_complexity_potential", "list_density", "missing_links",
+    "transition_risk",
+    # entry prediction
+    "entry_targets", "validate_entry", "potential_employment",
+    "build_features", "predict_entry", "explain_entry",
     # pipeline
     "compute_complexity",
 ]
