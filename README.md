@@ -1,6 +1,6 @@
 # econcomplex
 
-[![version](https://img.shields.io/badge/version-1.2.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.3.0-blue)](CHANGELOG.md)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![tests](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml/badge.svg)](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml)
@@ -21,7 +21,7 @@ diffusion) that, to our knowledge, is not available in any other package.
 | Group | Indicators |
 |---|---|
 | **Complexity** | ECI / PCI through a single entry point — `eci_pci(mat, method="eigenvector" \| "reflections" \| "fitness")` — plus subnational ECI projected with an external PCI, the GENEPY index (`method="genepy"`) and diagnostics of how reliable the ECI ranking is |
-| **Relatedness / Product Space** | Proximity (discrete, correlation, cosine), relatedness density, distance, relative relatedness (option-set z-score), co-occurrence indices, cross-space proximity between two activity spaces, skill relatedness from flows, spatial density, density contributions and fixed-effects decomposition, implied comparative advantage, input-output relatedness |
+| **Relatedness / Product Space** | Proximity (discrete, correlation, cosine), relatedness density, distance, relative relatedness (option-set z-score), co-occurrence indices, cross-space proximity between two activity spaces, skill relatedness from flows, spatial density, continuous density that also counts non-specialized related activities (Full Relatedness), density contributions and fixed-effects decomposition, implied comparative advantage, input-output relatedness |
 | **Specialization** | Location quotient, Hachman, Krugman, Hoover specialization coefficient, export similarity |
 | **Inequality / Concentration** | Gini, locational Gini, Hoover-Gini, Hoover index, Herfindahl-Hirschman, Shannon entropy |
 | **Productivity** | PRODY, EXPY, Product Gini Index, Product Emissions Intensity Index |
@@ -34,7 +34,7 @@ diffusion) that, to our knowledge, is not available in any other package.
 | **ECI Optimization** | Stepping-stone forecast model, entry-effort matrix, exact 0–1 program for minimal-effort diversification portfolios, growth targeting (Stojkoski & Hidalgo 2026) |
 | **Strategic diffusion** | Complex-contagion calibration, five diversification strategies, optimal entry sequencing (Alshamsi, Pinheiro & Hidalgo 2018) |
 
-112 public functions in total — the PDF documentation carries a complete API
+114 public functions in total — the PDF documentation carries a complete API
 reference and an interpretation guide for every indicator family.
 
 ## Installation
@@ -208,7 +208,7 @@ library recovers the canonical ECI country ranking.
   author  = {Freitas, Elton},
   title   = {econcomplex: economic complexity and regional science indicators in Python},
   year    = {2026},
-  version = {1.2.0},
+  version = {1.3.0},
   url     = {https://github.com/eltonfreitas/econcomplex}
 }
 ```

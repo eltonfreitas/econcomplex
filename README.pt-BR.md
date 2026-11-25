@@ -1,6 +1,6 @@
 # econcomplex
 
-[![version](https://img.shields.io/badge/vers%C3%A3o-1.2.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/vers%C3%A3o-1.3.0-blue)](CHANGELOG.md)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
 [![tests](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml/badge.svg)](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml)
@@ -21,7 +21,7 @@ difusão estratégica) que, até onde sabemos, não existe em nenhum outro pacot
 | Grupo | Indicadores |
 |---|---|
 | **Complexidade** | ECI / PCI por uma porta de entrada única — `eci_pci(mat, method="eigenvector" \| "reflections" \| "fitness")` — além de ECI subnacional projetado com PCI externo, o índice GENEPY (`method="genepy"`) e diagnósticos de confiabilidade do ranking de ECI |
-| **Relatedness / Product Space** | Proximidade (discreta, correlação, cosseno), densidade de relatedness, distância, relatedness relativa (z-score no option set), índices de coocorrência, proximidade cross-space entre dois espaços de atividades, skill relatedness por fluxos, densidade espacial, contribuições e decomposição da densidade, vantagem comparativa implícita, relatedness por insumo-produto |
+| **Relatedness / Product Space** | Proximidade (discreta, correlação, cosseno), densidade de relatedness, distância, relatedness relativa (z-score no option set), índices de coocorrência, proximidade cross-space entre dois espaços de atividades, skill relatedness por fluxos, densidade espacial, densidade contínua que também conta as atividades relacionadas não especializadas (Full Relatedness), contribuições e decomposição da densidade, vantagem comparativa implícita, relatedness por insumo-produto |
 | **Especialização** | Quociente locacional, Hachman, Krugman, coeficiente de especialização de Hoover, similaridade de exportações |
 | **Desigualdade / Concentração** | Gini, Gini locacional, Hoover-Gini, índice de Hoover, Herfindahl-Hirschman, entropia de Shannon |
 | **Produtividade** | PRODY, EXPY, Product Gini Index, Product Emissions Intensity Index |
@@ -34,7 +34,7 @@ difusão estratégica) que, até onde sabemos, não existe em nenhum outro pacot
 | **Otimização de ECI** | Modelo de previsão com steppingstone, matriz de esforço de entrada, programa 0–1 exato para portfólios de diversificação de menor esforço, metas de crescimento (Stojkoski & Hidalgo 2026) |
 | **Difusão estratégica** | Calibração de contágio complexo, cinco estratégias de diversificação, sequenciamento ótimo de entrada (Alshamsi, Pinheiro & Hidalgo 2018) |
 
-São 112 funções públicas — a documentação em PDF traz a referência completa da
+São 114 funções públicas — a documentação em PDF traz a referência completa da
 API e um guia de interpretação para cada família de indicadores.
 
 ## Instalação
@@ -209,7 +209,7 @@ recupera o ranking canônico de ECI dos países.
   author  = {Freitas, Elton},
   title   = {econcomplex: economic complexity and regional science indicators in Python},
   year    = {2026},
-  version = {1.2.0},
+  version = {1.3.0},
   url     = {https://github.com/eltonfreitas/econcomplex}
 }
 ```

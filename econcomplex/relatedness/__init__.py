@@ -12,6 +12,7 @@ from .density import (
     relatedness_density_internal,
     relatedness_density_external,
     relative_relatedness,
+    full_relatedness,
     density_contributions,
     decomposed_density,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "relatedness_density_internal",
     "relatedness_density_external",
     "relative_relatedness",
+    "full_relatedness",
     "density_contributions",
     "decomposed_density",
     "co_occurrence",

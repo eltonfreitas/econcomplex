@@ -70,6 +70,81 @@ def rca(
     return result
 
 
+def rsca(
+    mat: Union[np.ndarray, pd.DataFrame],
+    method: str = "dalum",
+) -> Union[np.ndarray, pd.DataFrame]:
+    """
+    Revealed Symmetric Comparative Advantage.
+
+    The RCA is asymmetric: de-specialization is squeezed between 0 and 1
+    while specialization runs from 1 to infinity. The symmetric versions
+    map it onto [-1, 1], with 0 as the neutral value, so that strengths
+    and weaknesses are measured on the same scale.
+
+    ``method="dalum"`` (Dalum, Laursen & Villumsen 1998)
+        RSCA = (RCA - 1) / (RCA + 1)
+    ``method="iapadre"`` (Iapadre 2001)
+        RSCA = (RCA_rc - RCA_rC) / (RCA_rc + RCA_rC), where RCA_rc
+        compares the share of activity c in region r with its share in
+        the *other* regions, and RCA_rC does the same for all the other
+        activities taken together. It simplifies to
+        (a d - b c) / (a d + b c), with a the value of the cell, b the
+        rest of the region, c the rest of the activity and d everything
+        else. Unlike the Balassa index, it does not depend on the weight
+        of the region itself in the total.
+
+    Both are positive exactly where RCA > 1.
+
+    Parameters
+    ----------
+    mat : array-like (R x C)
+        Value matrix.
+    method : {'dalum', 'iapadre'}
+
+    Returns
+    -------
+    R x C matrix in [-1, 1] (same type as the input). A cell with zero
+    value is -1.
+
+    References
+    ----------
+    Dalum, B., Laursen, K. & Villumsen, G. (1998). Structural change in
+    OECD export specialisation patterns: de-specialisation and
+    'stickiness'. International Review of Applied Economics, 12(3),
+    423-443.
+    Iapadre, P. L. (2001). Measuring international specialization.
+    International Advances in Economic Research, 7(2), 173-183.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[4, 0, 0], [0, 2, 2], [4, 2, 2]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> ec.rsca(mat).round(2).values.tolist()      # RCA = 2, 0 and 1
+    [[0.33, -1.0, -1.0], [-1.0, 0.33, 0.33], [0.0, 0.0, 0.0]]
+    """
+    is_df = isinstance(mat, pd.DataFrame)
+    arr = validate_matrix(mat)
+    if method == "dalum":
+        r = rca(arr)
+        out = (r - 1) / (r + 1)
+    elif method == "iapadre":
+        row = arr.sum(axis=1, keepdims=True)
+        col = arr.sum(axis=0, keepdims=True)
+        ad = arr * (arr.sum() - row - col + arr)
+        bc = (row - arr) * (col - arr)
+        out = np.where(arr > 0, 0.0, -1.0)            # value when ad + bc = 0
+        np.divide(ad - bc, ad + bc, out=out, where=(ad + bc) > 0)
+    else:
+        raise ValueError("method must be 'dalum' or 'iapadre'.")
+
+    if is_df:
+        return pd.DataFrame(out, index=mat.index, columns=mat.columns)
+    return out
+
+
 def rpop(
     mat: Union[np.ndarray, pd.DataFrame],
     pop: Union[np.ndarray, pd.Series],

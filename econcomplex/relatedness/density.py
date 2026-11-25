@@ -250,6 +250,115 @@ def relative_relatedness(
 density = relatedness_density
 
 
+def full_relatedness(
+    mat: Union[np.ndarray, pd.DataFrame],
+    phi: Optional[Union[np.ndarray, pd.DataFrame]] = None,
+    part: str = "full",
+    weights: str = "iapadre",
+    threshold: float = 1.0,
+    proximity_method: str = "max",
+) -> Union[pd.DataFrame, np.ndarray]:
+    """
+    Relatedness density with continuous specialization (Full Relatedness).
+
+    The standard density only counts the related activities in which the
+    region is specialized (RCA >= 1); everything below the cut-off is
+    treated as absent. Cicerone, McCann & Venhorst (2026) weight every
+    related activity by how specialized the region is in it:
+
+    FullRel_{rc} = sum_{z != c} phi_{cz} w_{rz} / sum_{z != c} phi_{cz}
+
+    with w = RSCA + 1, the symmetric index of revealed advantage shifted
+    to [0, 2]. The index then splits exactly into the part that comes
+    from the activities in which the region is specialized and the part
+    that comes from those in which it is not:
+
+    FullRel = Spec_FullRel + NoSpec_FullRel
+
+    In their data the second part predicts new specializations beyond
+    the first, more so in high-income regions.
+
+    Parameters
+    ----------
+    mat : array-like (R x C)
+        Value matrix.
+    phi : array-like (C x C), optional
+        Proximity matrix. Computed internally (from the binary RCA
+        matrix) if None. Its diagonal is ignored.
+    part : {'full', 'specialized', 'non_specialized'}
+        The whole index or one of its two parts.
+    weights : {'iapadre', 'dalum', 'capped'}
+        How specialization enters. ``'iapadre'`` (default, the paper's
+        choice) and ``'dalum'`` use RSCA + 1 with the corresponding
+        symmetric index of `rsca`; the result ranges from 0 to 2.
+        ``'capped'`` uses min(RCA / threshold, 1): activities above the
+        threshold count fully and those below count in proportion, so
+        the result ranges from 0 to 1 and its specialized part is the
+        standard density (as a share).
+    threshold : float
+        RCA from which an activity counts as specialized (the split
+        between the two parts, and the proximity matrix when `phi` is
+        None).
+    proximity_method : str
+        Normalization of the proximity computed internally.
+
+    Returns
+    -------
+    R x C matrix (DataFrame if the input was one), for every cell,
+    present or not. Unlike `relatedness_density` it is not a percentage.
+
+    Notes
+    -----
+    Eqs. (8)-(10) of the paper. The printed condition for the split,
+    "RSTA >= 1", is read here as RSTA + 1 >= 1, that is RSTA >= 0, which
+    is the paper's own definition of a specialization ("positive values
+    indicate that the region is relatively specialised") and coincides
+    with RCA >= 1. The ``'capped'`` weighting is not from the paper.
+
+    References
+    ----------
+    Cicerone, G., McCann, P. & Venhorst, V. A. (2026). Disentangling
+    relatedness density: the complementary impact of non-specialised
+    related technologies. Spatial Economic Analysis, 21(3), 460-477.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import econcomplex as ec
+    >>> mat = pd.DataFrame([[6, 2, 0], [1, 5, 4], [3, 3, 6]],
+    ...                    index=["R1", "R2", "R3"], columns=["A", "B", "C"])
+    >>> full = ec.full_relatedness(mat)
+    >>> spec = ec.full_relatedness(mat, part="specialized")
+    >>> rest = ec.full_relatedness(mat, part="non_specialized")
+    >>> bool(((spec + rest - full).abs() < 1e-12).all().all())
+    True
+    """
+    if part not in ("full", "specialized", "non_specialized"):
+        raise ValueError("part must be 'full', 'specialized' or 'non_specialized'.")
+    if weights not in ("iapadre", "dalum", "capped"):
+        raise ValueError("weights must be 'iapadre', 'dalum' or 'capped'.")
+    from ..core.rca import rsca
+
+    m, phi_arr, is_df = _get_mcp_and_phi(mat, phi, True, threshold, proximity_method)
+    arr = validate_matrix(mat)
+    if weights == "capped":
+        w = np.minimum(compute_rca(arr) / threshold, 1.0)
+    else:
+        w = rsca(arr, method=weights) + 1.0
+    if part == "specialized":
+        w = w * m
+    elif part == "non_specialized":
+        w = w * (1 - m)
+
+    p = phi_arr.copy()
+    np.fill_diagonal(p, 0.0)
+    out = safe_divide(w @ p, p.sum(axis=0, keepdims=True))
+
+    if is_df:
+        return pd.DataFrame(out, index=mat.index, columns=mat.columns)
+    return out
+
+
 def density_contributions(
     mat: Union[np.ndarray, pd.DataFrame],
     region,

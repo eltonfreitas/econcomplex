@@ -4,6 +4,7 @@
 \textbf{Function} & \textbf{Description} \\
 \midrule\endhead
 \texttt{\footnotesize rca(mat, binary=False, threshold=1.0)} & {\small Revealed Comparative Advantage (Balassa Index).} \\[2pt]
+\texttt{\footnotesize rsca(mat, method='dalum')} & {\small Revealed Symmetric Comparative Advantage.} \\[2pt]
 \texttt{\footnotesize rpop(mat, pop, binary=False, threshold=1.0)} & {\small Population-normalized RCA (RPOP).} \\[2pt]
 \texttt{\footnotesize mcp(mat, presence\_test='rca', rca\_threshold=1.0, rpop\_threshold=1.0, pop=None)} & {\small Binary presence matrix (Mcp).} \\[2pt]
 \texttt{\footnotesize diversity(mat, use\_rca=True, threshold=1.0)} & {\small Diversity: number of activities in which each region has RCA >= threshold.} \\[2pt]
@@ -54,6 +55,7 @@
 \texttt{\footnotesize relatedness\_density\_internal(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Internal relatedness density: density values for activities the region ALREADY has (M\_{rc} = 1).} \\[2pt]
 \texttt{\footnotesize relatedness\_density\_external(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small External relatedness density: density values for activities the region does NOT yet have (M\_{rc} = 0).} \\[2pt]
 \texttt{\footnotesize relative\_relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relative relatedness (Pinheiro et al.} \\[2pt]
+\texttt{\footnotesize full\_relatedness(mat, phi=None, part='full', weights='iapadre', threshold=1.0, proximity\_method='max')} & {\small Relatedness density with continuous specialization (Full Relatedness).} \\[2pt]
 \texttt{\footnotesize density\_contributions(mat, region, activity, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Which activities of a region make another activity feasible there.} \\[2pt]
 \texttt{\footnotesize decomposed\_density(density, tol=1e-10, max\_iter=1000)} & {\small Relatedness density net of region and activity fixed effects.} \\[2pt]
 \texttt{\footnotesize skill\_relatedness(flows, symmetric=False, exclude\_diagonal=True, normalize=True)} & {\small Skill relatedness between activities from a matrix of flows.} \\[2pt]

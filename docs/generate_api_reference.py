@@ -116,6 +116,8 @@ PT = {
     "build_features": "Tabela de atributos por c\\'{e}lula (regi\\~{a}o, atividade): camadas de densidade e controles.",
     "predict_entry": "Probabilidade de entrada fora da amostra (gradient boosting, floresta, logit); exige scikit-learn.",
     "explain_entry": "Import\\^{a}ncia dos atributos por permuta\\c{c}\\~{a}o em regi\\~{o}es fora do treino, com p-valor.",
+    "rsca": "VCR sim\\'{e}trica em $[-1, 1]$ (Dalum et al. 1998 ou Iapadre 2001).",
+    "full_relatedness": "Densidade cont\\'{i}nua (Cicerone, McCann \\& Venhorst 2026), com partes especializada e n\\~{a}o especializada.",
     "density_contributions": "Contribui\\c{c}\\~{a}o de cada atividade presente para a densidade de um par (regi\\~{a}o, atividade).",
     "decomposed_density": "Densidade l\\'{i}quida dos efeitos fixos de regi\\~{a}o e de atividade.",
     "skill_relatedness": "Relatedness por fluxos entre atividades (ex.: trocas de emprego), observado sobre esperado.",

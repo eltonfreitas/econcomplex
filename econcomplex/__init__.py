@@ -65,11 +65,11 @@ the same objects as their canonical functions (see the API map in the
 documentation).
 """
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __author__ = "Elton Freitas and contributors"
 
 # ── Core ──────────────────────────────────────────────────────────────────────
-from .core.rca import rca, rpop, mcp
+from .core.rca import rca, rsca, rpop, mcp
 from .core.diversity import diversity, ubiquity, normalized_ubiquity
 from .core.utils import (
     pivot_to_matrix,
@@ -107,6 +107,7 @@ from .relatedness.density import (
     relatedness_density_internal,
     relatedness_density_external,
     relative_relatedness,
+    full_relatedness,
     density_contributions,
     decomposed_density,
 )
@@ -207,7 +208,7 @@ from .pipeline import compute_complexity
 
 __all__ = [
     # core
-    "rca", "rpop", "mcp",
+    "rca", "rsca", "rpop", "mcp",
     "diversity", "ubiquity", "normalized_ubiquity",
     "pivot_to_matrix", "melt_matrix", "binarize",
     "normalize_zscore", "normalize_01",
@@ -224,7 +225,7 @@ __all__ = [
     "relatedness_density", "density", "relatedness", "distance",
     "relatedness_density_internal", "relatedness_density_external",
     "relative_relatedness",
-    "density_contributions", "decomposed_density",
+    "full_relatedness", "density_contributions", "decomposed_density",
     "skill_relatedness", "spatial_density", "implied_rca",
     "io_relatedness",
     "co_occurrence", "relatedness_index", "z_score_novelty",

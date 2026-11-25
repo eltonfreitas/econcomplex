@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.2.0}\par
+  {\large\bfseries Documenta\c{c}\~{a}o T\'{e}cnica --- Vers\~{a}o 1.3.0}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -235,14 +235,14 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \toprule
 \textbf{M\'{o}dulo} & \textbf{Conte\'{u}do} \\
 \midrule
-\texttt{core}           & RCA, RPOP, Mcp, diversidade, ubiquidade, \texttt{trim\_core},
+\texttt{core}           & RCA, RCA sim\'{e}trica, RPOP, Mcp, diversidade, ubiquidade, \texttt{trim\_core},
                           \texttt{make\_sample\_data}, utilit\'{a}rios \\
 \texttt{complexity}     & ECI/PCI --- porta de entrada \'{u}nica \texttt{eci\_pci(method=...)}
                           (eigenvector, reflections, fitness, genepy), ECI subnacional, diagn\'{o}sticos do ECI \\
 \texttt{relatedness}    & Proximidade (discreta, cont\'{i}nua, cosseno, correla\c{c}\~{a}o),
                           densidade, dist\^{a}ncia, co-ocorr\^{e}ncia, cross-space,
                           relatedness por fluxos, densidade espacial,
-                          contribui\c{c}\~{o}es e decomposi\c{c}\~{a}o da densidade, VCR impl\'{i}cita, relatedness por insumo-produto \\
+                          contribui\c{c}\~{o}es e decomposi\c{c}\~{a}o da densidade, densidade cont\'{i}nua (Full Relatedness), VCR impl\'{i}cita, relatedness por insumo-produto \\
 \texttt{specialization} & LQ, Hachman, Krugman, coef.\ especializa\c{c}\~{a}o, similaridade \\
 \texttt{inequality}     & Gini, Gini locacional, Hoover-Gini, HHI, entropia Shannon \\
 \texttt{productivity}   & PRODY, EXPY, PGI, PEII \\
@@ -531,7 +531,7 @@ import sys
 sys.path.insert(0, "/caminho/para/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.2.0
+print(ec.__version__)   # 1.3.0
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -946,6 +946,47 @@ external = ec.relatedness_density_external(mat, phi=phi_d)
 specific_ext = ec.decomposed_density(external)
 \end{lstlisting}
 
+\subsection{Densidade Cont\'{i}nua (Full Relatedness)}
+
+\begin{sloppypar}
+A densidade padr\~{a}o s\'{o} conta uma atividade relacionada quando o local
+\'{e} especializado nela ($\text{VCR} \geq 1$); um local logo abaixo do
+corte \'{e} tratado como se n\~{a}o tivesse nada. \fn{full\_relatedness}
+implementa o \'{i}ndice de Cicerone, McCann \& Venhorst (2026), que pondera
+cada atividade relacionada pelo grau de especializa\c{c}\~{a}o do local:
+\end{sloppypar}
+
+\[
+  \text{FullRel}_{ij} = \frac{\sum_{k \neq j} \phi_{jk}\,(\text{RSCA}_{ik} + 1)}
+                             {\sum_{k \neq j} \phi_{jk}}
+\]
+
+\begin{sloppypar}
+RSCA \'{e} o \'{i}ndice sim\'{e}trico de vantagem revelada, entre $-1$ e 1,
+com 0 como valor neutro (\fn{rsca}); o artigo usa a variante de Iapadre
+(2001), que compara o local com os outros locais e a atividade com as
+outras atividades, e o cl\'{a}ssico $(\text{VCR}-1)/(\text{VCR}+1)$ de Dalum
+et al.\ (1998) tamb\'{e}m est\'{a} dispon\'{i}vel. O \'{i}ndice vai de 0 a 2
+e se divide exatamente em dois: \texttt{part="specialized"} fica com as
+atividades de $\text{VCR} \geq 1$ e \texttt{part="non\_specialized"} com
+as demais. A segunda parte \'{e} a informa\c{c}\~{a}o que a densidade
+padr\~{a}o descarta, e no artigo ela prev\^{e} novas especializa\c{c}\~{o}es
+al\'{e}m da primeira, com mais for\c{c}a em regi\~{o}es de renda alta. Com
+\texttt{weights="capped"} o peso \'{e} $\min(\text{VCR}, 1)$: a parte
+especializada passa a ser a densidade padr\~{a}o (como parcela), e a outra
+d\'{a} cr\'{e}dito parcial ao que est\'{a} abaixo do corte.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Full relatedness e suas duas partes}]
+full = ec.full_relatedness(mat, phi=phi_d)          # 0 to 2
+spec = ec.full_relatedness(mat, phi=phi_d, part="specialized")
+rest = ec.full_relatedness(mat, phi=phi_d,
+                           part="non_specialized")
+# full == spec + rest; "rest" is what the standard density leaves out
+
+sym = ec.rsca(mat, method="iapadre")    # -1 to 1, 0 = neutral
+\end{lstlisting}
+
 \subsection{Skill Relatedness (fluxos entre atividades)}
 
 Duas atividades s\~{a}o relacionadas quando os trabalhadores se movem
@@ -1100,7 +1141,7 @@ $Q_{p'}$: o COG \'{e} o aumento resultante do COI (bruto do termo da
 pr\'{o}pria $p$, que sai da soma).
 
 \begin{notebox}
-  \textbf{Alterado na 1.2.0.} At\'{e} a vers\~{a}o 1.2.0 o COG era
+  \textbf{Alterado na 1.2.0.} At\'{e} a vers\~{a}o 1.1.0 o COG era
   normalizado pela proximidade total da atividade-alvo $p$, e n\~{a}o pela
   de cada $p'$. As duas formas s\'{o} coincidem quando todas as atividades
   t\^{e}m a mesma proximidade total; os valores mudam pouco
@@ -1538,6 +1579,9 @@ Skill relatedness & $[-1, 1)$ & $>0$: mais fluxos entre as duas
   atividades do que o esperado; $-1$: nenhum fluxo. \\
 Densidade espacial & $[0, 1]$ & Parcela dos vizinhos j\'{a}
   especializados na atividade. \\
+Full relatedness & $[0, 2]$ & Densidade que tamb\'{e}m conta as
+  atividades relacionadas abaixo do corte; a parte n\~{a}o especializada
+  \'{e} o que a densidade padr\~{a}o deixa de fora. \\
 Densidade decomposta & res\'{i}duo (m\'{e}dia 0) & $>0$: o par est\'{a} mais
   pr\'{o}ximo do que as m\'{e}dias do local e da atividade explicam. \\
 \'{I}ndice de desejabilidade & unidades de z-score & Maior = mais
@@ -1721,7 +1765,7 @@ print(otimo["sequence"][:10], otimo["improvement"])
 %% ============================================================
 \section{Refer\^{e}ncia da API}
 
-Invent\'{a}rio completo das 112 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
+Invent\'{a}rio completo das 114 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
 por m\'{o}dulo. As assinaturas mostram os par\^{a}metros e seus valores
 padr\~{a}o; consulte os docstrings no c\'{o}digo
 (\texttt{help(ec.funcao)}) para a documenta\c{c}\~{a}o completa de cada
@@ -1865,6 +1909,22 @@ do pacote instalado por \texttt{docs/generate\_api\_reference.py}.
     Relatedness in the era of machine learning. \textit{Chaos, Solitons
     \& Fractals}, 176, 114071.
 
+  \item[Cicerone, McCann \& Venhorst (2026)]
+    Cicerone, G., McCann, P., Venhorst, V.A. (2026). Disentangling
+    relatedness density: the complementary impact of non-specialised
+    related technologies. \textit{Spatial Economic Analysis}, 21(3),
+    460--477.
+
+  \item[Dalum, Laursen \& Villumsen (1998)]
+    Dalum, B., Laursen, K., Villumsen, G. (1998). Structural change in
+    OECD export specialisation patterns: de-specialisation and
+    `stickiness'. \textit{International Review of Applied Economics},
+    12(3), 423--443.
+
+  \item[Iapadre (2001)]
+    Iapadre, P.L. (2001). Measuring international specialization.
+    \textit{International Advances in Economic Research}, 7(2), 173--183.
+
 \end{description}
 
 %% ============================================================
@@ -1877,7 +1937,7 @@ originais dos indicadores utilizados (ver Refer\^{e}ncias).
 
 \begin{lstlisting}[language={}, caption={Verificar vers\~{a}o da biblioteca}]
 import econcomplex as ec
-print(ec.__version__)   # 1.2.0
+print(ec.__version__)   # 1.3.0
 \end{lstlisting}
 
 \end{document}

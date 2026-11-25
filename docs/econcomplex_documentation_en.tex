@@ -166,7 +166,7 @@
   \vspace*{3cm}
   {\Huge\bfseries\color{tblhead} econcomplex}\par
   \vspace{0.5cm}
-  {\large\bfseries Technical Documentation --- Version 1.2.0}\par
+  {\large\bfseries Technical Documentation --- Version 1.3.0}\par
   \vspace{1cm}
   \rule{10cm}{0.8pt}\par
   \vspace{0.8cm}
@@ -234,14 +234,14 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \toprule
 \textbf{Module} & \textbf{Contents} \\
 \midrule
-\texttt{core}           & RCA, RPOP, Mcp, diversity, ubiquity, \texttt{trim\_core},
+\texttt{core}           & RCA, symmetric RCA, RPOP, Mcp, diversity, ubiquity, \texttt{trim\_core},
                           \texttt{make\_sample\_data}, utilities \\
 \texttt{complexity}     & ECI/PCI --- single entry point \texttt{eci\_pci(method=...)}
                           (eigenvector, reflections, fitness, genepy), subnational ECI, ECI diagnostics \\
 \texttt{relatedness}    & Proximity (discrete, continuous, cosine, correlation),
                           density, distance, co-occurrence, cross-space, skill
                           relatedness (flows), spatial density, density
-                          contributions and fixed-effects decomposition, implied RCA, input-output relatedness \\
+                          contributions and fixed-effects decomposition, continuous density (Full Relatedness), implied RCA, input-output relatedness \\
 \texttt{specialization} & LQ, Hachman, Krugman, specialization coef., similarity \\
 \texttt{inequality}     & Gini, locational Gini, Hoover-Gini, HHI, Shannon entropy \\
 \texttt{productivity}   & PRODY, EXPY, PGI, PEII \\
@@ -526,7 +526,7 @@ import sys
 sys.path.insert(0, "/path/to/econcomplex")
 
 import econcomplex as ec
-print(ec.__version__)   # 1.2.0
+print(ec.__version__)   # 1.3.0
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -938,6 +938,48 @@ external = ec.relatedness_density_external(mat, phi=phi_d)
 specific_ext = ec.decomposed_density(external)
 \end{lstlisting}
 
+\subsection{Continuous Density (Full Relatedness)}
+
+\begin{sloppypar}
+The standard density counts a related activity only when the location is
+specialized in it ($\text{RCA} \geq 1$); a location just below the
+cut-off is treated like one with nothing. \fn{full\_relatedness}
+implements the index of Cicerone, McCann \& Venhorst (2026), which
+weights every related activity by how specialized the location is:
+\end{sloppypar}
+
+\[
+  \text{FullRel}_{ij} = \frac{\sum_{k \neq j} \phi_{jk}\,(\text{RSCA}_{ik} + 1)}
+                             {\sum_{k \neq j} \phi_{jk}}
+\]
+
+\begin{sloppypar}
+RSCA is the symmetric index of revealed advantage, between $-1$ and 1
+with 0 as the neutral value (\fn{rsca}); the paper uses the variant of
+Iapadre (2001), which compares the location with the other locations and
+the activity with the other activities, and the classic
+$(\text{RCA}-1)/(\text{RCA}+1)$ of Dalum et al.\ (1998) is also
+available. The index goes from 0 to 2 and splits exactly in two:
+\texttt{part="specialized"} keeps the activities with
+$\text{RCA} \geq 1$ and \texttt{part="non\_specialized"} the rest. The
+second part is the information the standard density discards, and in the
+paper it predicts new specializations beyond the first, more strongly in
+high-income regions. With \texttt{weights="capped"} the weight is
+$\min(\text{RCA}, 1)$: the specialized part is then the standard density
+(as a share), and the other part gives partial credit to what lies below
+the cut-off.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Full relatedness and its two parts}]
+full = ec.full_relatedness(mat, phi=phi_d)          # 0 to 2
+spec = ec.full_relatedness(mat, phi=phi_d, part="specialized")
+rest = ec.full_relatedness(mat, phi=phi_d,
+                           part="non_specialized")
+# full == spec + rest; "rest" is what the standard density leaves out
+
+sym = ec.rsca(mat, method="iapadre")    # -1 to 1, 0 = neutral
+\end{lstlisting}
+
 \subsection{Skill Relatedness (flows between activities)}
 
 Two activities are related when workers move between them more often
@@ -1089,7 +1131,7 @@ COG is the resulting increase in COI (gross of the term of $p$ itself,
 which leaves the sum).
 
 \begin{notebox}
-  \textbf{Changed in 1.2.0.} Up to version 1.2.0 the COG was normalized
+  \textbf{Changed in 1.2.0.} Up to version 1.1.0 the COG was normalized
   by the total proximity of the target activity $p$ instead of that of
   each $p'$. The two only coincide when all activities have the same
   total proximity; values change slightly (correlation around 0.97 with
@@ -1514,6 +1556,9 @@ Skill relatedness & $[-1, 1)$ & $>0$: more flows between the two
   activities than expected; $-1$: no flow. \\
 Spatial density & $[0, 1]$ & Share of the neighbours already specialized
   in the activity. \\
+Full relatedness & $[0, 2]$ & Density that also counts related
+  activities below the cut-off; its non-specialized part is what the
+  standard density leaves out. \\
 Decomposed density & residual (mean 0) & $>0$: the pair is closer than
   the location's and the activity's averages explain. \\
 Desirability index & z-score units & Higher = more desirable under the
@@ -1695,7 +1740,7 @@ print(best["sequence"][:10], best["improvement"])
 \section{API Reference}
 
 \begin{sloppypar}
-Complete inventory of the 112 public functions, grouped by module.
+Complete inventory of the 114 public functions, grouped by module.
 Signatures show parameter names and defaults; see the in-code
 docstrings (\texttt{help(ec.function)}) for full parameter
 documentation. This section is auto-generated from the installed
@@ -1839,6 +1884,22 @@ package by \texttt{docs/generate\_api\_reference.py}.
     Relatedness in the era of machine learning. \textit{Chaos, Solitons
     \& Fractals}, 176, 114071.
 
+  \item[Cicerone, McCann \& Venhorst (2026)]
+    Cicerone, G., McCann, P., Venhorst, V.A. (2026). Disentangling
+    relatedness density: the complementary impact of non-specialised
+    related technologies. \textit{Spatial Economic Analysis}, 21(3),
+    460--477.
+
+  \item[Dalum, Laursen \& Villumsen (1998)]
+    Dalum, B., Laursen, K., Villumsen, G. (1998). Structural change in
+    OECD export specialisation patterns: de-specialisation and
+    `stickiness'. \textit{International Review of Applied Economics},
+    12(3), 423--443.
+
+  \item[Iapadre (2001)]
+    Iapadre, P.L. (2001). Measuring international specialization.
+    \textit{International Advances in Economic Research}, 7(2), 173--183.
+
 \end{description}
 
 %% ============================================================
@@ -1851,7 +1912,7 @@ original papers of the indicators used (see References).
 
 \begin{lstlisting}[language={}, caption={Check the library version}]
 import econcomplex as ec
-print(ec.__version__)   # 1.2.0
+print(ec.__version__)   # 1.3.0
 \end{lstlisting}
 
 \end{document}

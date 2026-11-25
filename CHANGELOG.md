@@ -1,6 +1,24 @@
 # Changelog
 
-## [1.2.0] — unreleased
+## [1.3.0] — unreleased
+
+### Added
+- `full_relatedness`: relatedness density with continuous specialization
+  (Cicerone, McCann & Venhorst 2026). Every related activity is weighted by
+  how specialized the region is in it, instead of counting only those with
+  RCA >= 1, and the index splits exactly into the part that comes from
+  specialized activities and the part that comes from non-specialized ones
+  (`part="specialized"` / `"non_specialized"`). Weights: the symmetric index
+  of Iapadre (2001), as in the paper, the one of Dalum et al. (1998), or a
+  capped RCA, whose specialized part is the standard density.
+- `rsca`: revealed symmetric comparative advantage, in [-1, 1]
+  (`method="dalum"` or `"iapadre"`).
+
+### Fixed
+- Documentation: the note on the corrected COG said "up to version 1.2.0";
+  the old normalization was in place up to 1.1.0.
+
+## [1.2.0] — 2026-11-25
 
 General-purpose tools for the steps that come after the indicators:
 explaining opportunities, ranking them, reading them through lists of

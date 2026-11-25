@@ -4,6 +4,7 @@
 \textbf{Fun\c{c}\~{a}o} & \textbf{Descri\c{c}\~{a}o} \\
 \midrule\endhead
 \texttt{\footnotesize rca(mat, binary=False, threshold=1.0)} & {\small Vantagem Comparativa Revelada (\'{i}ndice de Balassa).} \\[2pt]
+\texttt{\footnotesize rsca(mat, method='dalum')} & {\small VCR sim\'{e}trica em $[-1, 1]$ (Dalum et al. 1998 ou Iapadre 2001).} \\[2pt]
 \texttt{\footnotesize rpop(mat, pop, binary=False, threshold=1.0)} & {\small RCA normalizada por popula\c{c}\~{a}o (RPOP).} \\[2pt]
 \texttt{\footnotesize mcp(mat, presence\_test='rca', rca\_threshold=1.0, rpop\_threshold=1.0, pop=None)} & {\small Matriz bin\'{a}ria de presen\c{c}a Mcp (RCA, RPOP, ambas ou manual).} \\[2pt]
 \texttt{\footnotesize diversity(mat, use\_rca=True, threshold=1.0)} & {\small Diversidade: n\'{u}mero de atividades com RCA acima do limiar, por regi\~{a}o.} \\[2pt]
@@ -54,6 +55,7 @@
 \texttt{\footnotesize relatedness\_density\_internal(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Densidade restrita \`{a}s atividades j\'{a} presentes.} \\[2pt]
 \texttt{\footnotesize relatedness\_density\_external(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Densidade restrita \`{a}s atividades ausentes.} \\[2pt]
 \texttt{\footnotesize relative\_relatedness(mat, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Relatedness relativa: z-score no option set (Pinheiro et al.\ 2022).} \\[2pt]
+\texttt{\footnotesize full\_relatedness(mat, phi=None, part='full', weights='iapadre', threshold=1.0, proximity\_method='max')} & {\small Densidade cont\'{i}nua (Cicerone, McCann \& Venhorst 2026), com partes especializada e n\~{a}o especializada.} \\[2pt]
 \texttt{\footnotesize density\_contributions(mat, region, activity, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', percent=True)} & {\small Contribui\c{c}\~{a}o de cada atividade presente para a densidade de um par (regi\~{a}o, atividade).} \\[2pt]
 \texttt{\footnotesize decomposed\_density(density, tol=1e-10, max\_iter=1000)} & {\small Densidade l\'{i}quida dos efeitos fixos de regi\~{a}o e de atividade.} \\[2pt]
 \texttt{\footnotesize skill\_relatedness(flows, symmetric=False, exclude\_diagonal=True, normalize=True)} & {\small Relatedness por fluxos entre atividades (ex.: trocas de emprego), observado sobre esperado.} \\[2pt]
