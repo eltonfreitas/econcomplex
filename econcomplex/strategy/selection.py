@@ -109,6 +109,110 @@ def desirability_index(
     return score.rename("desirability")
 
 
+def pca_weights(
+    indicators: pd.DataFrame,
+    groups: Optional[dict] = None,
+    variance: float = 0.8,
+) -> pd.Series:
+    """
+    Weights for a composite index from principal component analysis.
+
+    A way of not choosing the weights of `desirability_index` by hand:
+    indicators that carry more of the common variation of the data get
+    more weight. This is the device of the smart diversification score of
+    Romero et al. (2025), which groups the indicators of each (region,
+    activity) option into dimensions — capabilities, markets, gains —
+    gives the dimensions equal weight, and sets the weights inside each
+    dimension by PCA.
+
+    Inside a group, the components that jointly explain at least
+    `variance` of the total variance are kept, and the weight of an
+    indicator is the sum, over those components, of its squared loading
+    times the component's share of the variance they explain. Weights
+    are non-negative and add up to 1 within a group; each group receives
+    1 / (number of groups) of the total. When all the components are
+    kept the weights are equal, so `variance` should stay below 1.
+
+    Parameters
+    ----------
+    indicators : pd.DataFrame (units x indicators)
+        One row per unit — activities, or (region, activity) cells as
+        produced by `build_features`. To calibrate the weights on a
+        reference subsample, as the paper does, pass only those rows.
+        Rows with a missing value are dropped.
+    groups : dict, optional
+        ``{dimension: [indicator names]}``. By default all the columns
+        form a single group.
+    variance : float
+        Share of the variance the retained components must explain.
+
+    Returns
+    -------
+    pd.Series of weights indexed by indicator, adding up to 1, to pass
+    to ``desirability_index(indicators, weights)``.
+
+    Notes
+    -----
+    PCA weights are all positive: an indicator that should count against
+    the option (emissions, distance) must enter with its sign reversed,
+    or have the sign of its weight flipped afterwards. The paper does not
+    spell out how loadings become weights; the rule above is the usual
+    one for composite indicators (Nardo et al. 2008), without rotation of
+    the components.
+
+    References
+    ----------
+    Romero, J. P., Freitas, E., Silveira, F., Britto, G., Cimini, F. &
+    Jayme Jr., F. G. (2025). Complexity-based diversification strategies:
+    a new method for ranking promising activities for regional
+    diversification. Spatial Economic Analysis, 20(4), 640-663.
+    Nardo, M., Saisana, M., Saltelli, A., Tarantola, S., Hoffmann, A. &
+    Giovannini, E. (2008). Handbook on Constructing Composite Indicators:
+    Methodology and User Guide. OECD Publishing.
+
+    Examples
+    --------
+    >>> import numpy as np, pandas as pd
+    >>> import econcomplex as ec
+    >>> rng = np.random.default_rng(0)
+    >>> common = rng.normal(size=200)
+    >>> ind = pd.DataFrame({"a": common + 0.1 * rng.normal(size=200),
+    ...                     "b": common + 0.1 * rng.normal(size=200),
+    ...                     "noise": rng.normal(size=200)})
+    >>> w = ec.pca_weights(ind, variance=0.6)
+    >>> bool(w["a"] > 0.4 and w["b"] > 0.4 and w["noise"] < 0.1)
+    True
+    """
+    if not 0 < variance <= 1:
+        raise ValueError("variance must be in (0, 1].")
+    ind = pd.DataFrame(indicators).astype(float).dropna()
+    groups = {"all": list(ind.columns)} if groups is None else groups
+    weights = pd.Series(0.0, index=ind.columns)
+    for name, cols in groups.items():
+        cols = list(cols)
+        missing = [c for c in cols if c not in ind.columns]
+        if missing:
+            raise ValueError(f"group {name!r} has unknown indicator(s) {missing}.")
+        x = ind[cols].to_numpy()
+        sd = x.std(axis=0)
+        varying = sd > 0
+        w = np.zeros(len(cols))
+        if varying.sum() == 1:
+            w[varying] = 1.0
+        elif varying.sum() > 1:
+            z = (x[:, varying] - x[:, varying].mean(axis=0)) / sd[varying]
+            values, vectors = np.linalg.eigh(np.corrcoef(z, rowvar=False))
+            order = np.argsort(values)[::-1]
+            values, vectors = np.clip(values[order], 0, None), vectors[:, order]
+            share = np.cumsum(values) / values.sum()
+            keep = int(np.searchsorted(share, variance - 1e-12) + 1)
+            w[varying] = (vectors[:, :keep] ** 2) @ (values[:keep] / values[:keep].sum())
+        else:
+            raise ValueError(f"group {name!r} has no indicator that varies.")
+        weights[cols] += w / len(groups)
+    return weights.rename("weight")
+
+
 def weight_sensitivity(
     indicators: pd.DataFrame,
     weights: Optional[Union[dict, pd.Series, list, np.ndarray]] = None,

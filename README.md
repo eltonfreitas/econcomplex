@@ -28,13 +28,13 @@ diffusion) that, to our knowledge, is not available in any other package.
 | **Patents** | Ease of recombination, modular complexity |
 | **Dynamics** | Growth rates, entry/exit tracking — matrix-pair and long-panel APIs |
 | **Outlook** | Complexity Outlook Index (COI) and Gain (COG) |
-| **Strategy** | Desirability index with explicit weights, sensitivity of the ranking to the weights, feasibility × desirability quadrants, opportunity alignment |
+| **Strategy** | Desirability index with explicit weights or weights by principal components (smart diversification score), sensitivity of the ranking to the weights, feasibility × desirability quadrants, opportunity alignment |
 | **Policy lists** | Presence and potential of a region in any list of activities (green lists, missions, value chains), density that rests on a list, missing links of a chain, transition risk (exposure, lock-in, outlook) |
 | **Entry prediction** | Entry targets with a risk set, and out-of-sample validation of any predictor: AUC, within-region AUC, precision/recall@k, Brier, bootstrap by region; optional prediction models (gradient boosting, random forest, logit) with out-of-sample probabilities, feature importance and expected size of entries |
 | **ECI Optimization** | Stepping-stone forecast model, entry-effort matrix, exact 0–1 program for minimal-effort diversification portfolios, growth targeting (Stojkoski & Hidalgo 2026) |
 | **Strategic diffusion** | Complex-contagion calibration, five diversification strategies, optimal entry sequencing (Alshamsi, Pinheiro & Hidalgo 2018) |
 
-114 public functions in total — the PDF documentation carries a complete API
+115 public functions in total — the PDF documentation carries a complete API
 reference and an interpretation guide for every indicator family.
 
 ## Installation

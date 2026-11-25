@@ -351,14 +351,55 @@ def _predict_vector(features, target, new_features, groups, n_splits,
     return (out, models) if return_model else out
 
 
+def _permutation_drops(X, y, fold, make, n_repeats, rng):
+    """
+    Fall in held-out AUC when each column is shuffled (features x draws),
+    and the sign of the relation between each column and the prediction.
+    """
+    drops = [[] for _ in range(X.shape[1])]
+    sign = np.zeros(X.shape[1])
+    for k in np.unique(fold):
+        train, test = fold != k, fold == k
+        y_test = y[test] > 0.5
+        if y[train].min() == y[train].max() or y_test.min() == y_test.max():
+            continue
+        fitted = make().fit(X[train], y[train])
+        pred = fitted.predict_proba(X[test])[:, 1]
+        base = _auc(y_test, pred)
+        for j in range(X.shape[1]):
+            col = X[test][:, j]
+            ok = ~np.isnan(col)
+            if ok.sum() > 2 and col[ok].std() > 0 and pred[ok].std() > 0:
+                sign[j] += np.corrcoef(col[ok], pred[ok])[0, 1]
+            for _ in range(n_repeats):
+                shuffled = X[test].copy()
+                shuffled[:, j] = rng.permutation(col)
+                drops[j].append(base - _auc(y_test, fitted.predict_proba(shuffled)[:, 1]))
+    return np.array(drops), np.sign(sign)
+
+
+def _importance_table(drops, sign, names, alpha):
+    out = pd.DataFrame({
+        "importance": drops.mean(axis=1),
+        "std": drops.std(axis=1),
+        "p_value": (1 + (drops <= 0).sum(axis=1)) / (1 + drops.shape[1]),
+        "direction": np.where(sign > 0, "+", np.where(sign < 0, "-", "")),
+    }, index=names)
+    out["significant"] = out["p_value"] < alpha
+    return out.sort_values("importance", ascending=False, kind="stable")
+
+
 def explain_entry(
     features: pd.DataFrame,
     target: Union[pd.DataFrame, pd.Series],
     model="gbm",
+    mode: str = "layers",
+    activities: Optional[list] = None,
     groups: Optional[Union[dict, pd.Series]] = None,
     n_splits: int = 5,
     n_repeats: int = 10,
     alpha: float = 0.05,
+    min_entries: int = 5,
     seed: Optional[int] = None,
 ) -> pd.DataFrame:
     """
@@ -376,10 +417,26 @@ def explain_entry(
     though the pair matters. Read it together with the AUC of each layer
     alone in `validate_entry`.
 
+    ``mode="layers"``
+        One table for the model on `build_features`: which layers and
+        controls matter.
+    ``mode="vector"``
+        One table per target activity, for the models that predict entry
+        from the region's whole RCA vector: which of the activities a
+        region has make the entry into the target more likely. It is a
+        data-driven counterpart of `density_contributions`. Slow: one
+        cross-validated model and (number of activities x `n_repeats`)
+        predictions per fold and target, so pass the targets of interest
+        in `activities`.
+
     Parameters
     ----------
-    features, target, model, groups, n_splits, seed
-        As in `predict_entry` (``mode="layers"``).
+    features, target, model, groups, n_splits, min_entries, seed
+        As in `predict_entry`.
+    mode : {'layers', 'vector'}
+    activities : list, optional
+        ``mode="vector"`` only: target activities to explain (default:
+        all that have enough entries).
     n_repeats : int
         Shuffles of each feature in each fold.
     alpha : float
@@ -387,38 +444,42 @@ def explain_entry(
 
     Returns
     -------
-    pd.DataFrame indexed by feature, most important first, with
-    ``importance`` (mean fall in AUC), ``std``, ``p_value`` and
+    pd.DataFrame indexed by feature (by (target, feature) in vector
+    mode), most important first, with ``importance`` (mean fall in AUC),
+    ``std``, ``p_value``, ``direction`` (``+`` when higher values of the
+    feature go with a higher predicted probability, ``-`` otherwise) and
     ``significant``.
     """
-    y = _stack_target(target, features.index)
-    use = ~np.isnan(y)
-    X, y = features.to_numpy(dtype=float)[use], y[use]
-    regions = features.index.get_level_values(0)[use]
-    fold = _fold_of(_region_groups(regions, groups), n_splits, seed)
+    if mode not in ("layers", "vector"):
+        raise ValueError("mode must be 'layers' or 'vector'.")
     rng = np.random.default_rng(seed)
+    make = lambda: _make_model(model, False, seed)     # noqa: E731
 
-    drops = [[] for _ in features.columns]
-    for k in np.unique(fold):
-        train, test = fold != k, fold == k
-        y_test = y[test] > 0.5
-        if y[train].min() == y[train].max() or y_test.min() == y_test.max():
+    if mode == "layers":
+        y = _stack_target(target, features.index)
+        use = ~np.isnan(y)
+        X, y = features.to_numpy(dtype=float)[use], y[use]
+        regions = features.index.get_level_values(0)[use]
+        fold = _fold_of(_region_groups(regions, groups), n_splits, seed)
+        drops, sign = _permutation_drops(X, y, fold, make, n_repeats, rng)
+        if drops.size == 0:
+            raise ValueError("no fold had both entries and non-entries; use fewer splits.")
+        return _importance_table(drops, sign, features.columns, alpha)
+
+    if not isinstance(features, pd.DataFrame) or not isinstance(target, pd.DataFrame):
+        raise ValueError("mode='vector' needs R x C DataFrames for features and target.")
+    X = features.to_numpy(dtype=float)
+    Y = target.reindex(index=features.index, columns=features.columns)
+    fold = _fold_of(_region_groups(features.index, groups), n_splits, seed)
+    tables = {}
+    for activity in (features.columns if activities is None else activities):
+        y = Y[activity].to_numpy(dtype=float)
+        use = ~np.isnan(y)
+        if min(y[use].sum(), (1 - y[use]).sum()) < min_entries:
             continue
-        fitted = _make_model(model, False, seed).fit(X[train], y[train])
-        base = _auc(y_test, fitted.predict_proba(X[test])[:, 1])
-        for j in range(X.shape[1]):
-            for _ in range(n_repeats):
-                shuffled = X[test].copy()
-                shuffled[:, j] = rng.permutation(shuffled[:, j])
-                drops[j].append(base - _auc(y_test, fitted.predict_proba(shuffled)[:, 1]))
-
-    drops = np.array(drops)
-    if drops.size == 0:
-        raise ValueError("no fold had both entries and non-entries; use fewer splits.")
-    out = pd.DataFrame({
-        "importance": drops.mean(axis=1),
-        "std": drops.std(axis=1),
-        "p_value": (1 + (drops <= 0).sum(axis=1)) / (1 + drops.shape[1]),
-    }, index=features.columns)
-    out["significant"] = out["p_value"] < alpha
-    return out.sort_values("importance", ascending=False, kind="stable")
+        drops, sign = _permutation_drops(X[use], y[use], fold[use], make, n_repeats, rng)
+        if drops.size:
+            tables[activity] = _importance_table(drops, sign, features.columns, alpha)
+    if not tables:
+        raise ValueError("no target activity has enough entries and non-entries.")
+    return pd.concat(tables, names=["target", "feature"])

@@ -58,9 +58,9 @@ def io_relatedness(
     Notes
     -----
     The default, IOR_{ij} = (Z_{ij} / Z_{i.} + Z_{ji} / Z_{j.}) / 2, is
-    our reading of eq. (1) of Essletzbichler (2015, working-paper
-    version), who follows Fan & Lang (2000). The other options are
-    common variants; state which one you use.
+    eq. (1) of Essletzbichler (2015), who follows Fan & Lang (2000) and
+    reports it multiplied by 100. The other options are common variants;
+    state which one you use.
 
     Examples
     --------

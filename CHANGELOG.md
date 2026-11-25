@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.0] — unreleased
+## [1.3.0] — 2026-11-25
 
 ### Added
 - `full_relatedness`: relatedness density with continuous specialization
@@ -13,6 +13,19 @@
   capped RCA, whose specialized part is the standard density.
 - `rsca`: revealed symmetric comparative advantage, in [-1, 1]
   (`method="dalum"` or `"iapadre"`).
+- `pca_weights`: weights for `desirability_index` from principal component
+  analysis, optionally within dimensions of equal weight — the device of the
+  smart diversification score of Romero et al. (2025).
+- `complexity_outlook_gain(net=True)`: subtracts the term of the activity
+  itself and returns the exact change in the Complexity Outlook Index.
+- `explain_entry(mode="vector")`: for the models that predict entry from the
+  whole RCA vector, which present activities make the entry into each target
+  more likely. The importance tables gain a `direction` column.
+
+### Changed
+- `io_relatedness`: the default is now confirmed against eq. (1) of the
+  published Essletzbichler (2015), not only the working paper.
+- Portuguese documentation: section titles in sentence case.
 
 ### Fixed
 - Documentation: the note on the corrected COG said "up to version 1.2.0";

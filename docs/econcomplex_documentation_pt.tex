@@ -190,7 +190,7 @@
 \newpage
 
 %% ============================================================
-\section{Vis\~{a}o Geral}
+\section{Vis\~{a}o geral}
 
 \pkg{econcomplex} \'{e} uma biblioteca Python que consolida as melhores
 implementa\c{c}\~{o}es de indicadores de Complexidade Econ\^{o}mica e de
@@ -228,7 +228,7 @@ pip install -e .
 python3 -c "import econcomplex as ec; print(ec.__version__)"
 \end{lstlisting}
 
-\subsection{Estrutura de M\'{o}dulos}
+\subsection{Estrutura de m\'{o}dulos}
 
 \begin{center}
 \begin{tabular}{l>{\raggedright\arraybackslash}p{10cm}}
@@ -262,7 +262,7 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \end{tabular}
 \end{center}
 
-\subsection{Mapa da API: Portas de Entrada, Implementa\c{c}\~{o}es Avan\c{c}adas e Aliases}
+\subsection{Mapa da API: portas de entrada, implementa\c{c}\~{o}es avan\c{c}adas e aliases}
 
 A API p\'{u}blica tem tr\^{e}s camadas. As \textbf{portas de entrada}
 s\~{a}o o que a maioria dos usu\'{a}rios precisa; as
@@ -310,14 +310,14 @@ c\'{a}lculo duplicado).
 \end{center}
 
 %% ============================================================
-\section{Organiza\c{c}\~{a}o dos Dados}
+\section{Organiza\c{c}\~{a}o dos dados}
 
 Esta se\c{c}\~{a}o descreve o formato de entrada esperado pela biblioteca,
 garantindo que os dados estejam corretamente estruturados antes da
 execu\c{c}\~{a}o de qualquer indicador.
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Formato Padr\~{a}o: Tabela Longa (\textit{long format})}
+\subsection{Formato padr\~{a}o: tabela longa (\textit{long format})}
 
 A biblioteca \pkg{econcomplex} trabalha exclusivamente com
 \textbf{tabelas no formato longo} (\textit{tidy data}),
@@ -347,7 +347,7 @@ $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
 \end{warnbox}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Regras de Qualidade dos Dados}
+\subsection{Regras de qualidade dos dados}
 
 \begin{enumerate}[leftmargin=1.5em]
   \item \textbf{Sem linhas duplicadas:} cada par (\textit{regiao},
@@ -377,7 +377,7 @@ $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ \\
 \end{notebox}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Nomes das Colunas --- Dicion\'{a}rio \texttt{cols}}
+\subsection{Nomes das colunas: o dicion\'{a}rio \texttt{cols}}
 
 O pipeline usa um dicion\'{a}rio \argm{cols} para mapear os nomes reais
 das colunas do seu DataFrame:
@@ -422,7 +422,7 @@ resultado = ec.compute_complexity(
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Formatos de Arquivo Suportados}
+\subsection{Formatos de arquivo suportados}
 
 \begin{center}
 \renewcommand{\arraystretch}{1.3}
@@ -457,7 +457,7 @@ df = pd.read_excel("dados.xlsx", sheet_name="Sheet1",
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Exemplos de Bases Compat\'{i}veis}
+\subsection{Exemplos de bases compat\'{i}veis}
 
 \begin{description}[leftmargin=1.5em, style=nextline]
   \item[\textbf{RAIS/MTE}]
@@ -478,7 +478,7 @@ df = pd.read_excel("dados.xlsx", sheet_name="Sheet1",
 \end{description}
 
 %% ============================================================
-\section{Como Executar os Scripts}
+\section{Como executar os scripts}
 
 Esta se\c{c}\~{a}o descreve todas as formas de executar a biblioteca
 \pkg{econcomplex}, desde a execu\c{c}\~{a}o direta de scripts Python
@@ -506,7 +506,7 @@ python3 -c "import econcomplex as ec; print(ec.__version__)"
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Execu\c{c}\~{a}o Direta via Terminal}
+\subsection{Execu\c{c}\~{a}o direta via terminal}
 
 A forma mais simples de usar a biblioteca \'{e} executar um script
 \texttt{.py} diretamente no terminal:
@@ -599,7 +599,7 @@ No \textbf{Spyder}, v\'{a} em \textit{Tools $\to$ PYTHONPATH Manager}
 e adicione o diret\'{o}rio \texttt{econcomplex/}.
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Script M\'{i}nimo de Execu\c{c}\~{a}o}
+\subsection{Script m\'{i}nimo de execu\c{c}\~{a}o}
 
 Template pronto para uso com qualquer base em formato CSV:
 
@@ -654,7 +654,7 @@ print(saida.round(3))
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Execu\c{c}\~{a}o com Dados da RAIS / CNAE (caso de uso real)}
+\subsection{Execu\c{c}\~{a}o com dados da RAIS / CNAE (caso de uso real)}
 
 \begin{lstlisting}[caption={Uso com dados RAIS --- munic\'{i}pios x CNAE}]
 import pandas as pd
@@ -686,7 +686,7 @@ resultado.to_csv("complexidade_municipios_2022.csv", index=False)
 \end{lstlisting}
 
 % -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-\subsection{Execu\c{c}\~{a}o em Painel Multitemporal}
+\subsection{Execu\c{c}\~{a}o em painel multitemporal}
 
 Para analisar a evolu\c{c}\~{a}o dos indicadores ao longo do tempo,
 basta incluir a coluna temporal no dicion\'{a}rio \argm{cols}:
@@ -727,9 +727,9 @@ print(eci_evolucao)
 \input{tutorial_pt}
 
 %% ============================================================
-\section{Indicadores do N\'{u}cleo (\texttt{core})}
+\section{Indicadores do n\'{u}cleo (\texttt{core})}
 
-\subsection{Vantagem Comparativa Revelada (RCA)}
+\subsection{Vantagem comparativa revelada (RCA)}
 
 A RCA de Balassa \'{e} o principal filtro de especializa\c{c}\~{a}o:
 
@@ -750,7 +750,7 @@ mcp      = ec.mcp(mat, threshold=1)  # 1 se RCA >= 1, 0 caso contrario
 rca_rpop = ec.rpop(mat, pop)         # RCA de Puga & Turrini (requer vetor de populacao)
 \end{lstlisting}
 
-\subsection{Diversidade e Ubiquidade}
+\subsection{Diversidade e ubiquidade}
 
 \begin{lstlisting}[caption={Diversidade e ubiquidade}]
 div = ec.diversity(mat)    # numero de setores com RCA >= 1 por regiao
@@ -758,9 +758,9 @@ ubi = ec.ubiquity(mat)     # numero de regioes com RCA >= 1 por setor
 \end{lstlisting}
 
 %% ============================================================
-\section{Complexidade Econ\^{o}mica (\texttt{complexity})}
+\section{Complexidade econ\^{o}mica (\texttt{complexity})}
 
-\subsection{M\'{e}todo do Vetor Pr\'{o}prio (Hidalgo \& Hausmann, 2009)}
+\subsection{M\'{e}todo do autovetor (Hidalgo \& Hausmann, 2009)}
 
 \[
   \text{ECI} = \frac{\vec{v}_2 - \mu(\vec{v}_2)}{\sigma(\vec{v}_2)}, \quad
@@ -782,7 +782,7 @@ print(pci.head())   # Series indexada por produto/setor
 core = ec.trim_core(mat, dmin=2, umin=2)   # tambem disponivel avulsa
 \end{lstlisting}
 
-\subsection{M\'{e}todo de Reflex\~{o}es (Hidalgo \& Hausmann, 2009)}
+\subsection{M\'{e}todo dos reflexos (Hidalgo \& Hausmann, 2009)}
 
 \begin{lstlisting}[caption={M\'{e}todo de Reflex\~{o}es}]
 eci_r, pci_r = ec.eci_pci(mat, method="reflections", iterations=20)
@@ -808,7 +808,7 @@ fit, comp = ec.eci_pci(mat, method="fitness", iterations=20)
 fit_log, comp_log = ec.fitness_complexity(mat, log_fitness=True)
 \end{lstlisting}
 
-\subsection{ECI Subnacional}
+\subsection{ECI subnacional}
 
 \begin{lstlisting}[caption={ECI subnacional com PCI externo}]
 # pci_nacional: PCI calculado com dados nacionais/internacionais
@@ -865,7 +865,7 @@ diag[["gap", "corr_diversity", "rank_stability_mean", "sign_flips"]]
 \end{lstlisting}
 
 %% ============================================================
-\section{Product Space e Relatedness (\texttt{relatedness})}
+\section{Product Space e relatedness (\texttt{relatedness})}
 
 \subsection{Proximidade ($\phi$)}
 
@@ -881,7 +881,7 @@ phi_d = ec.proximity(mat)["product"]                   # baseada em Mcp binario
 phi_c = ec.proximity(mat, continuous=True)["product"]  # baseada em RCA continuo
 \end{lstlisting}
 
-\subsection{Densidade e Dist\^{a}ncia}
+\subsection{Densidade e dist\^{a}ncia}
 
 \[
   \omega_{ij} = \frac{\sum_k M_{kj} \phi_{ij}}{\sum_k \phi_{ij}}, \quad
@@ -893,7 +893,7 @@ density  = ec.density(mat, phi_d)   # DataFrame loc x act
 distance = ec.distance(mat, phi_d)  # DataFrame loc x act
 \end{lstlisting}
 
-\subsection{Co-ocorr\^{e}ncia e \'{I}ndices de Relatedness}
+\subsection{Coocorr\^{e}ncia e \'{i}ndices de relatedness}
 
 \begin{lstlisting}[caption={Co-ocorr\^{e}ncia e \'{i}ndices de relatedness}]
 cooc    = ec.co_occurrence(mat)
@@ -910,7 +910,7 @@ phi_cross = ec.cross_space_proximity(mat_setor, mat_tech)
 density_c = ec.cross_relatedness(mat_setor, phi_cross)
 \end{lstlisting}
 
-\subsection{Explicando e Decompondo a Densidade}
+\subsection{Explicando e decompondo a densidade}
 
 \begin{sloppypar}
 A densidade \'{e} uma soma sobre as atividades que o local j\'{a} tem, e
@@ -946,7 +946,7 @@ external = ec.relatedness_density_external(mat, phi=phi_d)
 specific_ext = ec.decomposed_density(external)
 \end{lstlisting}
 
-\subsection{Densidade Cont\'{i}nua (Full Relatedness)}
+\subsection{Densidade cont\'{i}nua (Full Relatedness)}
 
 \begin{sloppypar}
 A densidade padr\~{a}o s\'{o} conta uma atividade relacionada quando o local
@@ -987,7 +987,7 @@ rest = ec.full_relatedness(mat, phi=phi_d,
 sym = ec.rsca(mat, method="iapadre")    # -1 to 1, 0 = neutral
 \end{lstlisting}
 
-\subsection{Skill Relatedness (fluxos entre atividades)}
+\subsection{Skill relatedness (fluxos entre atividades)}
 
 Duas atividades s\~{a}o relacionadas quando os trabalhadores se movem
 entre elas mais do que o esperado (Neffke \& Henning, 2013; Neffke, Otto
@@ -1017,7 +1017,7 @@ phi_skill = sr_sym.clip(lower=0).fillna(0)
 density_skill = ec.density(mat, phi=phi_skill)
 \end{lstlisting}
 
-\subsection{Densidade Espacial}
+\subsection{Densidade espacial}
 
 O an\'{a}logo espacial da densidade: a parcela dos vizinhos de um local
 que j\'{a} s\~{a}o especializados na atividade (Bahar, Hausmann \&
@@ -1037,7 +1037,7 @@ geogr\'{a}fica \'{e} necess\'{a}ria. Locais sem vizinhos recebem
 sd = ec.spatial_density(mat, W)   # share of neighbours, 0 to 1
 \end{lstlisting}
 
-\subsection{Vantagem Comparativa Impl\'{i}cita e Relatedness por Insumo-Produto}
+\subsection{Vantagem comparativa impl\'{i}cita e relatedness por insumo-produto}
 
 \begin{sloppypar}
 \fn{implied\_rca} (Hausmann, Stock \& Y{\i}ld{\i}r{\i}m, 2022) prev\^{e} a
@@ -1072,7 +1072,7 @@ density_io = ec.density(mat, phi=phi_io)
 \end{lstlisting}
 
 %% ============================================================
-\section{Especializa\c{c}\~{a}o Regional (\texttt{specialization})}
+\section{Especializa\c{c}\~{a}o regional (\texttt{specialization})}
 
 \begin{lstlisting}[caption={\'{I}ndices de especializa\c{c}\~{a}o}]
 lq        = ec.location_quotient(mat)    # equivalente ao RCA
@@ -1083,7 +1083,7 @@ sim_exp   = ec.export_similarity(mat)    # similaridade de estrutura produtiva
 \end{lstlisting}
 
 %% ============================================================
-\section{Desigualdade e Concentra\c{c}\~{a}o (\texttt{inequality})}
+\section{Desigualdade e concentra\c{c}\~{a}o (\texttt{inequality})}
 
 \begin{lstlisting}[caption={Indicadores de desigualdade}]
 gini_r   = ec.gini(mat)                # Gini da distribuicao do valor
@@ -1104,7 +1104,7 @@ peii  = ec.peii(mat, emissions)        # Product Emissions Intensity Index
 \end{lstlisting}
 
 %% ============================================================
-\section{Complexidade Baseada em Patentes (\texttt{patents})}
+\section{Complexidade baseada em patentes (\texttt{patents})}
 
 \begin{lstlisting}[caption={Indicadores de patentes (input: matriz patente x tecnologia)}]
 ease_rec = ec.ease_of_recombination(mat_pat)
@@ -1112,7 +1112,7 @@ mod_comp = ec.modular_complexity(mat_pat)
 \end{lstlisting}
 
 %% ============================================================
-\section{Din\^{a}mica Temporal (\texttt{dynamics})}
+\section{Din\^{a}mica temporal (\texttt{dynamics})}
 
 \begin{lstlisting}[caption={Crescimento e rastreamento de entrada/sa\'{i}da}]
 growth  = ec.growth_rates(df, "regiao", "setor", "empregos", "ano")
@@ -1137,8 +1137,10 @@ o \textbf{COG} mede o ganho esperado de complexidade:
 
 Entrar em $p$ eleva a densidade de cada outra atividade ausente $p'$ em
 $\phi_{pp'}/\sum_{p''}\phi_{p''p'}$, e cada ganho \'{e} valorado por
-$Q_{p'}$: o COG \'{e} o aumento resultante do COI (bruto do termo da
-pr\'{o}pria $p$, que sai da soma).
+$Q_{p'}$: o COG \'{e} o aumento resultante do COI, bruto do termo da
+pr\'{o}pria $p$, que sai da soma; \texttt{net=True} subtrai esse termo
+($\omega_{cp} Q_p$) e devolve a varia\c{c}\~{a}o exata do COI, que pode
+ser negativa.
 
 \begin{notebox}
   \textbf{Alterado na 1.2.0.} At\'{e} a vers\~{a}o 1.1.0 o COG era
@@ -1156,7 +1158,7 @@ cog = ec.cog(mat, pci, phi=phi_d)
 \end{lstlisting}
 
 %% ============================================================
-\section{Otimiza\c{c}\~{a}o de Complexidade (\texttt{optimization})}
+\section{Otimiza\c{c}\~{a}o de complexidade (\texttt{optimization})}
 
 Camada de otimiza\c{c}\~{a}o orientada a metas para diversifica\c{c}\~{a}o
 estrat\'{e}gica (Stojkoski \& Hidalgo, 2026, \emph{Research Policy} 55,
@@ -1188,7 +1190,7 @@ portfolio = ec.eci_optimization(mat, model, target_eci=eci_alvo)
 \end{lstlisting}
 
 %% ============================================================
-\section{Difus\~{a}o Estrat\'{e}gica (\texttt{optimization.diffusion})}
+\section{Difus\~{a}o estrat\'{e}gica (\texttt{optimization.diffusion})}
 
 Modelo de cont\'{a}gio complexo de diversifica\c{c}\~{a}o na rede de
 atividades relacionadas (Alshamsi, Pinheiro \& Hidalgo, 2018,
@@ -1212,7 +1214,7 @@ otimo  = ec.optimize_sequence(adj, active0, B=fit["B"], alpha=fit["alpha"])
 \end{lstlisting}
 
 %% ============================================================
-\section{Estrat\'{e}gia: Desejabilidade e Quadrantes (\texttt{strategy})}
+\section{Estrat\'{e}gia: desejabilidade e quadrantes (\texttt{strategy})}
 
 Escolher alvos de diversifica\c{c}\~{a}o envolve duas perguntas: o que
 est\'{a} ao alcance (\emph{viabilidade} --- densidade, relatedness
@@ -1262,6 +1264,28 @@ quadrants.loc["my_region"].value_counts()
 \end{lstlisting}
 
 \begin{sloppypar}
+Os pesos tamb\'{e}m podem vir dos dados. \fn{pca\_weights} implementa o
+recurso do escore de diversifica\c{c}\~{a}o inteligente de Romero et al.\
+(2025): os indicadores de cada op\c{c}\~{a}o s\~{a}o agrupados em
+dimens\~{o}es (capacidades, mercados, ganhos), as dimens\~{o}es recebem
+peso igual e, dentro de cada dimens\~{a}o, os pesos v\^{e}m de uma an\'{a}lise
+de componentes principais, de modo que os indicadores que carregam mais da
+varia\c{c}\~{a}o comum pesam mais. As linhas da tabela podem ser c\'{e}lulas
+(local, atividade), como as produzidas por \fn{build\_features}, e os
+pesos podem ser calibrados numa subamostra de refer\^{e}ncia, passando s\'{o}
+essas linhas.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Pesos por componentes principais (escore de diversifica\c{c}\~{a}o inteligente)}]
+# weights from the data, within three dimensions of equal weight
+dims = {"capabilities": ["rca", "employment"],
+        "markets": ["imports", "import_growth"],
+        "gains": ["density", "pci", "cog"]}
+weights = ec.pca_weights(cells, groups=dims)   # one row per option
+sds = ec.desirability_index(cells, weights).unstack()
+\end{lstlisting}
+
+\begin{sloppypar}
 \fn{opportunity\_alignment} resume o quadro por local: a correla\c{c}\~{a}o,
 entre as suas op\c{c}\~{o}es, de viabilidade e desejabilidade. Valores
 negativos indicam locais cujas oportunidades pr\'{o}ximas t\^{e}m baixo
@@ -1277,7 +1301,7 @@ alignment = ec.opportunity_alignment(options, desirability)
 \end{lstlisting}
 
 %% ============================================================
-\section{Listas de Pol\'{i}tica (\texttt{policy})}
+\section{Listas de pol\'{i}tica (\texttt{policy})}
 
 Uma \emph{lista} \'{e} qualquer conjunto de atividades que interessa a
 uma pol\'{i}tica: produtos verdes, as atividades de uma miss\~{a}o ou de
@@ -1352,7 +1376,7 @@ risk.sort_values("lock_in", ascending=False).head()
 \end{lstlisting}
 
 %% ============================================================
-\section{Previs\~{a}o de Entradas e Valida\c{c}\~{a}o (\texttt{prediction})}
+\section{Previs\~{a}o de entradas e valida\c{c}\~{a}o (\texttt{prediction})}
 
 A relatedness \'{e} \'{u}til para a pol\'{i}tica na medida em que prev\^{e}
 onde os locais de fato se diversificam. Este m\'{o}dulo testa isso fora
@@ -1419,7 +1443,7 @@ val["value"].unstack()   # scores x metrics
 val.loc["density"]       # value, 95% interval, diff. to baseline
 \end{lstlisting}
 
-\subsection{Previs\~{a}o com Aprendizado de M\'{a}quina (opcional)}
+\subsection{Previs\~{a}o com aprendizado de m\'{a}quina (opcional)}
 
 \begin{sloppypar}
 Com o scikit-learn instalado (\texttt{pip install econcomplex[ml]}) a
@@ -1442,7 +1466,9 @@ proximidade (Tacchella et al., 2023; Albora et al., 2023).
 \begin{sloppypar}
 \fn{explain\_entry} informa quais atributos sustentam a previs\~{a}o:
 import\^{a}ncia por permuta\c{c}\~{a}o (queda da AUC) em locais fora do
-treino, com p-valor. \fn{potential\_employment} converte probabilidades
+treino, com p-valor e a dire\c{c}\~{a}o do efeito; com
+\texttt{mode="vector"} ela lista, para cada atividade-alvo, as
+atividades cuja presen\c{c}a torna a entrada mais prov\'{a}vel. \fn{potential\_employment} converte probabilidades
 calibradas em quantidades,
 $\text{prob}_{cp} \times \text{chegada}_{cp}$, em que o tamanho de chegada
 \'{e} o que d\'{a} quociente locacional 1
@@ -1472,9 +1498,9 @@ jobs.groupby("region")["expected"].sum()
 \end{lstlisting}
 
 %% ============================================================
-\section{Pipeline Unificado (\texttt{compute\_complexity})}
+\section{Pipeline unificado (\texttt{compute\_complexity})}
 
-\subsection{Assinatura da Fun\c{c}\~{a}o}
+\subsection{Assinatura da fun\c{c}\~{a}o}
 
 \begin{lstlisting}[caption={Assinatura da fun\c{c}\~{a}o pipeline}]
 def compute_complexity(
@@ -1543,7 +1569,7 @@ def compute_complexity(
 \end{notebox}
 
 %% ============================================================
-\section{Como Interpretar os Indicadores}
+\section{Como interpretar os indicadores}
 
 Guia r\'{a}pido de leitura dos principais resultados. Todos os
 \'{i}ndices de complexidade s\~{a}o \textbf{medidas relativas}: compare
@@ -1626,9 +1652,9 @@ Cont\'{a}gio $B$, $\alpha$ & $B \in (0,1]$, $\alpha \approx 1$ &
 \end{warnbox}
 
 %% ============================================================
-\section{Exemplos Completos}
+\section{Exemplos completos}
 
-\subsection{Exemplo 1 --- An\'{a}lise Regional de Empregos}
+\subsection{Exemplo 1: an\'{a}lise regional de empregos}
 
 \begin{lstlisting}[caption={An\'{a}lise completa de emprego regional}]
 import pandas as pd
@@ -1663,7 +1689,7 @@ print(top_eci)
 resultado.to_csv("resultado_regional.csv", index=False)
 \end{lstlisting}
 
-\subsection{Exemplo 2 --- Exporta\c{c}\~{o}es com Dados COMEX}
+\subsection{Exemplo 2: exporta\c{c}\~{o}es com dados COMEX}
 
 \begin{lstlisting}[caption={An\'{a}lise de exportacoes com dados COMEX/MDIC}]
 import pandas as pd
@@ -1690,7 +1716,7 @@ resultado.to_csv("complexidade_exportacoes_2023.csv", index=False)
 print("ECI medio:", resultado["eci"].dropna().mean().round(4))
 \end{lstlisting}
 
-\subsection{Exemplo 3 --- Painel Temporal RAIS (2010--2022)}
+\subsection{Exemplo 3: painel temporal da RAIS (2010--2022)}
 
 \begin{lstlisting}[caption={Pipeline com dados em painel --- multiplos periodos}]
 import pandas as pd
@@ -1722,7 +1748,7 @@ print(eci_trend)
 painel.to_csv("painel_complexidade_2010_2022.csv", index=False)
 \end{lstlisting}
 
-\subsection{Exemplo 4 --- Alvos de Diversifica\c{c}\~{a}o (Otimiza\c{c}\~{a}o de ECI)}
+\subsection{Exemplo 4: alvos de diversifica\c{c}\~{a}o (otimiza\c{c}\~{a}o de ECI)}
 
 Uso passo a passo da camada de otimiza\c{c}\~{a}o com um painel
 multi-anual (exige ao menos os per\'{i}odos $t$, $t+\tau$ e $t+\Delta t$):
@@ -1765,7 +1791,7 @@ print(otimo["sequence"][:10], otimo["improvement"])
 %% ============================================================
 \section{Refer\^{e}ncia da API}
 
-Invent\'{a}rio completo das 114 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
+Invent\'{a}rio completo das 115 fun\c{c}\~{o}es p\'{u}blicas, agrupadas
 por m\'{o}dulo. As assinaturas mostram os par\^{a}metros e seus valores
 padr\~{a}o; consulte os docstrings no c\'{o}digo
 (\texttt{help(ec.funcao)}) para a documenta\c{c}\~{a}o completa de cada
@@ -1775,7 +1801,7 @@ do pacote instalado por \texttt{docs/generate\_api\_reference.py}.
 \input{api_reference_pt}
 
 %% ============================================================
-\section{Refer\^{e}ncias Bibliogr\'{a}ficas}
+\section{Refer\^{e}ncias bibliogr\'{a}ficas}
 
 \begin{description}[leftmargin=1.5em, style=nextline]
 
@@ -1925,10 +1951,21 @@ do pacote instalado por \texttt{docs/generate\_api\_reference.py}.
     Iapadre, P.L. (2001). Measuring international specialization.
     \textit{International Advances in Economic Research}, 7(2), 173--183.
 
+  \item[Romero et al.\ (2025)]
+    Romero, J.P., Freitas, E., Silveira, F., Britto, G., Cimini, F.,
+    Jayme Jr., F.G. (2025). Complexity-based diversification strategies:
+    a new method for ranking promising activities for regional
+    diversification. \textit{Spatial Economic Analysis}, 20(4), 640--663.
+
+  \item[Nardo et al.\ (2008)]
+    Nardo, M., Saisana, M., Saltelli, A., Tarantola, S., Hoffmann, A.,
+    Giovannini, E. (2008). \textit{Handbook on Constructing Composite
+    Indicators: Methodology and User Guide}. OECD Publishing.
+
 \end{description}
 
 %% ============================================================
-\section{Licen\c{c}a e Cita\c{c}\~{a}o}
+\section{Licen\c{c}a e cita\c{c}\~{a}o}
 
 Esta biblioteca \'{e} distribu\'{i}da sob a licen\c{c}a MIT. Para uso em
 trabalhos acad\^{e}micos, cite a biblioteca

@@ -23,20 +23,20 @@ GROUP_TITLES = {
     "core": ("Core", "Core"),
     "complexity": ("Complexity", "Complexidade"),
     "relatedness": ("Relatedness and Product Space", "Relatedness e Product Space"),
-    "specialization": ("Regional Specialization", "Especializa\\c{c}\\~{a}o Regional"),
-    "inequality": ("Inequality and Concentration", "Desigualdade e Concentra\\c{c}\\~{a}o"),
+    "specialization": ("Regional Specialization", "Especializa\\c{c}\\~{a}o regional"),
+    "inequality": ("Inequality and Concentration", "Desigualdade e concentra\\c{c}\\~{a}o"),
     "productivity": ("Productivity", "Produtividade"),
-    "patents": ("Patent-Based Complexity", "Complexidade de Patentes"),
-    "dynamics": ("Temporal Dynamics", "Din\\^{a}mica Temporal"),
+    "patents": ("Patent-Based Complexity", "Complexidade de patentes"),
+    "dynamics": ("Temporal Dynamics", "Din\\^{a}mica temporal"),
     "outlook": ("Complexity Outlook", "Complexity Outlook"),
     "optimization": ("ECI Optimization and Strategic Diffusion",
-                     "Otimiza\\c{c}\\~{a}o de ECI e Difus\\~{a}o Estrat\\'{e}gica"),
+                     "Otimiza\\c{c}\\~{a}o de ECI e difus\\~{a}o estrat\\'{e}gica"),
     "strategy": ("Strategy: Desirability and Quadrants",
-                 "Estrat\\'{e}gia: Desejabilidade e Quadrantes"),
-    "policy": ("Policy Lists", "Listas de Pol\\'{i}tica"),
+                 "Estrat\\'{e}gia: desejabilidade e quadrantes"),
+    "policy": ("Policy Lists", "Listas de pol\\'{i}tica"),
     "prediction": ("Entry Prediction and Validation",
-                   "Previs\\~{a}o de Entradas e Valida\\c{c}\\~{a}o"),
-    "pipeline": ("Unified Pipeline", "Pipeline Unificado"),
+                   "Previs\\~{a}o de entradas e valida\\c{c}\\~{a}o"),
+    "pipeline": ("Unified Pipeline", "Pipeline unificado"),
 }
 
 # Descrições em português (uma linha por função canônica)
@@ -118,6 +118,7 @@ PT = {
     "explain_entry": "Import\\^{a}ncia dos atributos por permuta\\c{c}\\~{a}o em regi\\~{o}es fora do treino, com p-valor.",
     "rsca": "VCR sim\\'{e}trica em $[-1, 1]$ (Dalum et al. 1998 ou Iapadre 2001).",
     "full_relatedness": "Densidade cont\\'{i}nua (Cicerone, McCann \\& Venhorst 2026), com partes especializada e n\\~{a}o especializada.",
+    "pca_weights": "Pesos de um \\'{i}ndice composto por componentes principais, por dimens\\~{a}o (Romero et al. 2025).",
     "density_contributions": "Contribui\\c{c}\\~{a}o de cada atividade presente para a densidade de um par (regi\\~{a}o, atividade).",
     "decomposed_density": "Densidade l\\'{i}quida dos efeitos fixos de regi\\~{a}o e de atividade.",
     "skill_relatedness": "Relatedness por fluxos entre atividades (ex.: trocas de emprego), observado sobre esperado.",
@@ -210,7 +211,7 @@ def build(lang):
         if g not in groups:
             continue
         title = GROUP_TITLES[g][0 if lang == "en" else 1]
-        out.append(f"\\subsection{{\\texttt{{{g}}} --- {title}}}")
+        out.append(f"\\subsection{{\\texttt{{{g}}}: {title}}}")
         out.append(
             "\\begin{longtable}{>{\\raggedright\\arraybackslash}p{9.2cm} "
             ">{\\raggedright\\arraybackslash}p{7.0cm}}")

@@ -98,6 +98,7 @@ def complexity_outlook_gain(
     use_rca: bool = True,
     threshold: float = 1.0,
     proximity_method: str = "max",
+    net: bool = False,
 ) -> Union[pd.DataFrame, np.ndarray]:
     """
     Complexity Outlook Gain (COG).
@@ -134,6 +135,15 @@ def complexity_outlook_gain(
         Binarization threshold.
     proximity_method : str
         Proximity normalization method.
+    net : bool
+        If True, subtract density_{rc} * PCI_c, the term of the activity
+        itself, so that the result is exactly the change in the
+        Complexity Outlook Index when the region enters the activity. It
+        can then be negative: entering a complex activity that was the
+        region's best nearby option lowers what is left to reach. The
+        opportunity gain of the Atlas (Hausmann, Hidalgo et al. 2014) is
+        defined net of a term of this kind. Default False, the gross
+        gain, as in ``py-ecomplexity``.
 
     Returns
     -------
@@ -168,6 +178,9 @@ def complexity_outlook_gain(
     weight = safe_divide(pci_arr, phi_arr.sum(axis=0))
     not_present = 1 - m
     cog = not_present * (not_present @ (phi_arr * weight[None, :]).T)
+    if net:
+        density = safe_divide(m @ phi_arr, phi_arr.sum(axis=0, keepdims=True))
+        cog = cog - not_present * density * pci_arr[None, :]
 
     if is_df:
         return pd.DataFrame(cog, index=row_index, columns=col_index)

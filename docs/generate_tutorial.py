@@ -63,7 +63,7 @@ arbitrários.""",
 
 STEPS = [
     dict(
-        title=("From the Table to the Matrix", "Da Tabela à Matriz"),
+        title=("From the Table to the Matrix", "Da tabela à matriz"),
         before=(
             r"""The library starts from a long table: one row per region and
 activity, with a value (employment, exports, patents).
@@ -99,7 +99,7 @@ funções, com um erro que nomeia o problema.""",
         ),
     ),
     dict(
-        title=("Who Is Specialized in What", "Quem É Especializado em Quê"),
+        title=("Who Is Specialized in What", "Quem é especializado em quê"),
         before=(
             r"""Raw values mostly reflect size: a large region has more of
 everything. The RCA (the location quotient, when the data are
@@ -146,7 +146,7 @@ matriz já é um índice ou uma tabela 0/1.""",
     ),
     dict(
         title=("Complexity, and How Far to Trust It",
-               "Complexidade, e Quanto Confiar Nela"),
+               "Complexidade, e quanto confiar nela"),
         before=(
             r"""The ECI ranks regions by the complexity of what they are
 specialized in, and the PCI ranks activities by the complexity of the
@@ -202,7 +202,7 @@ alto'' como ``complexo''.""",
         ),
     ),
     dict(
-        title=("What Is Within Reach", "O Que Está ao Alcance"),
+        title=("What Is Within Reach", "O que está ao alcance"),
         before=(
             r"""Two activities are close when the same regions tend to be
 specialized in both. From the proximity matrix $\phi$, relatedness
@@ -253,7 +253,7 @@ densidade. É a frase que entra na ficha de uma região: ``a
         ),
     ),
     dict(
-        title=("What Is Worth Reaching", "O Que Vale a Pena Alcançar"),
+        title=("What Is Worth Reaching", "O que vale a pena alcançar"),
         before=(
             r"""Feasibility says what is within reach, not what is worth
 reaching. The second axis is a choice of the analyst: complexity, wages,
@@ -297,7 +297,7 @@ negativo.""",
         ),
     ),
     dict(
-        title=("The Shortlist", "A Lista Curta"),
+        title=("The Shortlist", "A lista curta"),
         before=(
             r"""With the two axes, each option of the region falls in one of
 four quadrants. The cuts are the medians of the region's own options, so
@@ -370,12 +370,12 @@ com alinhamento positivo, os saltos curtos encheriam a lista sozinhos.
 Quantas apostas não relacionadas fazer, e em que ordem, é o que
 \fn{optimize\_sequence} responde, e \fn{eci\_optimization} devolve o
 conjunto de novas atividades que alcança um ECI-alvo com o menor esforço
-(ver as seções de Difusão Estratégica e de Otimização de ECI).""",
+(ver as seções de difusão estratégica e de otimização de ECI).""",
         ),
     ),
     dict(
         title=("Reading the Result Through Policy Lists",
-               "Lendo o Resultado por Listas de Política"),
+               "Lendo o resultado por listas de política"),
         before=(
             r"""Policies are usually written as lists of activities: a mission,
 a value chain, a green taxonomy. The list functions read the same matrix
@@ -426,7 +426,7 @@ lógica a atividades que tendem a encolher.""",
         ),
     ),
     dict(
-        title=("Does Density Predict Entry?", "A Densidade Prevê a Entrada?"),
+        title=("Does Density Predict Entry?", "A densidade prevê a entrada?"),
         before=(
             r"""Everything so far assumes that density says where regions will
 go. With two periods this can be tested: compute the scores with the
@@ -508,7 +508,7 @@ período, inclusive a matriz de proximidade.""",
     ),
     dict(
         title=("A Prediction Model and Expected Jobs (Optional)",
-               "Um Modelo de Previsão e o Emprego Esperado (Opcional)"),
+               "Um modelo de previsão e o emprego esperado (opcional)"),
         before=(
             r"""With several measures of feasibility, a model can combine them.
 \fn{build\_features} stacks the layers into one table of cells and adds
@@ -611,7 +611,7 @@ indicators.
     ranking moves when they change.
 \end{itemize}
 """,
-    r"""\subsection{Antes de Usar os Resultados}
+    r"""\subsection{Antes de usar os resultados}
 
 Alguns pontos respondem pela maior parte dos erros no uso aplicado
 desses indicadores.
@@ -640,7 +640,7 @@ desses indicadores.
 )
 
 SECTION = ("Tutorial: From the Data to a List of Targets",
-           "Tutorial: Dos Dados a uma Lista de Alvos")
+           "Tutorial: dos dados a uma lista de alvos")
 STEP = ("Step", "Passo")
 OUT_STYLE = (r"[language={}, numbers=none, backgroundcolor=\color{white}, "
              r"frame=leftline, framerule=2pt, rulecolor=\color{noteborder}, "

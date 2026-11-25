@@ -188,7 +188,7 @@ from .optimization import (
 
 # ── Strategy: desirability, sensitivity to weights, quadrants ─────────────────
 from .strategy import (
-    desirability_index, weight_sensitivity, strategy_quadrants,
+    desirability_index, pca_weights, weight_sensitivity, strategy_quadrants,
     opportunity_alignment,
 )
 
@@ -259,7 +259,8 @@ __all__ = [
     "diversification_strategy", "expected_diversification_time",
     "compare_strategies", "optimize_sequence",
     # strategy
-    "desirability_index", "weight_sensitivity", "strategy_quadrants",
+    "desirability_index", "pca_weights", "weight_sensitivity",
+    "strategy_quadrants",
     "opportunity_alignment",
     # policy lists
     "list_complexity_potential", "list_density", "missing_links",

@@ -28,13 +28,13 @@ difusão estratégica) que, até onde sabemos, não existe em nenhum outro pacot
 | **Patentes** | Facilidade de recombinação, complexidade modular |
 | **Dinâmica** | Taxas de crescimento, rastreamento de entrada/saída — APIs por pares de matrizes e por painel longo |
 | **Outlook** | Complexity Outlook Index (COI) e Gain (COG) |
-| **Estratégia** | Índice de desejabilidade com pesos explícitos, sensibilidade do ranking aos pesos, quadrantes viabilidade × desejabilidade, alinhamento de oportunidades |
+| **Estratégia** | Índice de desejabilidade com pesos explícitos ou por componentes principais (escore de diversificação inteligente), sensibilidade do ranking aos pesos, quadrantes viabilidade × desejabilidade, alinhamento de oportunidades |
 | **Listas de política** | Presença e potencial da região em qualquer lista de atividades (listas verdes, missões, cadeias), densidade apoiada numa lista, elos ausentes de uma cadeia, risco de transição (exposição, lock-in, perspectiva) |
 | **Previsão de entradas** | Alvos de entrada com conjunto em risco e validação fora da amostra de qualquer preditor: AUC, AUC intra-região, precisão/revocação@k, Brier, bootstrap por região; modelos de previsão opcionais (gradient boosting, floresta aleatória, logit) com probabilidades fora da amostra, importância dos atributos e tamanho esperado das entradas |
 | **Otimização de ECI** | Modelo de previsão com steppingstone, matriz de esforço de entrada, programa 0–1 exato para portfólios de diversificação de menor esforço, metas de crescimento (Stojkoski & Hidalgo 2026) |
 | **Difusão estratégica** | Calibração de contágio complexo, cinco estratégias de diversificação, sequenciamento ótimo de entrada (Alshamsi, Pinheiro & Hidalgo 2018) |
 
-São 114 funções públicas — a documentação em PDF traz a referência completa da
+São 115 funções públicas — a documentação em PDF traz a referência completa da
 API e um guia de interpretação para cada família de indicadores.
 
 ## Instalação

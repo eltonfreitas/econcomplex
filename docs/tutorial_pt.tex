@@ -1,4 +1,4 @@
-\section{Tutorial: Dos Dados a uma Lista de Alvos}
+\section{Tutorial: dos dados a uma lista de alvos}
 
 Este tutorial acompanha uma análise do começo ao fim: da tabela
 bruta até uma lista curta de alvos de diversificação para uma região, e
@@ -13,7 +13,7 @@ O exemplo acompanha a região \texttt{L045}, que tem um número mediano de
 especializações. Os rótulos de regiões e atividades são códigos
 arbitrários.
 
-\subsection{Passo 1: Da Tabela à Matriz}
+\subsection{Passo 1: Da tabela à matriz}
 
 A biblioteca parte de uma tabela longa: uma linha por região e
 atividade, com um valor (emprego, exportações, patentes).
@@ -45,7 +45,7 @@ esconde: pares de região e atividade repetidos são somados, e pares
 ausentes viram zero. Valores negativos ou faltantes são recusados pelas
 funções, com um erro que nomeia o problema.
 
-\subsection{Passo 2: Quem É Especializado em Quê}
+\subsection{Passo 2: Quem é especializado em quê}
 
 Os valores brutos refletem sobretudo o tamanho: uma região grande
 tem mais de tudo. A VCR (o quociente locacional, quando o dado é
@@ -85,7 +85,7 @@ como um todo. O limiar de 1 é o argumento \texttt{threshold} de toda
 função que binariza, e \texttt{use\_rca=False} dispensa a VCR quando a
 matriz já é um índice ou uma tabela 0/1.
 
-\subsection{Passo 3: Complexidade, e Quanto Confiar Nela}
+\subsection{Passo 3: Complexidade, e quanto confiar nela}
 
 O ECI ordena as regiões pela complexidade daquilo em que são
 especializadas, e o PCI ordena as atividades pela complexidade das
@@ -134,7 +134,7 @@ a correlação com a diversidade for próxima de zero, o sinal do índice é
 arbitrário, e convém conferi-lo com renda ou salários antes de ler ``ECI
 alto'' como ``complexo''.
 
-\subsection{Passo 4: O Que Está ao Alcance}
+\subsection{Passo 4: O que está ao alcance}
 
 Duas atividades são próximas quando as mesmas regiões tendem a ser
 especializadas nas duas. A partir da matriz de proximidade $\phi$, a
@@ -183,7 +183,7 @@ densidade. É a frase que entra na ficha de uma região: ``a
 \texttt{A004}, \texttt{A014} e
 \texttt{A023}''.
 
-\subsection{Passo 5: O Que Vale a Pena Alcançar}
+\subsection{Passo 5: O que vale a pena alcançar}
 
 A viabilidade diz o que está ao alcance, não o que vale a pena
 alcançar. O segundo eixo é uma escolha de quem analisa: complexidade,
@@ -220,7 +220,7 @@ a posição da atividade depende dos pesos, e o relatório deve dizer isso.
 Um indicador que conta contra a atividade, como emissões, entra com peso
 negativo.
 
-\subsection{Passo 6: A Lista Curta}
+\subsection{Passo 6: A lista curta}
 
 Com os dois eixos, cada opção da região cai em um de quatro
 quadrantes. Os cortes são as medianas das opções da própria região, de
@@ -280,9 +280,9 @@ com alinhamento positivo, os saltos curtos encheriam a lista sozinhos.
 Quantas apostas não relacionadas fazer, e em que ordem, é o que
 \fn{optimize\_sequence} responde, e \fn{eci\_optimization} devolve o
 conjunto de novas atividades que alcança um ECI-alvo com o menor esforço
-(ver as seções de Difusão Estratégica e de Otimização de ECI).
+(ver as seções de difusão estratégica e de otimização de ECI).
 
-\subsection{Passo 7: Lendo o Resultado por Listas de Política}
+\subsection{Passo 7: Lendo o resultado por listas de política}
 
 Políticas costumam ser escritas como listas de atividades: uma
 missão, uma cadeia produtiva, uma taxonomia verde. As funções de lista
@@ -325,7 +325,7 @@ quando alguma atividade do elo tem densidade de 40\,\% ou mais, e
 \texttt{missing} caso contrário. \fn{transition\_risk} aplica a mesma
 lógica a atividades que tendem a encolher.
 
-\subsection{Passo 8: A Densidade Prevê a Entrada?}
+\subsection{Passo 8: A densidade prevê a entrada?}
 
 Tudo até aqui supõe que a densidade diz para onde as regiões
 vão. Com dois períodos isso pode ser testado: calculam-se os escores com
@@ -391,7 +391,7 @@ de 0{,}04 a
 Para o teste ser honesto, todo escore tem de usar só dados do primeiro
 período, inclusive a matriz de proximidade.
 
-\subsection{Passo 9: Um Modelo de Previsão e o Emprego Esperado (Opcional)}
+\subsection{Passo 9: Um modelo de previsão e o emprego esperado (opcional)}
 
 Com várias medidas de viabilidade, um modelo pode combiná-las.
 \fn{build\_features} empilha as camadas numa tabela de células e
@@ -426,10 +426,10 @@ metric     auc  auc_within
 score                     
 density  0.788       0.646
 model    0.792       0.643
-                 importance    std  p_value  significant
-density               0.273  0.099    0.020         True
-log_region_size       0.040  0.037    0.137        False
-rca                   0.023  0.021    0.137        False
+                 importance    std  p_value direction  significant
+density               0.273  0.099    0.020         +         True
+log_region_size       0.040  0.037    0.137         +        False
+rca                   0.023  0.021    0.137         +        False
 region
 L019    540.4
 L016    530.3
@@ -454,7 +454,7 @@ multiplica então cada probabilidade calibrada pelo tamanho que a
 atividade teria na região com quociente locacional 1, e a soma por
 região é o emprego esperado em novas especializações.
 
-\subsection{Antes de Usar os Resultados}
+\subsection{Antes de usar os resultados}
 
 Alguns pontos respondem pela maior parte dos erros no uso aplicado
 desses indicadores.

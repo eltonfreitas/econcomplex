@@ -1,4 +1,4 @@
-\subsection{\texttt{core} --- Core}
+\subsection{\texttt{core}: Core}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -20,7 +20,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{complexity} --- Complexity}
+\subsection{\texttt{complexity}: Complexity}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -37,7 +37,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{relatedness} --- Relatedness and Product Space}
+\subsection{\texttt{relatedness}: Relatedness and Product Space}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -71,7 +71,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{specialization} --- Regional Specialization}
+\subsection{\texttt{specialization}: Regional Specialization}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -86,7 +86,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{inequality} --- Inequality and Concentration}
+\subsection{\texttt{inequality}: Inequality and Concentration}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -101,7 +101,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{productivity} --- Productivity}
+\subsection{\texttt{productivity}: Productivity}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -115,7 +115,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{patents} --- Patent-Based Complexity}
+\subsection{\texttt{patents}: Patent-Based Complexity}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -126,7 +126,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{dynamics} --- Temporal Dynamics}
+\subsection{\texttt{dynamics}: Temporal Dynamics}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -143,19 +143,19 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{outlook} --- Complexity Outlook}
+\subsection{\texttt{outlook}: Complexity Outlook}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
 \midrule\endhead
 \texttt{\footnotesize complexity\_outlook\_index(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Complexity Outlook Index (COI).} \\[2pt]
-\texttt{\footnotesize complexity\_outlook\_gain(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Complexity Outlook Gain (COG).} \\[2pt]
+\texttt{\footnotesize complexity\_outlook\_gain(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', net=False)} & {\small Complexity Outlook Gain (COG).} \\[2pt]
 \texttt{\footnotesize coi(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias of \texttt{complexity\_outlook\_index}.} \\[2pt]
-\texttt{\footnotesize cog(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max')} & {\small Alias of \texttt{complexity\_outlook\_gain}.} \\[2pt]
+\texttt{\footnotesize cog(mat, pci, phi=None, use\_rca=True, threshold=1.0, proximity\_method='max', net=False)} & {\small Alias of \texttt{complexity\_outlook\_gain}.} \\[2pt]
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{optimization} --- ECI Optimization and Strategic Diffusion}
+\subsection{\texttt{optimization}: ECI Optimization and Strategic Diffusion}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -177,19 +177,20 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{strategy} --- Strategy: Desirability and Quadrants}
+\subsection{\texttt{strategy}: Strategy: Desirability and Quadrants}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
 \midrule\endhead
 \texttt{\footnotesize desirability\_index(indicators, weights=None, standardize='z')} & {\small Weighted combination of indicators of how desirable each activity is.} \\[2pt]
+\texttt{\footnotesize pca\_weights(indicators, groups=None, variance=0.8)} & {\small Weights for a composite index from principal component analysis.} \\[2pt]
 \texttt{\footnotesize weight\_sensitivity(indicators, weights=None, standardize='z', n\_draws=1000, concentration=1.0, top=10, seed=None)} & {\small Stability of the desirability ranking when the weights change.} \\[2pt]
 \texttt{\footnotesize strategy\_quadrants(feasibility, desirability, by\_region=True, cut='median')} & {\small Classify each region's options by feasibility and desirability.} \\[2pt]
 \texttt{\footnotesize opportunity\_alignment(feasibility, desirability, method='spearman', min\_options=3)} & {\small Are a region's nearby opportunities also its valuable ones?} \\[2pt]
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{policy} --- Policy Lists}
+\subsection{\texttt{policy}: Policy Lists}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -201,7 +202,7 @@
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{prediction} --- Entry Prediction and Validation}
+\subsection{\texttt{prediction}: Entry Prediction and Validation}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\
@@ -211,11 +212,11 @@
 \texttt{\footnotesize potential\_employment(prob, values, arrival='lq1', entrants=None, quantiles=(0.25, 0.5, 0.75))} & {\small Expected size of the activities a region may enter.} \\[2pt]
 \texttt{\footnotesize build\_features(mat, layers=None, at\_risk=None, region\_vars=None, activity\_vars=None, controls=True, use\_rca=True, threshold=1.0)} & {\small Table of features for each (region, activity) cell.} \\[2pt]
 \texttt{\footnotesize predict\_entry(features, target, model='gbm', mode='layers', new\_features=None, groups=None, n\_splits=5, calibrate=False, min\_entries=5, seed=None, return\_model=False)} & {\small Predicted probability of entry, out of sample.} \\[2pt]
-\texttt{\footnotesize explain\_entry(features, target, model='gbm', groups=None, n\_splits=5, n\_repeats=10, alpha=0.05, seed=None)} & {\small Which features carry the prediction of entry, out of sample.} \\[2pt]
+\texttt{\footnotesize explain\_entry(features, target, model='gbm', mode='layers', activities=None, groups=None, n\_splits=5, n\_repeats=10, alpha=0.05, min\_entries=5, seed=None)} & {\small Which features carry the prediction of entry, out of sample.} \\[2pt]
 \bottomrule
 \end{longtable}
 
-\subsection{\texttt{pipeline} --- Unified Pipeline}
+\subsection{\texttt{pipeline}: Unified Pipeline}
 \begin{longtable}{>{\raggedright\arraybackslash}p{9.2cm} >{\raggedright\arraybackslash}p{7.0cm}}
 \toprule
 \textbf{Function} & \textbf{Description} \\

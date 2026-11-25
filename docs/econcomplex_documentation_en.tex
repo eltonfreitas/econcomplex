@@ -1127,8 +1127,10 @@ the \textbf{COG} measures the expected complexity gain:
 
 Entering $p$ raises the density of every other missing activity $p'$ by
 $\phi_{pp'}/\sum_{p''}\phi_{p''p'}$, and each gain is valued at $Q_{p'}$:
-COG is the resulting increase in COI (gross of the term of $p$ itself,
-which leaves the sum).
+COG is the resulting increase in COI, gross of the term of $p$ itself,
+which leaves the sum; \texttt{net=True} subtracts that term
+($\omega_{cp} Q_p$) and returns the exact change in COI, which can be
+negative.
 
 \begin{notebox}
   \textbf{Changed in 1.2.0.} Up to version 1.1.0 the COG was normalized
@@ -1246,6 +1248,27 @@ robust = ec.weight_sensitivity(indicators, weights, n_draws=1000,
 options   = ec.relatedness_density_external(mat, phi=phi_d)
 quadrants = ec.strategy_quadrants(options, desirability)
 quadrants.loc["my_region"].value_counts()
+\end{lstlisting}
+
+\begin{sloppypar}
+The weights can also come from the data. \fn{pca\_weights} implements the
+device of the smart diversification score of Romero et al.\ (2025): the
+indicators of each option are grouped into dimensions (capabilities,
+markets, gains), the dimensions get equal weight, and inside each
+dimension the weights come from a principal component analysis, so that
+indicators carrying more of the common variation count more. The rows of
+the table can be (location, activity) cells, as produced by
+\fn{build\_features}, and the weights can be calibrated on a reference
+subsample of locations by passing only those rows.
+\end{sloppypar}
+
+\begin{lstlisting}[caption={Weights by principal components (smart diversification score)}]
+# weights from the data, within three dimensions of equal weight
+dims = {"capabilities": ["rca", "employment"],
+        "markets": ["imports", "import_growth"],
+        "gains": ["density", "pci", "cog"]}
+weights = ec.pca_weights(cells, groups=dims)   # one row per option
+sds = ec.desirability_index(cells, weights).unstack()
 \end{lstlisting}
 
 \begin{sloppypar}
@@ -1425,7 +1448,9 @@ activity on the location's whole RCA vector, with no proximity matrix
 \begin{sloppypar}
 \fn{explain\_entry} reports which features carry the prediction:
 permutation importance (fall in AUC) on held-out locations, with a
-p-value. \fn{potential\_employment} turns calibrated probabilities into
+p-value and the direction of the effect; with \texttt{mode="vector"} it
+lists, for each target activity, the activities whose presence makes the
+entry more likely. \fn{potential\_employment} turns calibrated probabilities into
 quantities, $\text{prob}_{cp} \times \text{arrival}_{cp}$, where the
 arrival size is the one that gives a location quotient of 1
 ($E_{c\cdot}E_{\cdot p}/E_{\cdot\cdot}$) or a quantile of what past
@@ -1740,7 +1765,7 @@ print(best["sequence"][:10], best["improvement"])
 \section{API Reference}
 
 \begin{sloppypar}
-Complete inventory of the 114 public functions, grouped by module.
+Complete inventory of the 115 public functions, grouped by module.
 Signatures show parameter names and defaults; see the in-code
 docstrings (\texttt{help(ec.function)}) for full parameter
 documentation. This section is auto-generated from the installed
@@ -1899,6 +1924,17 @@ package by \texttt{docs/generate\_api\_reference.py}.
   \item[Iapadre (2001)]
     Iapadre, P.L. (2001). Measuring international specialization.
     \textit{International Advances in Economic Research}, 7(2), 173--183.
+
+  \item[Romero et al.\ (2025)]
+    Romero, J.P., Freitas, E., Silveira, F., Britto, G., Cimini, F.,
+    Jayme Jr., F.G. (2025). Complexity-based diversification strategies:
+    a new method for ranking promising activities for regional
+    diversification. \textit{Spatial Economic Analysis}, 20(4), 640--663.
+
+  \item[Nardo et al.\ (2008)]
+    Nardo, M., Saisana, M., Saltelli, A., Tarantola, S., Hoffmann, A.,
+    Giovannini, E. (2008). \textit{Handbook on Constructing Composite
+    Indicators: Methodology and User Guide}. OECD Publishing.
 
 \end{description}
 

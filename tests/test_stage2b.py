@@ -286,7 +286,8 @@ def test_explain_entry_finds_the_planted_layer():
     pytest.importorskip("sklearn")
     X, target, _, _ = _planted()
     imp = ec.explain_entry(X, target, model="logit", n_repeats=8, seed=0)
-    assert list(imp.columns) == ["importance", "std", "p_value", "significant"]
+    assert list(imp.columns) == ["importance", "std", "p_value", "direction", "significant"]
+    assert imp.loc["signal", "direction"] == "+"
     assert imp.index[0] == "signal" and bool(imp.loc["signal", "significant"])
     assert imp.loc["signal", "importance"] > 0.2
     assert abs(imp.loc["noise", "importance"]) < 0.01
@@ -343,3 +344,29 @@ def test_transition_risk_known():
     assert np.isnan(ec.transition_risk(clean, ["coal", "oil"], **kw).loc["R1", "outlook"])
     with pytest.raises(ValueError, match="not in the matrix"):
         ec.transition_risk(mat, ["gas"], **kw)
+
+
+def test_explain_entry_vector_mode_and_direction():
+    pytest.importorskip("sklearn")
+    rng = np.random.default_rng(2)
+    R, C = 200, 5
+    idx, cols = [f"r{i}" for i in range(R)], list("ABCDE")
+    rca0 = pd.DataFrame(rng.lognormal(0, 1, (R, C)), idx, cols)
+    # entry into A is helped by B and hindered by C; D and E are irrelevant
+    drive = np.log(rca0["B"]) - np.log(rca0["C"]) + rng.normal(0, 0.4, R)
+    target = pd.DataFrame(np.nan, idx, cols)
+    target["A"] = (drive > 0.3).astype(float)
+    imp = ec.explain_entry(np.log(rca0), target, model="logit", mode="vector",
+                           n_repeats=6, seed=0)
+    assert list(imp.index.names) == ["target", "feature"]
+    a = imp.loc["A"]
+    assert set(a.index[:2]) == {"B", "C"}
+    assert a.loc["B", "direction"] == "+" and a.loc["C", "direction"] == "-"
+    assert bool(a.loc["B", "significant"]) and bool(a.loc["C", "significant"])
+    assert not a.loc[["D", "E"], "significant"].any()
+    only = ec.explain_entry(np.log(rca0), target, model="logit", mode="vector",
+                            activities=["A"], n_repeats=2, seed=0)
+    assert list(only.index.get_level_values("target").unique()) == ["A"]
+    with pytest.raises(ValueError, match="enough entries"):
+        ec.explain_entry(np.log(rca0), target, model="logit", mode="vector",
+                         activities=["B"])

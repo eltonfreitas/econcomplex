@@ -98,3 +98,55 @@ def test_full_relatedness_capped_nests_the_standard_density(big):
         ec.full_relatedness(big, part="unspecialized")
     with pytest.raises(ValueError):
         ec.full_relatedness(big, weights="binary")
+
+
+# ── PCA weights (Romero et al. 2025) ──────────────────────────────────────────
+def test_pca_weights():
+    rng = np.random.default_rng(0)
+    common = rng.normal(size=300)
+    ind = pd.DataFrame({"a": common + 0.1 * rng.normal(size=300),
+                        "b": common + 0.1 * rng.normal(size=300),
+                        "noise": rng.normal(size=300)})
+    w = ec.pca_weights(ind, variance=0.6)
+    assert w.sum() == pytest.approx(1) and (w >= 0).all()
+    assert w["a"] == pytest.approx(w["b"], abs=0.02) and w["noise"] < 0.05
+    # one component: squared loadings of the first eigenvector
+    vec = np.linalg.eigh(np.corrcoef(ind.values, rowvar=False))[1][:, -1]
+    np.testing.assert_allclose(w.values, vec ** 2)
+    # all components kept: equal weights
+    np.testing.assert_allclose(ec.pca_weights(ind, variance=1.0), 1 / 3)
+    # dimensions get equal weight; a single-indicator dimension keeps all of its share
+    g = ec.pca_weights(ind, groups={"x": ["a", "b"], "y": ["noise"]})
+    assert g["noise"] == pytest.approx(0.5) and g[["a", "b"]].sum() == pytest.approx(0.5)
+    # a constant indicator gets nothing; the result feeds desirability_index
+    ind["flat"] = 3.0
+    wf = ec.pca_weights(ind, variance=0.6)
+    assert wf["flat"] == 0 and wf.sum() == pytest.approx(1)
+    score = ec.desirability_index(ind, wf)
+    assert score.notna().all() and abs(np.corrcoef(score, common)[0, 1]) > 0.95
+    with pytest.raises(ValueError):
+        ec.pca_weights(ind, groups={"x": ["a", "zzz"]})
+    with pytest.raises(ValueError):
+        ec.pca_weights(ind, variance=0)
+
+
+# ── net Complexity Outlook Gain ───────────────────────────────────────────────
+def test_cog_net_is_the_exact_change_in_coi(big):
+    m = ec.mcp(big)
+    _, pci = ec.eci_pci(big)
+    phi = ec.product_proximity(big)
+    kw = {"phi": phi, "use_rca": False, "threshold": 0.5}
+    net = ec.cog(m, pci, net=True, **kw)
+    gross = ec.cog(m, pci, **kw)
+    coi0 = ec.coi(m, pci, **kw)
+    checked = 0
+    for r in m.index[:6]:
+        for c in m.columns[m.loc[r] == 0][:5]:
+            m2 = m.copy()
+            m2.loc[r, c] = 1
+            assert net.loc[r, c] == pytest.approx(ec.coi(m2, pci, **kw)[r] - coi0[r], abs=1e-10)
+            checked += 1
+    assert checked > 10
+    dens = ec.relatedness_density(m, percent=False, **kw)
+    np.testing.assert_allclose(net, gross - (1 - m) * dens * pci)
+    assert (net.values[m.values == 1] == 0).all()
