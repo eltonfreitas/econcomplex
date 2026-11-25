@@ -1,6 +1,6 @@
 # econcomplex
 
-[![version](https://img.shields.io/badge/vers%C3%A3o-1.3.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/vers%C3%A3o-1.4.0-blue)](CHANGELOG.md)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
 [![tests](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml/badge.svg)](https://github.com/eltonfreitas/econcomplex/actions/workflows/tests.yml)
@@ -209,7 +209,7 @@ recupera o ranking canônico de ECI dos países.
   author  = {Freitas, Elton},
   title   = {econcomplex: economic complexity and regional science indicators in Python},
   year    = {2026},
-  version = {1.3.0},
+  version = {1.4.0},
   url     = {https://github.com/eltonfreitas/econcomplex}
 }
 ```

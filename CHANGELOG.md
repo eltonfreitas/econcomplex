@@ -1,18 +1,8 @@
 # Changelog
 
-## [1.3.0] — 2026-11-25
+## [1.4.0] — 2026-11-25
 
 ### Added
-- `full_relatedness`: relatedness density with continuous specialization
-  (Cicerone, McCann & Venhorst 2026). Every related activity is weighted by
-  how specialized the region is in it, instead of counting only those with
-  RCA >= 1, and the index splits exactly into the part that comes from
-  specialized activities and the part that comes from non-specialized ones
-  (`part="specialized"` / `"non_specialized"`). Weights: the symmetric index
-  of Iapadre (2001), as in the paper, the one of Dalum et al. (1998), or a
-  capped RCA, whose specialized part is the standard density.
-- `rsca`: revealed symmetric comparative advantage, in [-1, 1]
-  (`method="dalum"` or `"iapadre"`).
 - `pca_weights`: weights for `desirability_index` from principal component
   analysis, optionally within dimensions of equal weight — the device of the
   smart diversification score of Romero et al. (2025).
@@ -26,6 +16,20 @@
 - `io_relatedness`: the default is now confirmed against eq. (1) of the
   published Essletzbichler (2015), not only the working paper.
 - Portuguese documentation: section titles in sentence case.
+
+## [1.3.0] — 2026-11-25
+
+### Added
+- `full_relatedness`: relatedness density with continuous specialization
+  (Cicerone, McCann & Venhorst 2026). Every related activity is weighted by
+  how specialized the region is in it, instead of counting only those with
+  RCA >= 1, and the index splits exactly into the part that comes from
+  specialized activities and the part that comes from non-specialized ones
+  (`part="specialized"` / `"non_specialized"`). Weights: the symmetric index
+  of Iapadre (2001), as in the paper, the one of Dalum et al. (1998), or a
+  capped RCA, whose specialized part is the standard density.
+- `rsca`: revealed symmetric comparative advantage, in [-1, 1]
+  (`method="dalum"` or `"iapadre"`).
 
 ### Fixed
 - Documentation: the note on the corrected COG said "up to version 1.2.0";
